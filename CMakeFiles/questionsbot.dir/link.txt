@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/questionsbot.dir/main.cpp.o  -o questionsbot -lpthread -lssl -lcrypto -lz 

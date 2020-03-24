@@ -1,0 +1,3 @@
+/home/meep/projects/questionsbot/CMakeFiles/rebuild_cache.dir
+/home/meep/projects/questionsbot/CMakeFiles/questionsbot.dir
+/home/meep/projects/questionsbot/CMakeFiles/edit_cache.dir
