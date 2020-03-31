@@ -123,32 +123,140 @@ questionsbot/fast:
 	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/build
 .PHONY : questionsbot/fast
 
-main.o: main.cpp.o
+src/bot/bot.o: src/bot/bot.cpp.o
 
-.PHONY : main.o
+.PHONY : src/bot/bot.o
 
 # target to build an object file
-main.cpp.o:
-	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/main.cpp.o
-.PHONY : main.cpp.o
+src/bot/bot.cpp.o:
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o
+.PHONY : src/bot/bot.cpp.o
 
-main.i: main.cpp.i
+src/bot/bot.i: src/bot/bot.cpp.i
 
-.PHONY : main.i
+.PHONY : src/bot/bot.i
 
 # target to preprocess a source file
-main.cpp.i:
-	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/main.cpp.i
-.PHONY : main.cpp.i
+src/bot/bot.cpp.i:
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/bot.cpp.i
+.PHONY : src/bot/bot.cpp.i
 
-main.s: main.cpp.s
+src/bot/bot.s: src/bot/bot.cpp.s
 
-.PHONY : main.s
+.PHONY : src/bot/bot.s
 
 # target to generate assembly for a file
-main.cpp.s:
-	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/main.cpp.s
-.PHONY : main.cpp.s
+src/bot/bot.cpp.s:
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/bot.cpp.s
+.PHONY : src/bot/bot.cpp.s
+
+src/bot/commands/helpCommand.o: src/bot/commands/helpCommand.cpp.o
+
+.PHONY : src/bot/commands/helpCommand.o
+
+# target to build an object file
+src/bot/commands/helpCommand.cpp.o:
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o
+.PHONY : src/bot/commands/helpCommand.cpp.o
+
+src/bot/commands/helpCommand.i: src/bot/commands/helpCommand.cpp.i
+
+.PHONY : src/bot/commands/helpCommand.i
+
+# target to preprocess a source file
+src/bot/commands/helpCommand.cpp.i:
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.i
+.PHONY : src/bot/commands/helpCommand.cpp.i
+
+src/bot/commands/helpCommand.s: src/bot/commands/helpCommand.cpp.s
+
+.PHONY : src/bot/commands/helpCommand.s
+
+# target to generate assembly for a file
+src/bot/commands/helpCommand.cpp.s:
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.s
+.PHONY : src/bot/commands/helpCommand.cpp.s
+
+src/bot/commands/questionCommand.o: src/bot/commands/questionCommand.cpp.o
+
+.PHONY : src/bot/commands/questionCommand.o
+
+# target to build an object file
+src/bot/commands/questionCommand.cpp.o:
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o
+.PHONY : src/bot/commands/questionCommand.cpp.o
+
+src/bot/commands/questionCommand.i: src/bot/commands/questionCommand.cpp.i
+
+.PHONY : src/bot/commands/questionCommand.i
+
+# target to preprocess a source file
+src/bot/commands/questionCommand.cpp.i:
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.i
+.PHONY : src/bot/commands/questionCommand.cpp.i
+
+src/bot/commands/questionCommand.s: src/bot/commands/questionCommand.cpp.s
+
+.PHONY : src/bot/commands/questionCommand.s
+
+# target to generate assembly for a file
+src/bot/commands/questionCommand.cpp.s:
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.s
+.PHONY : src/bot/commands/questionCommand.cpp.s
+
+src/bot/utils/utils.o: src/bot/utils/utils.cpp.o
+
+.PHONY : src/bot/utils/utils.o
+
+# target to build an object file
+src/bot/utils/utils.cpp.o:
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o
+.PHONY : src/bot/utils/utils.cpp.o
+
+src/bot/utils/utils.i: src/bot/utils/utils.cpp.i
+
+.PHONY : src/bot/utils/utils.i
+
+# target to preprocess a source file
+src/bot/utils/utils.cpp.i:
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.i
+.PHONY : src/bot/utils/utils.cpp.i
+
+src/bot/utils/utils.s: src/bot/utils/utils.cpp.s
+
+.PHONY : src/bot/utils/utils.s
+
+# target to generate assembly for a file
+src/bot/utils/utils.cpp.s:
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.s
+.PHONY : src/bot/utils/utils.cpp.s
+
+src/main.o: src/main.cpp.o
+
+.PHONY : src/main.o
+
+# target to build an object file
+src/main.cpp.o:
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/main.cpp.o
+.PHONY : src/main.cpp.o
+
+src/main.i: src/main.cpp.i
+
+.PHONY : src/main.i
+
+# target to preprocess a source file
+src/main.cpp.i:
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/main.cpp.i
+.PHONY : src/main.cpp.i
+
+src/main.s: src/main.cpp.s
+
+.PHONY : src/main.s
+
+# target to generate assembly for a file
+src/main.cpp.s:
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/main.cpp.s
+.PHONY : src/main.cpp.s
 
 # Help Target
 help:
@@ -159,9 +267,21 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... questionsbot"
 	@echo "... edit_cache"
-	@echo "... main.o"
-	@echo "... main.i"
-	@echo "... main.s"
+	@echo "... src/bot/bot.o"
+	@echo "... src/bot/bot.i"
+	@echo "... src/bot/bot.s"
+	@echo "... src/bot/commands/helpCommand.o"
+	@echo "... src/bot/commands/helpCommand.i"
+	@echo "... src/bot/commands/helpCommand.s"
+	@echo "... src/bot/commands/questionCommand.o"
+	@echo "... src/bot/commands/questionCommand.i"
+	@echo "... src/bot/commands/questionCommand.s"
+	@echo "... src/bot/utils/utils.o"
+	@echo "... src/bot/utils/utils.i"
+	@echo "... src/bot/utils/utils.s"
+	@echo "... src/main.o"
+	@echo "... src/main.i"
+	@echo "... src/main.s"
 .PHONY : help
 
 

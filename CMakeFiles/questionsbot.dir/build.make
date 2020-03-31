@@ -57,41 +57,145 @@ include CMakeFiles/questionsbot.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/questionsbot.dir/flags.make
 
-CMakeFiles/questionsbot.dir/main.cpp.o: CMakeFiles/questionsbot.dir/flags.make
-CMakeFiles/questionsbot.dir/main.cpp.o: main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/meep/projects/questionsbot/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/questionsbot.dir/main.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/questionsbot.dir/main.cpp.o -c /home/meep/projects/questionsbot/main.cpp
+CMakeFiles/questionsbot.dir/src/main.cpp.o: CMakeFiles/questionsbot.dir/flags.make
+CMakeFiles/questionsbot.dir/src/main.cpp.o: src/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/meep/projects/questionsbot/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/questionsbot.dir/src/main.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/questionsbot.dir/src/main.cpp.o -c /home/meep/projects/questionsbot/src/main.cpp
 
-CMakeFiles/questionsbot.dir/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/questionsbot.dir/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/meep/projects/questionsbot/main.cpp > CMakeFiles/questionsbot.dir/main.cpp.i
+CMakeFiles/questionsbot.dir/src/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/questionsbot.dir/src/main.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/meep/projects/questionsbot/src/main.cpp > CMakeFiles/questionsbot.dir/src/main.cpp.i
 
-CMakeFiles/questionsbot.dir/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/questionsbot.dir/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/meep/projects/questionsbot/main.cpp -o CMakeFiles/questionsbot.dir/main.cpp.s
+CMakeFiles/questionsbot.dir/src/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/questionsbot.dir/src/main.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/meep/projects/questionsbot/src/main.cpp -o CMakeFiles/questionsbot.dir/src/main.cpp.s
 
-CMakeFiles/questionsbot.dir/main.cpp.o.requires:
+CMakeFiles/questionsbot.dir/src/main.cpp.o.requires:
 
-.PHONY : CMakeFiles/questionsbot.dir/main.cpp.o.requires
+.PHONY : CMakeFiles/questionsbot.dir/src/main.cpp.o.requires
 
-CMakeFiles/questionsbot.dir/main.cpp.o.provides: CMakeFiles/questionsbot.dir/main.cpp.o.requires
-	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/main.cpp.o.provides.build
-.PHONY : CMakeFiles/questionsbot.dir/main.cpp.o.provides
+CMakeFiles/questionsbot.dir/src/main.cpp.o.provides: CMakeFiles/questionsbot.dir/src/main.cpp.o.requires
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/main.cpp.o.provides.build
+.PHONY : CMakeFiles/questionsbot.dir/src/main.cpp.o.provides
 
-CMakeFiles/questionsbot.dir/main.cpp.o.provides.build: CMakeFiles/questionsbot.dir/main.cpp.o
+CMakeFiles/questionsbot.dir/src/main.cpp.o.provides.build: CMakeFiles/questionsbot.dir/src/main.cpp.o
+
+
+CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o: CMakeFiles/questionsbot.dir/flags.make
+CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o: src/bot/bot.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/meep/projects/questionsbot/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o -c /home/meep/projects/questionsbot/src/bot/bot.cpp
+
+CMakeFiles/questionsbot.dir/src/bot/bot.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/questionsbot.dir/src/bot/bot.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/meep/projects/questionsbot/src/bot/bot.cpp > CMakeFiles/questionsbot.dir/src/bot/bot.cpp.i
+
+CMakeFiles/questionsbot.dir/src/bot/bot.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/questionsbot.dir/src/bot/bot.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/meep/projects/questionsbot/src/bot/bot.cpp -o CMakeFiles/questionsbot.dir/src/bot/bot.cpp.s
+
+CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o.requires:
+
+.PHONY : CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o.requires
+
+CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o.provides: CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o.requires
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o.provides.build
+.PHONY : CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o.provides
+
+CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o.provides.build: CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o
+
+
+CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o: CMakeFiles/questionsbot.dir/flags.make
+CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o: src/bot/commands/helpCommand.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/meep/projects/questionsbot/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o -c /home/meep/projects/questionsbot/src/bot/commands/helpCommand.cpp
+
+CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/meep/projects/questionsbot/src/bot/commands/helpCommand.cpp > CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.i
+
+CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/meep/projects/questionsbot/src/bot/commands/helpCommand.cpp -o CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.s
+
+CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o.requires:
+
+.PHONY : CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o.requires
+
+CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o.provides: CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o.requires
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o.provides.build
+.PHONY : CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o.provides
+
+CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o.provides.build: CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o
+
+
+CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o: CMakeFiles/questionsbot.dir/flags.make
+CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o: src/bot/commands/questionCommand.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/meep/projects/questionsbot/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o -c /home/meep/projects/questionsbot/src/bot/commands/questionCommand.cpp
+
+CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/meep/projects/questionsbot/src/bot/commands/questionCommand.cpp > CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.i
+
+CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/meep/projects/questionsbot/src/bot/commands/questionCommand.cpp -o CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.s
+
+CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o.requires:
+
+.PHONY : CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o.requires
+
+CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o.provides: CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o.requires
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o.provides.build
+.PHONY : CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o.provides
+
+CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o.provides.build: CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o
+
+
+CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o: CMakeFiles/questionsbot.dir/flags.make
+CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o: src/bot/utils/utils.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/meep/projects/questionsbot/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o -c /home/meep/projects/questionsbot/src/bot/utils/utils.cpp
+
+CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/meep/projects/questionsbot/src/bot/utils/utils.cpp > CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.i
+
+CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/meep/projects/questionsbot/src/bot/utils/utils.cpp -o CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.s
+
+CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o.requires:
+
+.PHONY : CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o.requires
+
+CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o.provides: CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o.requires
+	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o.provides.build
+.PHONY : CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o.provides
+
+CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o.provides.build: CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o
 
 
 # Object files for target questionsbot
 questionsbot_OBJECTS = \
-"CMakeFiles/questionsbot.dir/main.cpp.o"
+"CMakeFiles/questionsbot.dir/src/main.cpp.o" \
+"CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o" \
+"CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o" \
+"CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o" \
+"CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o"
 
 # External object files for target questionsbot
 questionsbot_EXTERNAL_OBJECTS =
 
-questionsbot: CMakeFiles/questionsbot.dir/main.cpp.o
+questionsbot: CMakeFiles/questionsbot.dir/src/main.cpp.o
+questionsbot: CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o
+questionsbot: CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o
+questionsbot: CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o
+questionsbot: CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o
 questionsbot: CMakeFiles/questionsbot.dir/build.make
 questionsbot: CMakeFiles/questionsbot.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/meep/projects/questionsbot/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable questionsbot"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/meep/projects/questionsbot/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable questionsbot"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/questionsbot.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -99,7 +203,11 @@ CMakeFiles/questionsbot.dir/build: questionsbot
 
 .PHONY : CMakeFiles/questionsbot.dir/build
 
-CMakeFiles/questionsbot.dir/requires: CMakeFiles/questionsbot.dir/main.cpp.o.requires
+CMakeFiles/questionsbot.dir/requires: CMakeFiles/questionsbot.dir/src/main.cpp.o.requires
+CMakeFiles/questionsbot.dir/requires: CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o.requires
+CMakeFiles/questionsbot.dir/requires: CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o.requires
+CMakeFiles/questionsbot.dir/requires: CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o.requires
+CMakeFiles/questionsbot.dir/requires: CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o.requires
 
 .PHONY : CMakeFiles/questionsbot.dir/requires
 

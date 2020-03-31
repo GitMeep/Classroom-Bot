@@ -66,7 +66,7 @@ CMAKE_BINARY_DIR = /home/meep/projects/questionsbot
 CMakeFiles/questionsbot.dir/all:
 	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/depend
 	$(MAKE) -f CMakeFiles/questionsbot.dir/build.make CMakeFiles/questionsbot.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/meep/projects/questionsbot/CMakeFiles --progress-num=1,2 "Built target questionsbot"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/meep/projects/questionsbot/CMakeFiles --progress-num=1,2,3,4,5,6 "Built target questionsbot"
 .PHONY : CMakeFiles/questionsbot.dir/all
 
 # Include target in all.
@@ -76,7 +76,7 @@ all: CMakeFiles/questionsbot.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/questionsbot.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/meep/projects/questionsbot/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/meep/projects/questionsbot/CMakeFiles 6
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/questionsbot.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/meep/projects/questionsbot/CMakeFiles 0
 .PHONY : CMakeFiles/questionsbot.dir/rule

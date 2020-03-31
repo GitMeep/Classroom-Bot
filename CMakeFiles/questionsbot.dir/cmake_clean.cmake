@@ -1,5 +1,9 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/questionsbot.dir/main.cpp.o"
+  "CMakeFiles/questionsbot.dir/src/main.cpp.o"
+  "CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o"
+  "CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o"
+  "CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o"
+  "CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o"
   "questionsbot.pdb"
   "questionsbot"
 )

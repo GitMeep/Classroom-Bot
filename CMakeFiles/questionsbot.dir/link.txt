@@ -1,1 +1,1 @@
-/usr/bin/c++     CMakeFiles/questionsbot.dir/main.cpp.o  -o questionsbot -lpthread -lssl -lcrypto -lz 
+/usr/bin/c++  -g   CMakeFiles/questionsbot.dir/src/main.cpp.o CMakeFiles/questionsbot.dir/src/bot/bot.cpp.o CMakeFiles/questionsbot.dir/src/bot/commands/helpCommand.cpp.o CMakeFiles/questionsbot.dir/src/bot/commands/questionCommand.cpp.o CMakeFiles/questionsbot.dir/src/bot/utils/utils.cpp.o  -o questionsbot -lpthread -lssl -lcrypto -lz -lfmt 
