@@ -1,6 +1,0 @@
-{
-	"token": "NjkxOTQ1NjY2ODk2ODU1MDcy.Xnn7sA.jJ1GMPC8hB_oSOwTYu9jb_zV0fQ",
-	"force-shard-count": 10,
-	"file-logging": false,
-	"log-format": "%^%Y-%m-%d %H:%M:%S.%e [%L] [th#%t]%$ : %v"
-}
