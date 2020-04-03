@@ -16,12 +16,12 @@ Students can ask questions using a text command. The teacher can then go through
 Got any other ideas? Send me a tweet [@TweetMeepsi](https://twitter.com/TweetMeepsi). Check the [trello](https://trello.com/b/owJzJaVt/classroom-bot) development board to see if i am already working on it first though!
 
 ## Building and running
-You dont need to run the bot yourself, i am already doing it (see the invite link above). But if you want to run it yourself, here's how to do it:
+You dont need to run the bot yourself, i am already doing it (see the invite link above). But if you want to run it yourself, here's how to do it. Also, it seems that aegis.cpp only works for linux, so if you want to run on windows, you will have to wait until i set up docker properly.
 
 ### Requirements
-CMake
-Make
-GCC
+* CMake
+* Make
+* A C++ compiler
 
 ### Installing aegis.cpp
 This bot uses the Aegis library to interface with the Discord API. To install it, follow these steps:
