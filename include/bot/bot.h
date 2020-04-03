@@ -15,5 +15,6 @@ private:
     std::unique_ptr<Command> getCommand(std::string);
 
     std::shared_ptr<spdlog::logger> _log;
+    std::map<std::string, std::string> _aliases;
     std::map<std::string, std::shared_ptr<Command>> _commands;
 };

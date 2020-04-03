@@ -2,9 +2,13 @@ cmake_minimum_required(VERSION 3.10)
 
 project(questionsbot VERSION 1.0)
 
-add_executable(questionsbot src/main.cpp src/bot/bot.cpp src/bot/commands/helpCommand.cpp src/bot/commands/questionCommand.cpp src/bot/utils/utils.cpp)
+file(GLOB_RECURSE commands_SRC
+    "src/*.cpp"
+)
 
-set(CMAKE_BUILD_TYPE Debug)
+add_executable(questionsbot src/main.cpp src/bot/bot.cpp src/bot/utils/utils.cpp ${commands_SRC})
+
+# set(CMAKE_BUILD_TYPE Debug)
 
 target_link_libraries(questionsbot pthread ssl crypto z fmt)
 

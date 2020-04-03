@@ -3,6 +3,7 @@
 #include <bot/bot.h>
 #include <bot/commands/helpCommand.h>
 #include <bot/commands/questionCommand.h>
+#include <bot/commands/handsCommand.h>
 
 using json = nlohmann::json;
 
@@ -15,6 +16,7 @@ int main(int argc, char * argv[])
 
     questionsbotInstance.registerCommand(new HelpCommand());
     questionsbotInstance.registerCommand(new QuestionCommand());
+    questionsbotInstance.registerCommand(new HandsCommand());
 
     AEGIS_TRACE(bot.log, "Bot object created");
     // With min log level set to trace and wsdbg (websocket debug) set to true

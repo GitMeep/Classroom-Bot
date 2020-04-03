@@ -16,8 +16,14 @@ questionsbot::questionsbot(std::shared_ptr<spdlog::logger> logger) {
 void questionsbot::registerCommand(Command* command) {
     CommandInfo info = command->getCommandInfo();
     
-    for(auto alias : info.aliases) {
-        _commands[alias] = std::shared_ptr<Command>(command);
+    auto it = info.aliases.begin();
+    std::string commandName = *it;
+
+    _commands[commandName] = std::shared_ptr<Command>(command);
+
+    while(it != info.aliases.end()) {
+        _aliases[*it] = commandName;
+        it++;
     }
 }
 
@@ -39,17 +45,25 @@ void questionsbot::onMessage(aegis::gateway::events::message_create message) {
         return;
     }
 
-    if(!_commands.count(parameters[0])) {
+    std::string commandName = parameters[0];
+    if(_aliases.count(commandName)) {
+        commandName = _aliases[commandName];
+    }
+
+    if(!_commands.count(commandName)) {
         message.channel.create_message("Unknown command");
+        return;
     }
 
     std::vector<std::string> commandParameters;
-    for(auto it = parameters.begin(); it != parameters.end(); ++it) {
-        if(it == parameters.begin()) continue;
+    auto it = parameters.begin();
+    it++;
+    while(it != parameters.end()) {
         commandParameters.push_back(*it);
+        it++;
     }
 
-    std::shared_ptr<Command> command = _commands[parameters[0]];
+    std::shared_ptr<Command> command = _commands[commandName];
     command->call(commandParameters, message);
     
 }
