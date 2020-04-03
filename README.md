@@ -16,12 +16,14 @@ Students can ask questions using a text command. The teacher can then go through
 Got any other ideas? Send me a tweet [@TweetMeepsi](https://twitter.com/TweetMeepsi). Check the [trello](https://trello.com/b/owJzJaVt/classroom-bot) development board to see if i am already working on it first though!
 
 ## Building and running
-You dont need to run the bot yourself, i am already doing it (see the invite link above). But if you want to run it yourself, here's how to do it. Also, it seems that aegis.cpp only works for linux, so if you want to run on windows, you will have to wait until i set up docker properly.
+You dont need to run the bot yourself, i am already doing it (see the invite link above). But if you want to run it yourself, here's how to do it. Note: this can only be built on linux. If you want to run it on windows, see the "Running with docker" section.
 
 ### Requirements
 * CMake
 * Make
 * A C++ compiler
+* libssl-dev
+* zlib1g
 
 ### Installing aegis.cpp
 This bot uses the Aegis library to interface with the Discord API. To install it, follow these steps:
@@ -53,7 +55,15 @@ $ make -j 8
 8. You can now run the bot by typing `./questionsbot` in the build directory.
 
 ## Running with docker
-Coming soon
+I have created an image on Docker Hub to run the bot easily on linux, mac and windows. If you don't have docker, start by [downlaoding it](https://www.docker.com/). When you have it up and running, the container can be started using this command, which downloads the image and runs it:
+```sh
+docker run --publish 443:443 --env BOT_TOKEN=YOUR_TOKEN_HERE --detach --name cb meepdocker/classroom-bot:1.0
+```
+This command may need sudo if you are on linux. The bot can be stopped using:
+```sh
+docker rm --force cb
+```
+It can be a good idea to set up the token as an environment variable.
 
 ## Developing
 If you want to help with development, awesome, here's the basic structure of the project. Please fork the repo and submit a pull request if you have made changes.

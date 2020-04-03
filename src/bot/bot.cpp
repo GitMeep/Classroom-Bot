@@ -1,6 +1,5 @@
-#include "bot/bot.h"
-#include <fmt/format.h>
-#include <bot/commands/command.h>
+#include "bot.h"
+#include "commands/command.h"
 
 #define COMMAND_PREFIX '?'
 
@@ -9,11 +8,12 @@ enum ParserException {
     EMPTY_COMMAND
 };
 
-questionsbot::questionsbot(std::shared_ptr<spdlog::logger> logger) {
-    _log = logger;
+ClassroomBot::ClassroomBot(std::shared_ptr<spdlog::logger> logger, aegis::core* core)
+    : _log(logger)
+    ,_aegisCore(core) {
 }
 
-void questionsbot::registerCommand(Command* command) {
+void ClassroomBot::registerCommand(Command* command) {
     CommandInfo info = command->getCommandInfo();
     
     auto it = info.aliases.begin();
@@ -27,7 +27,7 @@ void questionsbot::registerCommand(Command* command) {
     }
 }
 
-void questionsbot::onMessage(aegis::gateway::events::message_create message) {
+void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
     if(message.get_user().is_bot()) return;
     if(message.msg.get_content().size() == 0) return;
     std::vector<std::string> parameters;
@@ -46,6 +46,12 @@ void questionsbot::onMessage(aegis::gateway::events::message_create message) {
     }
 
     std::string commandName = parameters[0];
+
+    if(commandName == "h" || commandName == "help") {
+        printHelp(message.channel.get_id());
+        return;
+    }
+
     if(_aliases.count(commandName)) {
         commandName = _aliases[commandName];
     }
@@ -64,11 +70,51 @@ void questionsbot::onMessage(aegis::gateway::events::message_create message) {
     }
 
     std::shared_ptr<Command> command = _commands[commandName];
-    command->call(commandParameters, message);
+    command->call(commandParameters, {message.msg.get_id(), message.channel.get_id(), message.channel.get_guild_id(), message.msg.get_author_id()});
     
 }
 
-std::vector<std::string> questionsbot::parseCommand(std::string message, char prefix) {
+void ClassroomBot::printHelp(aegis::snowflake channelId) {
+    std::stringstream ss;
+    ss << "Commands: ```" << std::endl
+    << "help: Print this help page." << std::endl
+    << "Aliases: " << std::endl
+    << "\th" << std::endl
+    << "------------------------------------------------" << std::endl << std::endl;
+    
+    CommandInfo commandInfo;
+    auto command = _commands.begin();
+    while(command != _commands.end()) {
+        commandInfo = (command->second)->getCommandInfo();
+        ss << command->first << ": " << commandInfo.description << std::endl;
+        
+        ss << "Aliases:" << std::endl;
+        auto alias = commandInfo.aliases.begin();
+        alias++;
+        while(alias != commandInfo.aliases.end()) {
+            ss << "\t" << *alias << std::endl;
+            alias++;
+        }
+
+        ss << "Options: " << std::endl;
+        auto option = commandInfo.options.begin();
+        while(option != commandInfo.options.end()) {
+            ss << "\t" << *option << std::endl;
+            option++;
+        }
+
+        if(command != (_commands.end()--))
+            ss << "------------------------------------------------" << std::endl << std::endl;
+
+        command++;
+    }
+
+    ss << "```";
+
+    _aegisCore->create_message(channelId, ss.str());
+}
+
+std::vector<std::string> ClassroomBot::parseCommand(std::string message, char prefix) {
     std::vector<std::string> parameters;
     std::stringstream ss;
     ss << message;
