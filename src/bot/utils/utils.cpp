@@ -2,19 +2,19 @@
 
 #define ADMIN_ROLE "Teacher"
 
-std::string getUsername(aegis::user &user, aegis::snowflake guildId) {
-    std::string username = user.get_name(guildId);
-    if(username.size()==0) username = user.get_username();
+std::string getUsername(aegis::snowflake userId, aegis::snowflake guildId, std::shared_ptr<aegis::core> core) {
+    aegis::user* user = core->find_guild(guildId)->find_member(userId);
+    std::string username = user->get_name(guildId);
+    if(username.size()==0) username = user->get_username();
     return username;
 }
 
-bool isTeacher(aegis::gateway::events::message_create message) {
-    aegis::snowflake guildId = message.channel.get_guild_id();
-    std::vector<aegis::snowflake> roles = message.get_user().get_guild_info(guildId).roles;
-    std::vector<aegis::snowflake>::iterator it = roles.begin();
+bool isTeacher(aegis::snowflake guildId, aegis::snowflake userId, std::shared_ptr<aegis::core> core) {
+    auto roles = core->find_guild(guildId)->find_member(userId)->get_guild_info(guildId).roles;
+    auto it = roles.begin();
     bool hasRole = false;
     while(it != roles.end()) {
-        if(message.channel.get_guild().get_role(*it).name == ADMIN_ROLE) {
+        if(core->find_guild(guildId)->get_role(*it).name == ADMIN_ROLE) {
             hasRole = true;
             break;
         }

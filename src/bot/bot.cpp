@@ -70,7 +70,7 @@ void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
     }
 
     std::shared_ptr<Command> command = _commands[commandName];
-    command->call(commandParameters, message);
+    command->call(commandParameters, {message.msg.get_id(), message.channel.get_id(), message.channel.get_guild_id(), message.msg.get_author_id()});
     
 }
 
@@ -90,6 +90,7 @@ void ClassroomBot::printHelp(aegis::snowflake channelId) {
         
         ss << "Aliases:" << std::endl;
         auto alias = commandInfo.aliases.begin();
+        alias++;
         while(alias != commandInfo.aliases.end()) {
             ss << "\t" << *alias << std::endl;
             alias++;

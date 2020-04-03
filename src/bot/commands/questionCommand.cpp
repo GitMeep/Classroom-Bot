@@ -5,15 +5,15 @@
 
 const std::string actionMsg = "Please enter a valid action! Options are: ```ask, list, next, clear```";
 
-QuestionCommand::QuestionCommand() {
-    _log = spdlog::stdout_color_mt("QuestionCommand");
-}
-
-void QuestionCommand::call(std::vector<std::string> parameters, aegis::gateway::events::message_create& message) {
+void QuestionCommand::call(std::vector<std::string> parameters, CurrentCommand current) {
     _questionsMtx.lock();
+
+    Command::call(parameters, current);
+
     if(parameters.size() == 0) {
-        message.channel.create_message(actionMsg);
+        _aegisCore->create_message(_current.channelId, actionMsg);
     }
+
     std::string verb = parameters[0];
     if(verb == "ask") {
         std::string question;
@@ -23,98 +23,89 @@ void QuestionCommand::call(std::vector<std::string> parameters, aegis::gateway::
         while(i != parameters.end()) {
             ss << *i++ << " ";
         }
-        std::string response;
-        response = ask(ss.str(), message.channel.get_guild_id(), message.get_user());
-        message.channel.create_message(response);
-        message.msg.create_reaction("%E2%9C%85"); // checkmark emoji
+        ask(ss.str());
     }
 
     else if(verb == "list") {
-        std::string response = list(message.channel.get_guild_id());
-        message.channel.create_message(response);
+        list();
     }
 
     else if(verb == "next") {
-        if(!isTeacher(message)) {
-            message.channel.create_message(fmt::format("You must have the role \"{0}\" to use this command!", ADMIN_ROLE));
-            return;
+        if(!isTeacher(_current.guildId, _current.userId, _aegisCore)) {
+            _aegisCore->create_message(_current.guildId, fmt::format("You must have the role \"{0}\" to use this command!", ADMIN_ROLE));
         } else {
-            std::string response;
-            response = next(message.channel.get_guild_id());
-            message.channel.create_message(response);
+            next();
         }
     }
 
     else if(verb == "clear") {
-        if(!isTeacher(message)) {
-            message.channel.create_message(fmt::format("You must have the role \"{0}\" to use this command!", ADMIN_ROLE));
-            return;
+        if(!isTeacher(_current.guildId, _current.userId, _aegisCore)) {
+            _aegisCore->create_message(_current.guildId, fmt::format("You must have the role \"{0}\" to use this command!", ADMIN_ROLE));
         } else {
-            std::string response;
-            response = clear(message.channel.get_guild_id());
-            message.channel.create_message(response);
+            clear();
         }
     }
 
     else {
-        message.channel.create_message(actionMsg);
+        _aegisCore->create_message(_current.channelId, actionMsg);
     }
     
     _questionsMtx.unlock();
 }
 
-std::string QuestionCommand::ask(std::string question, aegis::snowflake guildId, std::reference_wrapper<aegis::user> user) {
-    if(!_questions.count(guildId)) {
-        _questions[guildId]; // if a space in the map is not allocated for this guild, allocate one
+void QuestionCommand::ask(std::string question) {
+    if(!_questions.count(_current.guildId)) {
+        _questions[_current.guildId]; // if a space in the map is not allocated for this guild, allocate one
     }
     
-    if(_questions[guildId].size() > 100) {
-        return "Queue limit reached! (100 questions)";
+    if(_questions[_current.guildId].size() > 100) {
+        _aegisCore->create_message(_current.channelId, "Queue limit reached! (100 questions)");
+        return;
     }
     
-    _questions[guildId].push_back(Question({user, question}));
+    _questions[_current.guildId].push_back(Question({_current.userId, question}));
+    _aegisCore->find_channel(_current.channelId)->create_reaction(aegis::create_reaction_t().message_id(_current.messageId).emoji_text("%E2%9C%85"));
 }
 
-std::string QuestionCommand::list(aegis::snowflake guildId) {
-    auto it = _questions[guildId].begin();
-
-
-    if(!_questions.count(guildId)) {
-        return "No questions";
+void QuestionCommand::list() {
+    if(!_questions.count(_current.guildId)) {
+        _aegisCore->create_message(_current.channelId, "No questions");
+        return;
     }
 
     std::stringstream ss;
     ss << "```" << std::endl;
 
-    for (auto i = _questions[guildId].cbegin(); i != _questions[guildId].cend(); ++i) {
-        ss << getUsername(i->user, guildId) << ": " << i->question << std::endl;
+    for (auto i = _questions[_current.guildId].cbegin(); i != _questions[_current.guildId].cend(); ++i) {
+        ss << getUsername(i->user, _current.guildId, _aegisCore) << ": " << i->question << std::endl;
     }
 
     ss << "```" << std::endl;
 
-    return ss.str();
+    _aegisCore->create_message(_current.channelId, ss.str());
 }
 
-std::string QuestionCommand::next(aegis::snowflake guildId) {
-    if(_questions[guildId].size() == 0) {
-        return "No questions";
+void QuestionCommand::next() {
+    if(_questions[_current.guildId].size() == 0) {
+        _aegisCore->create_message(_current.channelId, "No questions");
+        return;
     }
 
-    Question question = _questions[guildId].front();
-    _questions[guildId].pop_front();
+    Question question = _questions[_current.guildId].front();
+    _questions[_current.guildId].pop_front();
 
-    if(_questions[guildId].size() == 0) {
-        _questions.erase(guildId);
+    if(_questions[_current.guildId].size() == 0) {
+        _questions.erase(_current.guildId);
     }
 
-    std::string username = getUsername(question.user.get(), guildId);
-    return fmt::format("```{0}: {1}```", username, question.question);
+    std::string username = getUsername(question.user.get(), _current.guildId, _aegisCore);
+    _aegisCore->create_message(_current.channelId, fmt::format("```{0}: {1}```", username, question.question));
 }
 
-std::string QuestionCommand::clear(aegis::snowflake guildId) {
-    _questions[guildId].clear();
-    _questions.erase(guildId);
-    return "Questions cleared!";
+void QuestionCommand::clear() {
+    _questions[_current.guildId].clear();
+    _questions.erase(_current.guildId);
+    _aegisCore->find_channel(_current.channelId)->create_reaction(aegis::create_reaction_t().message_id(_current.messageId).emoji_text("%E2%9C%85"));
 }
 
 CommandInfo QuestionCommand::getCommandInfo() {

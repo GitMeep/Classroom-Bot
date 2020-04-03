@@ -7,18 +7,19 @@
 
 class HandsCommand : public Command {
 public:
-    void call(std::vector<std::string> parameters, aegis::gateway::events::message_create& message);
+    HandsCommand(std::shared_ptr<aegis::core> aegisCore) : Command::Command(aegisCore->log, aegisCore) {}
+    void call(std::vector<std::string> parameters, CurrentCommand current);
     CommandInfo getCommandInfo();
 
 private:
-    std::map<aegis::snowflake, std::list<aegis::user*>> _hands;
+    std::map<aegis::snowflake, std::list<aegis::snowflake>> _hands;
     std::mutex _handsMtx;
 
-    std::string up(aegis::snowflake guildId, aegis::user& user);
-    std::string down(aegis::snowflake guildId, aegis::user& user);
-    std::string next(aegis::snowflake guildId);
-    std::string clear(aegis::snowflake guildId);
-    std::string list(aegis::snowflake guildId);
-    std::string random(aegis::snowflake guildId);
-    std::string pick(aegis::snowflake guildId, int number);
+    void up();
+    void down();
+    void next();
+    void clear();
+    void list();
+    void random();
+    void pick(int number);
 };

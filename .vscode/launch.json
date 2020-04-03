@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/classroombot",
-            "args": [],
+            "args": ["$BOT_TOKEN"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
