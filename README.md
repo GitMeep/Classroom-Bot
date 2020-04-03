@@ -13,7 +13,7 @@ Users can raise their hand to answer/ask questions to the teacher using a text c
 Students can ask questions using a text command. The teacher can then go through them one at a time.
 
 ### Your idea here
-Got any other ideas? Send me a tweet [@TwittiMu](https://twitter.com/twittimu). Or a Check the [trello](https://trello.com/b/owJzJaVt/classroom-bot) development board to see if i am already working on it first though!
+Got any other ideas? Send me a tweet [@TweetMeepsi](https://twitter.com/TweetMeepsi). Check the [trello](https://trello.com/b/owJzJaVt/classroom-bot) development board to see if i am already working on it first though!
 
 ## Building and running
 You dont need to run the bot yourself, i am already doing it (see the invite link above). But if you want to run it yourself, here's how to do it:
@@ -21,6 +21,7 @@ You dont need to run the bot yourself, i am already doing it (see the invite lin
 ### Requirements
 CMake
 Make
+GCC
 
 ### Installing aegis.cpp
 This bot uses the Aegis library to interface with the Discord API. To install it, follow these steps:
