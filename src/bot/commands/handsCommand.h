@@ -1,8 +1,9 @@
 #pragma once
 
-#include <bot/commands/command.h>
+#include <aegis.hpp>
 #include <list>
-#include <mutex>
+
+#include "command.h"
 
 class HandsCommand : public Command {
 public:

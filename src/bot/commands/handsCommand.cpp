@@ -1,5 +1,5 @@
-#include <bot/commands/handsCommand.h>
-#include <bot/utils/utils.h>
+#include "handsCommand.h"
+#include "../utils/utils.h"
 
 #include <stdlib.h>
 #include <time.h>
@@ -216,6 +216,16 @@ std::string HandsCommand::pick(aegis::snowflake guildId, int number) {
 
 CommandInfo HandsCommand::getCommandInfo() {
     return {
-        {"hand", "ha"}
+        {"hand", "ha"},
+        "Show of hands",
+        {
+            "up: raise your hand",
+            "down: lower your hand",
+            "list: list all users with their hand raised",
+            "next: (teacher only) show the next user with a raised hand, and lower it",
+            "pick [number]: (teacher only) pick a user from the list",
+            "random: (teacher only) pick a random user with their hand raised, and lower it",
+            "clear: (teacher only) lower all hands"
+        }
     };
 }

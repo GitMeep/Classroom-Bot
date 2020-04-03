@@ -1,6 +1,5 @@
-#include <bot/commands/questionCommand.h>
-#include <bot/utils/utils.h>
-#include <spdlog/spdlog.h>
+#include "questionCommand.h"
+#include "../utils/utils.h"
 
 #define ADMIN_ROLE "Teacher"
 
@@ -120,7 +119,14 @@ std::string QuestionCommand::clear(aegis::snowflake guildId) {
 
 CommandInfo QuestionCommand::getCommandInfo() {
     return {
-        {"question", "q"}
+        {"question", "q"},
+        "Ask questions",
+        {
+            "ask [question]: ask a question",
+            "list: list all questions",
+            "next: (teacher only) show the next question, and remove it from queue",
+            "clear: (teacher only) clear the question queue"
+        }
     };
 }
 

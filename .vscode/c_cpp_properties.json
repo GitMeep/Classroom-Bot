@@ -3,7 +3,6 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/include/*",
                 "/usr/local/include/*"
             ],
             "defines": [],

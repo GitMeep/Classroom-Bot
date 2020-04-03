@@ -1,10 +1,10 @@
 FROM ubuntu
 
-WORKDIR /usr/src/questionsbot
+WORKDIR /usr/src/classroombot
 
-COPY build/questionsbot .
+COPY build/classroombot .
 
 RUN apt-get update
 RUN apt-get install libssl-dev zlib1g
 
-CMD ["./questionsbot"]
+CMD ["./classroombot"]

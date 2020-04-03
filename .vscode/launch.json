@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/questionsbot",
+            "program": "${workspaceFolder}/build/classroombot",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

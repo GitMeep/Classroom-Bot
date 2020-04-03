@@ -1,11 +1,11 @@
 #pragma once
 
-#include <vector>
-#include <string>
 #include <aegis.hpp>
 
 struct CommandInfo {
     std::vector<std::string> aliases;
+    std::string description;
+    std::vector<std::string> options;
 };
 
 class Command {
