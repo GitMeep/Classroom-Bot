@@ -52,27 +52,27 @@ $ cd build
 $ cmake ..
 $ make -j 8
 ```
-8. You can now run the bot by typing `./questionsbot` in the build directory.
+8. You can now run the bot by typing `./questionsbot [token]` in the build directory, replacing `[token]` with your bot token. I recommend saving it as an environment variable and passing that in using `${VARIABLE_NAME_HERE}`, for example `./questionsbot ${BOT_TOKEN}`.
 
 ## Running with docker
 I have created an image on Docker Hub to run the bot easily on linux, mac and windows. If you don't have docker, start by [downlaoding it](https://www.docker.com/). When you have it up and running, the container can be started using this command, which downloads the image and runs it:
 ```sh
-docker run --publish 443:443 --env BOT_TOKEN=YOUR_TOKEN_HERE --detach --name cb meepdocker/classroom-bot:1.0
+docker run --publish 443:443 --env BOT_TOKEN=YOUR_TOKEN_HERE --detach --name cb meepdocker/classroom-bot:latest
 ```
 This command may need sudo if you are on linux. The bot can be stopped using:
 ```sh
 docker rm --force cb
 ```
-It can be a good idea to set up the token as an environment variable.
+Again, it can be a good idea to set up the token as an environment variable.
 
 ## Developing
-If you want to help with development, awesome, here's the basic structure of the project. Please fork the repo and submit a pull request if you have made changes.
+If you want to help with development, awesome, here's the basic structure of the project. Please fork the repo and submit a pull request if you want to make changes.
 
 ### The main class
-The main class is questionsbot which lives in main.cpp and main.h. It keeps track of the commands using a map and recieves messages sent in the discord channels on the function onMessage. From here it parses the command and finds the relevant command class to pass it onto.
+The main class is ClassroomBot which lives in main.cpp and main.h. It keeps track of the commands using a map and recieves messages sent in the discord channels on the function onMessage. From here it parses the command and finds the relevant command class to pass it onto. It also handles the help command.
 
 ### Commands
-Commands are each represented by a class inheriting from the Command class. These live in src/bot/commands. A command can be registered to the bot via the registerCommand function (see main.cpp for examples). When a command is registered, getCommandInfo is called, which returns a struct containing info about the command (name, aliases). When a command is invoked by a user, the call function is called and passed the remaining parameters and the aegis message object which can be used to respond and otherwise query the Discord API. In the future, this will be replaced with a shared pointer to the aegis::core instance that the command get's passed when it is registered and which should be kept by the class itself.
+Commands are each represented by a class inheriting from the Command class. These live in src/bot/commands. A command can be registered to the bot via the registerCommand function (see main.cpp for examples). The command constructor takes in an aegis::core object, which should be passed to the parent constructor, which extracts the log object and saves them in a member variable. When a command is registered, getCommandInfo is called, which returns a struct containing info about the command (name, aliases, description). When a command is invoked by a user, the call function is called with the command's parameters and a CurrentCommand struct (from command.h) containing relavant id's for the issued command. These parameters have to be passed to Command::call, the parent class, which saves the structure in a member variable for easier use.
 
 ### Trello
-[Trello](https://trello.com/b/owJzJaVt/classroom-bot) is used to keep track of issues (users can submit issues here on github). Mostly just so i can remember what i need to do. If you become a regular contributer, i'll add you to it too, and give you access to the main repo.
+[Trello](https://trello.com/b/owJzJaVt/classroom-bot) is used to keep track of tasks. Mostly just so i can remember what i need to do. If you become a regular contributer, i'll add you to it too, and give you access to the main repo.
