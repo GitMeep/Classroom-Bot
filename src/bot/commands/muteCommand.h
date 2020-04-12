@@ -23,6 +23,5 @@ private:
     void unmuteChannel(aegis::snowflake channelId);
     void changeChannelMuteState(aegis::snowflake channelId, bool muted);
     void changeMemberMuteState(aegis::snowflake userId, aegis::snowflake guildId, aegis::snowflake channelId, bool muted);
-    bool isChannelEmpty(aegis::snowflake channelId);
     bool doesChannelHaveTeacher(aegis::snowflake channelId);
 };

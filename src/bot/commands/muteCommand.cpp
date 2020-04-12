@@ -51,9 +51,9 @@ void MuteCommand::onVoiceStateUpdate(aegis::gateway::events::voice_state_update 
     }
 
     if(!_mutedChannels.count(obj.channel_id) && _mutedUsers[obj.guild_id].count(obj.user_id)) { // user left or joined an unmuted channel
-        // check if the channel they left is now empty, and unmute if it is
+        // check if the channel has any teachers left, if not, unmute it
         aegis::snowflake channelId = _mutedUsers[obj.guild_id][obj.user_id];
-        if(isChannelEmpty(channelId) || !doesChannelHaveTeacher(channelId))
+        if(!doesChannelHaveTeacher(channelId))
             unmuteChannel(channelId);
 
         if(obj.channel_id.get() == 0) { // user left, queue them up for unmuting
@@ -78,19 +78,6 @@ bool MuteCommand::doesChannelHaveTeacher(aegis::snowflake channelId) {
         it++;
     }
     return false;
-}
-
-bool MuteCommand::isChannelEmpty(aegis::snowflake channelId) {
-    aegis::snowflake guildId = _aegisCore->find_channel(channelId)->get_guild_id();
-
-    auto voiceStates = _aegisCore->find_guild(guildId)->get_voicestates();
-    auto it = voiceStates.begin();
-    while(it != voiceStates.end()) {
-        if(it->second.channel_id == channelId)
-            return false;
-        it++;
-    }
-    return true;
 }
 
 void MuteCommand::changeChannelMuteState(aegis::snowflake channelId, bool muted) {
@@ -121,7 +108,7 @@ void MuteCommand::changeMemberMuteState(aegis::snowflake userId, aegis::snowflak
 CommandInfo MuteCommand::getCommandInfo() {
     return {
         {"mute", "m"},
-        "Mutes everyone in your voice channel except teachers.",
+        "This command toggles mute on a channel. Everyone in a muted channel, except teachers, get server muted. When all teachers leave a channel, it is automatically unmuted.",
         {}
     };
 }
