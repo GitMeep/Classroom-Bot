@@ -10,8 +10,7 @@ enum ParserException {
 
 ClassroomBot::ClassroomBot(std::shared_ptr<spdlog::logger> logger, aegis::core* core)
     : _log(logger)
-    ,_aegisCore(core) {
-}
+    ,_aegisCore(core) {}
 
 void ClassroomBot::registerCommand(Command* command) {
     CommandInfo info = command->getCommandInfo();
@@ -88,7 +87,8 @@ void ClassroomBot::printHelp(aegis::snowflake channelId) {
         commandInfo = (command->second)->getCommandInfo();
         ss << command->first << ": " << commandInfo.description << std::endl;
         
-        ss << "Aliases:" << std::endl;
+        if(commandInfo.aliases.size())
+            ss << "Aliases:" << std::endl;
         auto alias = commandInfo.aliases.begin();
         alias++;
         while(alias != commandInfo.aliases.end()) {
@@ -96,7 +96,8 @@ void ClassroomBot::printHelp(aegis::snowflake channelId) {
             alias++;
         }
 
-        ss << "Options: " << std::endl;
+        if(commandInfo.options.size())
+            ss << "Options: " << std::endl;
         auto option = commandInfo.options.begin();
         while(option != commandInfo.options.end()) {
             ss << "\t" << *option << std::endl;

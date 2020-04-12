@@ -27,7 +27,7 @@ You dont need to run the bot yourself, i am already doing it (see the invite lin
 
 ### Installing aegis.cpp
 This bot uses the Aegis library to interface with the Discord API. To install it, follow these steps:
-1. Clone the [aegis repository](https://github.com/zeroxs/aegis.cpp)
+1. Clone [my fork of aegis.cpp](https://github.com/GitMeep/aegis.cpp), the normal one won't work, as it doesn't support voice states yet.
 2. Run `install-deps.sh` (may need sudo)
 3. In the aegis repository, run these commands to build it:
 ```sh

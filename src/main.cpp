@@ -1,8 +1,10 @@
 #include <aegis.hpp>
 
 #include "bot/bot.h"
+
 #include "bot/commands/questionCommand.h"
 #include "bot/commands/handsCommand.h"
+#include "bot/commands/muteCommand.h"
 
 using json = nlohmann::json;
 
@@ -16,6 +18,7 @@ int main(int argc, char * argv[])
 
     classroomBot.registerCommand(new QuestionCommand(std::shared_ptr<aegis::core>(&bot)));
     classroomBot.registerCommand(new HandsCommand(std::shared_ptr<aegis::core>(&bot)));
+    classroomBot.registerCommand(new MuteCommand(std::shared_ptr<aegis::core>(&bot)));
 
     AEGIS_TRACE(bot.log, "Bot object created");
     // With min log level set to trace and wsdbg (websocket debug) set to true
