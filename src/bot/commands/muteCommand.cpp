@@ -5,6 +5,11 @@
 void MuteCommand::call(std::vector<std::string> parameters, CurrentCommand current) {
     _lock.lock();
     Command::call(parameters, current);
+
+    if(!isTeacher(current.guildId, current.userId, _aegisCore)) {
+        _aegisCore->find_channel(current.channelId)->create_message("You are not a teacher!");
+        return;
+    }
     
     auto voiceStates = _aegisCore->find_guild(current.guildId)->get_voicestates();
     if(!voiceStates.count(current.userId)) {
@@ -108,7 +113,7 @@ void MuteCommand::changeMemberMuteState(aegis::snowflake userId, aegis::snowflak
 CommandInfo MuteCommand::getCommandInfo() {
     return {
         {"mute", "m"},
-        "This command toggles mute on a channel. Everyone in a muted channel, except teachers, get server muted. When all teachers leave a channel, it is automatically unmuted.",
+        "(Teacher only) Toggles mute on the voice channel that the caller is in. Everyone in a muted channel, except teachers, get server muted. When all teachers leave a channel, it is automatically unmuted.",
         {}
     };
 }

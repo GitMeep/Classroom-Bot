@@ -12,6 +12,9 @@ Users can raise their hand to answer/ask questions to the teacher using a text c
 ### Questions
 Students can ask questions using a text command. The teacher can then go through them one at a time.
 
+### Mute
+Tired of students talking when they shouldn't? Force mute a channel, so only the teacher can speak!
+
 ### Your idea here
 Got any other ideas? Send me a tweet [@TweetMeepsi](https://twitter.com/TweetMeepsi). Check the [trello](https://trello.com/b/owJzJaVt/classroom-bot) development board to see if i am already working on it first though!
 

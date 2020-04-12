@@ -199,7 +199,7 @@ void HandsCommand::pick(int number) {
 
 CommandInfo HandsCommand::getCommandInfo() {
     return {
-        {"hand", "ha"},
+        {"hand", "h"},
         "Show of hands",
         {
             "up: raise your hand",

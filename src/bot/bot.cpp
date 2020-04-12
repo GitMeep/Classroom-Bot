@@ -1,6 +1,8 @@
 #include "bot.h"
 #include "commands/command.h"
 
+#include <string>
+
 #define COMMAND_PREFIX '?'
 
 enum ParserException {
@@ -10,7 +12,11 @@ enum ParserException {
 
 ClassroomBot::ClassroomBot(std::shared_ptr<spdlog::logger> logger, aegis::core* core)
     : _log(logger)
-    ,_aegisCore(core) {}
+    ,_aegisCore(core) {
+        _lastPresenceUpdate = std::chrono::system_clock::now()-std::chrono::seconds(61);
+        _aegisCore->set_on_message_create(std::bind(&ClassroomBot::onMessage, this, std::placeholders::_1));
+        _aegisCore->set_on_guild_create(std::bind(&ClassroomBot::onGuildCreate, this, std::placeholders::_1));
+    }
 
 void ClassroomBot::registerCommand(Command* command) {
     CommandInfo info = command->getCommandInfo();
@@ -46,7 +52,11 @@ void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
 
     std::string commandName = parameters[0];
 
-    if(commandName == "h" || commandName == "help") {
+    if(_shouldUpdatePresence) {
+        tryUpdatePresence();
+    }
+
+    if(commandName == "he" || commandName == "help") {
         printHelp(message.channel.get_id());
         return;
     }
@@ -73,12 +83,33 @@ void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
     
 }
 
+void ClassroomBot::onGuildCreate(aegis::gateway::events::guild_create obj) {
+    _shouldUpdatePresence = !tryUpdatePresence(); // if presence couln't be updated, try to update again on next command, otherwise, don't try again
+}
+
+bool ClassroomBot::tryUpdatePresence() {
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    int secondsSinceLastUpdate = std::chrono::duration_cast<std::chrono::seconds>(now - _lastPresenceUpdate).count();
+    if(secondsSinceLastUpdate > 60) { // only update presence if last update was more than 60 seconds ago
+        updatePresence();
+        _lastPresenceUpdate = std::chrono::system_clock::now();
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void ClassroomBot::updatePresence() {
+    _log->info("Updating presence!");
+    _aegisCore->update_presence(std::to_string(_aegisCore->get_guild_count()) + " servers", aegis::gateway::objects::activity::activity_type::Watching);
+}
+
 void ClassroomBot::printHelp(aegis::snowflake channelId) {
     std::stringstream ss;
     ss << "Commands: ```" << std::endl
     << "help: Print this help page." << std::endl
     << "Aliases: " << std::endl
-    << "\th" << std::endl
+    << "\the" << std::endl
     << "------------------------------------------------" << std::endl << std::endl;
     
     CommandInfo commandInfo;
