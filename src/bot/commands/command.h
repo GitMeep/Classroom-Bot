@@ -1,11 +1,13 @@
 #pragma once
 
 #include <aegis.hpp>
+#include "../bot.h"
 
 struct CommandInfo {
     std::vector<std::string> aliases;
     std::string description;
     std::vector<std::string> options;
+    std::string permsMessage;
 };
 
 struct CurrentCommand {
@@ -17,15 +19,17 @@ struct CurrentCommand {
 
 class Command {
 public:
-    Command(std::shared_ptr<spdlog::logger> log, std::shared_ptr<aegis::core> aegisCore)
-    : _log(log)
-    , _aegisCore(aegisCore)
+    explicit Command(ClassroomBot* classroomBot)
+    : _log(classroomBot->_log)
+    , _aegisCore(classroomBot->_aegisCore)
     {}
+
     virtual void call(std::vector<std::string> parameters, CurrentCommand current) { // call the command
         _current = current;
     }
 
-    virtual CommandInfo getCommandInfo() = 0; // called on command registration
+    virtual CommandInfo getCommandInfo() = 0;
+    virtual bool checkPermissions(aegis::permission channelPermissions) = 0;
 
 
     virtual ~Command() {}

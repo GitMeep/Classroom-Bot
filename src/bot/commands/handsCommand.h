@@ -7,9 +7,10 @@
 
 class HandsCommand : public Command {
 public:
-    HandsCommand(std::shared_ptr<aegis::core> aegisCore) : Command::Command(aegisCore->log, aegisCore) {}
+    explicit HandsCommand(ClassroomBot* classroomBot) : Command::Command(classroomBot) {}
     void call(std::vector<std::string> parameters, CurrentCommand current);
     CommandInfo getCommandInfo();
+    bool checkPermissions(aegis::permission channelPermissions);
 
 private:
     std::map<aegis::snowflake, std::list<aegis::snowflake>> _hands;

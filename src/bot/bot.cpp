@@ -10,8 +10,8 @@ enum ParserException {
     EMPTY_COMMAND
 };
 
-ClassroomBot::ClassroomBot(std::shared_ptr<spdlog::logger> logger, aegis::core* core)
-    : _log(logger)
+ClassroomBot::ClassroomBot(aegis::core* core)
+    : _log(core->log)
     ,_aegisCore(core) {
         _lastPresenceUpdate = std::chrono::system_clock::now()-std::chrono::seconds(61);
         _aegisCore->set_on_message_create(std::bind(&ClassroomBot::onMessage, this, std::placeholders::_1));
@@ -37,8 +37,9 @@ void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
     if(message.msg.get_content().size() == 0) return;
     std::vector<std::string> parameters;
     try {
-        parameters = parseCommand(message.msg.get_content(), COMMAND_PREFIX);
-    } catch (ParserException e) {
+        std::string content = message.msg.get_content();
+        parameters = parseCommand(content, COMMAND_PREFIX);
+    } catch (ParserException& e) {
         switch(e) {
             case NOT_A_COMMAND:
                 break;
@@ -70,6 +71,14 @@ void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
         return;
     }
 
+    std::shared_ptr<Command> command = _commands[commandName];
+
+    aegis::permission perms = message.channel.perms();
+    if(!command->checkPermissions(perms)) {
+        message.channel.create_message(command->getCommandInfo().permsMessage);
+        return;
+    }
+
     std::vector<std::string> commandParameters;
     auto it = parameters.begin();
     it++;
@@ -78,7 +87,6 @@ void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
         it++;
     }
 
-    std::shared_ptr<Command> command = _commands[commandName];
     command->call(commandParameters, {message.msg.get_id(), message.channel.get_id(), message.channel.get_guild_id(), message.msg.get_author_id()});
     
 }
@@ -146,7 +154,7 @@ void ClassroomBot::printHelp(aegis::snowflake channelId) {
     _aegisCore->create_message(channelId, ss.str());
 }
 
-std::vector<std::string> ClassroomBot::parseCommand(std::string message, char prefix) {
+std::vector<std::string> ClassroomBot::parseCommand(std::string& message, char prefix) {
     std::vector<std::string> parameters;
     std::stringstream ss;
     ss << message;

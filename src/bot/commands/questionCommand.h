@@ -6,9 +6,10 @@
 
 class QuestionCommand : public Command {
 public:
-    QuestionCommand(std::shared_ptr<aegis::core> aegisCore) : Command::Command(aegisCore->log, aegisCore) {}
+    explicit QuestionCommand(ClassroomBot* classroomBot) : Command::Command(classroomBot) {}
     void call(std::vector<std::string> parameters, CurrentCommand current);
     CommandInfo getCommandInfo();
+    bool checkPermissions(aegis::permission channelPermissions);
 
 private:
     struct Question {

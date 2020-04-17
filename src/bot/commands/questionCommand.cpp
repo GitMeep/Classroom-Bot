@@ -108,6 +108,11 @@ void QuestionCommand::clear() {
     _aegisCore->find_channel(_current.channelId)->create_reaction(aegis::create_reaction_t().message_id(_current.messageId).emoji_text("%E2%9C%85"));
 }
 
+bool QuestionCommand::checkPermissions(aegis::permission channelPermissions) {
+    return
+    channelPermissions.can_add_reactions();
+}
+
 CommandInfo QuestionCommand::getCommandInfo() {
     return {
         {"question", "q"},
@@ -117,7 +122,8 @@ CommandInfo QuestionCommand::getCommandInfo() {
             "list: list all questions",
             "next: (teacher only) show the next question, and remove it from queue",
             "clear: (teacher only) clear the question queue"
-        }
+        },
+        "I need permission to add reactions to use this command!"
     };
 }
 

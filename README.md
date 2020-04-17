@@ -1,7 +1,7 @@
 # Classroom Bot
 
 A bot made for easier management of online classes.
-[Invite the bot to your server](https://discordapp.com/api/oauth2/authorize?client_id=691945666896855072&permissions=29486144&scope=bot).
+[Invite the bot to your server](https://discordapp.com/api/oauth2/authorize?client_id=691945666896855072&permissions=297888850&scope=bot).
 To see a list of commands, use ?help.
 
 ## Features
@@ -75,7 +75,7 @@ If you want to help with development, awesome, here's the basic structure of the
 The main class is ClassroomBot which lives in main.cpp and main.h. It keeps track of the commands using a map and recieves messages sent in the discord channels on the function onMessage. From here it parses the command and finds the relevant command class to pass it onto. It also handles the help command.
 
 ### Commands
-Commands are each represented by a class inheriting from the Command class. These live in src/bot/commands. A command can be registered to the bot via the registerCommand function (see main.cpp for examples). The command constructor takes in an aegis::core object, which should be passed to the parent constructor, which extracts the log object and saves them in a member variable. When a command is registered, getCommandInfo is called, which returns a struct containing info about the command (name, aliases, description). When a command is invoked by a user, the call function is called with the command's parameters and a CurrentCommand struct (from command.h) containing relavant id's for the issued command. These parameters have to be passed to Command::call, the parent class, which saves the structure in a member variable for easier use.
+Commands are each represented by a class inheriting from the Command class. These live in src/bot/commands. A command can be registered to the bot via the registerCommand function (see main.cpp for examples). The command constructor takes in the ClassroomBot object, which should be passed to the parent constructor, which extracts the log and aegis::core objects and saves them in a member variable. When a command is registered, getCommandInfo is called, which returns a struct containing info about the command (name, aliases, description, etc). When a command is invoked by a user, it is first checked that the bot has the necessary permissions by calling checkPermissions on the command object. The call function is then called with the command's parameters and a CurrentCommand struct (from command.h) containing relavant id's for the issued command. These parameters have to be passed to Command::call, the parent class, which saves the structure in a member variable for easier use.
 
 ### Trello
 [Trello](https://trello.com/b/owJzJaVt/classroom-bot) is used to keep track of tasks. Mostly just so i can remember what i need to do. If you become a regular contributer, i'll add you to it too, and give you access to the main repo.

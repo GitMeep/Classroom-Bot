@@ -78,7 +78,7 @@ void HandsCommand::call(std::vector<std::string> parameters, CurrentCommand curr
 
 void HandsCommand::up() {
     for(aegis::snowflake handUser : _hands[_current.guildId]) {
-        if(_current.userId = handUser) {
+        if(_current.userId == handUser) {
             _aegisCore->create_message(_current.channelId, "You already have your hand raised!");
             return;
         }
@@ -197,6 +197,11 @@ void HandsCommand::pick(int number) {
     _aegisCore->create_message(_current.channelId, "```" + username + "```");
 }
 
+bool HandsCommand::checkPermissions(aegis::permission channelPermissions) {
+    return
+    channelPermissions.can_add_reactions();
+}
+
 CommandInfo HandsCommand::getCommandInfo() {
     return {
         {"hand", "h"},
@@ -209,6 +214,7 @@ CommandInfo HandsCommand::getCommandInfo() {
             "pick [number]: (teacher only) pick a user from the list",
             "random: (teacher only) pick a random user with their hand raised, and lower it",
             "clear: (teacher only) lower all hands"
-        }
+        },
+        "I need permission to add reactions to use this command!"
     };
 }
