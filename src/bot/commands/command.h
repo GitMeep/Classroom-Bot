@@ -17,11 +17,14 @@ struct CurrentCommand {
     aegis::snowflake userId;
 };
 
+class ClassroomBot;
+
 class Command {
 public:
-    explicit Command(ClassroomBot* classroomBot)
-    : _log(classroomBot->_log)
+    explicit Command(std::shared_ptr<ClassroomBot> classroomBot)
+    : _log(spdlog::get("console"))
     , _aegisCore(classroomBot->_aegisCore)
+    , _bot(classroomBot)
     {}
 
     virtual void call(std::vector<std::string> parameters, CurrentCommand current) { // call the command
@@ -37,6 +40,7 @@ public:
 protected:
     std::shared_ptr<spdlog::logger> _log;
     std::shared_ptr<aegis::core> _aegisCore;
+    std::shared_ptr<ClassroomBot> _bot;
     CurrentCommand _current;
 
 };

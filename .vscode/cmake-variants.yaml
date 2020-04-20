@@ -1,0 +1,12 @@
+buildType:
+    default: debug
+    description: Idk
+    choices:
+        debug:
+            short: debug
+            long: Build with debugging information
+            buildType: Debug
+        release:
+                short: release
+                long: Optimize the resulting binaries
+                buildType: Release

@@ -1,4 +1,5 @@
 #include <aegis.hpp>
+#include <spdlog/spdlog.h>
 
 #include "bot/bot.h"
 
@@ -6,30 +7,46 @@
 #include "bot/commands/handsCommand.h"
 #include "bot/commands/muteCommand.h"
 #include "bot/commands/inviteCommand.h"
+#include "bot/commands/settingsCommad.h"
 
 using json = nlohmann::json;
 
-int main(int argc, char * argv[])
+int main(int argc, char *argv[])
 {
-    if(argc < 2) return 1;
-    aegis::core bot(aegis::create_bot_t().log_level(spdlog::level::trace).token(argv[1]));
-    
-    ClassroomBot classroomBot(&bot);
+    bool tokenCommand = true;
+    if (argc < 2)
+        tokenCommand = false;
 
-    classroomBot.registerCommand(new QuestionCommand(&classroomBot));
-    classroomBot.registerCommand(new HandsCommand(&classroomBot));
-    classroomBot.registerCommand(new MuteCommand(&classroomBot));
-    classroomBot.registerCommand(new InviteCommand(&classroomBot));
+    auto log = spdlog::stdout_color_mt("console");
+    log->set_pattern("%^%Y-%m-%d %H:%M:%S.%e [%L] [th#%t]%$ : %v");
+    log->set_level(spdlog::level::trace);
 
-    AEGIS_TRACE(bot.log, "Bot object created");
-    // With min log level set to trace and wsdbg (websocket debug) set to true
-    // the bot will dump all websocket messages to console
-    bot.wsdbg = true;
-    // start the bot
-    bot.run();
-    // yield thread execution to the library
-    bot.yield();
-    std::cout << "Press any key to continue...\n";
-    std::cin.ignore();
-    return 0;
+    std::shared_ptr<Config> config = std::make_shared<Config>();
+    try {
+        config->loadFromFile("config.json");
+    } catch (std::runtime_error& e) {
+        log->error(std::string(e.what()));
+        return 1;
+    }
+
+    std::string token = config->getValue("bot")["token"];
+
+    try
+    {
+        std::shared_ptr<ClassroomBot> classroomBot = std::make_shared<ClassroomBot>(token, log, config);
+
+        classroomBot->registerCommand(new QuestionCommand(classroomBot));
+        classroomBot->registerCommand(new HandsCommand(classroomBot));
+        classroomBot->registerCommand(new MuteCommand(classroomBot));
+        classroomBot->registerCommand(new InviteCommand(classroomBot));
+        classroomBot->registerCommand(new SettingsCommand(classroomBot));
+
+        classroomBot->run();
+        return 0;
+    }
+    catch (std::runtime_error &e)
+    {
+        log->error("Bot failed with error message: \n" + std::string(e.what()));
+        return 1;
+    }
 }

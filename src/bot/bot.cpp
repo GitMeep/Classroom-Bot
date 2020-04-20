@@ -2,6 +2,8 @@
 #include "commands/command.h"
 
 #include <string>
+#include <chrono>
+#include <thread>
 
 #define COMMAND_PREFIX '?'
 
@@ -10,13 +12,28 @@ enum ParserException {
     EMPTY_COMMAND
 };
 
-ClassroomBot::ClassroomBot(aegis::core* core)
-    : _log(core->log)
-    ,_aegisCore(core) {
-        _lastPresenceUpdate = std::chrono::system_clock::now()-std::chrono::seconds(61);
-        _aegisCore->set_on_message_create(std::bind(&ClassroomBot::onMessage, this, std::placeholders::_1));
-        _aegisCore->set_on_guild_create(std::bind(&ClassroomBot::onGuildCreate, this, std::placeholders::_1));
+ClassroomBot::ClassroomBot(std::string token, std::shared_ptr<spdlog::logger> log, std::shared_ptr<Config> config)
+: _log(spdlog::get("console"))
+,_aegisCore(std::make_shared<aegis::core>(aegis::create_bot_t().logger(log).token(token)))
+,_config(config) {
+    _aegisCore->wsdbg = true;
+    _lastPresenceUpdate = std::chrono::system_clock::now()-std::chrono::seconds(61);
+
+    _aegisCore->set_on_message_create(std::bind(&ClassroomBot::onMessage, this, std::placeholders::_1));
+    _aegisCore->set_on_guild_create(std::bind(&ClassroomBot::onGuildCreate, this, std::placeholders::_1));
+
+    if(!_config->isLoaded()) {
+        throw std::runtime_error("Invalid config supplied to ClassroomBot!");
     }
+
+    _persistence = std::make_shared<Persistence>(_config);
+    _settingsRepo = std::make_shared<SettingsRepo>(_persistence);
+}
+
+void ClassroomBot::run() {
+    _aegisCore->run();
+    _aegisCore->yield();
+}
 
 void ClassroomBot::registerCommand(Command* command) {
     CommandInfo info = command->getCommandInfo();
@@ -35,10 +52,13 @@ void ClassroomBot::registerCommand(Command* command) {
 void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
     if(message.get_user().is_bot()) return;
     if(message.msg.get_content().size() == 0) return;
+
+    char prefix = _settingsRepo->getSettings(message.channel.get_guild_id()).prefix[0];
+
     std::vector<std::string> parameters;
     try {
         std::string content = message.msg.get_content();
-        parameters = parseCommand(content, COMMAND_PREFIX);
+        parameters = parseCommand(content, prefix);
     } catch (ParserException& e) {
         switch(e) {
             case NOT_A_COMMAND:
@@ -55,6 +75,16 @@ void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
 
     if(_shouldUpdatePresence) {
         tryUpdatePresence();
+    }
+
+    std::string ownerId = _config->getValue("bot")["owner"];
+    if(commandName == "shutdown" && message.get_user().get_id().gets() == ownerId) {
+        message.channel.create_message("Ok, shutting down.");
+        _aegisCore->async([this]{
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            _aegisCore->shutdown();
+        });
+        return;
     }
 
     if(commandName == "he" || commandName == "help") {
@@ -115,8 +145,8 @@ void ClassroomBot::updatePresence() {
 void ClassroomBot::printHelp(aegis::snowflake channelId) {
     std::stringstream ss;
     ss << "Commands: ```" << std::endl
-    << "help: Print this help page." << std::endl
-    << "Aliases: " << std::endl
+    << "help: Print this help page." << std::endl;
+    ss << "Aliases: " << std::endl
     << "\the" << std::endl
     << "------------------------------------------------" << std::endl << std::endl;
     
@@ -126,7 +156,7 @@ void ClassroomBot::printHelp(aegis::snowflake channelId) {
         commandInfo = (command->second)->getCommandInfo();
         ss << command->first << ": " << commandInfo.description << std::endl;
         
-        if(commandInfo.aliases.size())
+        if(commandInfo.aliases.size() > 1)
             ss << "Aliases:" << std::endl;
         auto alias = commandInfo.aliases.begin();
         alias++;
@@ -144,7 +174,7 @@ void ClassroomBot::printHelp(aegis::snowflake channelId) {
         }
 
         if(command != (_commands.end()--))
-            ss << "------------------------------------------------" << std::endl << std::endl;
+            ss << std::endl << "------------------------------------------------" << std::endl << std::endl;
 
         command++;
     }

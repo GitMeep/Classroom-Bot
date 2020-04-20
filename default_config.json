@@ -1,0 +1,9 @@
+{
+    "bot": {
+        "token": "${BOT_TOKEN}",
+        "owner": "${OWNER_ID}"
+    },
+    "persistence": {
+        "url": "${DATABASE_URL}"
+    }
+}

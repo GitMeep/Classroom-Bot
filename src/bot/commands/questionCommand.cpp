@@ -6,7 +6,7 @@
 const std::string actionMsg = "Please enter a valid action! Options are: ```ask, list, next, clear```";
 
 void QuestionCommand::call(std::vector<std::string> parameters, CurrentCommand current) {
-    _questionsMtx.lock();
+    std::lock_guard<std::mutex> guard(_questionsMtx);
 
     Command::call(parameters, current);
 
@@ -31,16 +31,16 @@ void QuestionCommand::call(std::vector<std::string> parameters, CurrentCommand c
     }
 
     else if(verb == "next") {
-        if(!isTeacher(_current.guildId, _current.userId, _aegisCore)) {
-            _aegisCore->create_message(_current.guildId, fmt::format("You must have the role \"{0}\" to use this command!", ADMIN_ROLE));
+        if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
+            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command!");
         } else {
             next();
         }
     }
 
     else if(verb == "clear") {
-        if(!isTeacher(_current.guildId, _current.userId, _aegisCore)) {
-            _aegisCore->create_message(_current.guildId, fmt::format("You must have the role \"{0}\" to use this command!", ADMIN_ROLE));
+        if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
+            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command!");
         } else {
             clear();
         }
@@ -49,8 +49,6 @@ void QuestionCommand::call(std::vector<std::string> parameters, CurrentCommand c
     else {
         _aegisCore->create_message(_current.channelId, actionMsg);
     }
-    
-    _questionsMtx.unlock();
 }
 
 void QuestionCommand::ask(std::string question) {
@@ -120,8 +118,8 @@ CommandInfo QuestionCommand::getCommandInfo() {
         {
             "ask [question]: ask a question",
             "list: list all questions",
-            "next: (teacher only) show the next question, and remove it from queue",
-            "clear: (teacher only) clear the question queue"
+            "next: (admin only) show the next question, and remove it from queue",
+            "clear: (admin only) clear the question queue"
         },
         "I need permission to add reactions to use this command!"
     };

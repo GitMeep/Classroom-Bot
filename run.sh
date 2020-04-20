@@ -1,1 +1,1 @@
-./build/classroombot $BOT_TOKEN
+./build/classroombot

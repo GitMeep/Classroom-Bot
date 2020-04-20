@@ -6,7 +6,7 @@
 
 class QuestionCommand : public Command {
 public:
-    explicit QuestionCommand(ClassroomBot* classroomBot) : Command::Command(classroomBot) {}
+    explicit QuestionCommand(std::shared_ptr<ClassroomBot> classroomBot) : Command::Command(classroomBot) {}
     void call(std::vector<std::string> parameters, CurrentCommand current);
     CommandInfo getCommandInfo();
     bool checkPermissions(aegis::permission channelPermissions);

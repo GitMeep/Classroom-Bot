@@ -9,7 +9,7 @@
 const std::string actionMsg = "Please enter a valid action! Options are: ```up, down, next, pick, random, list, clear```";
 
 void HandsCommand::call(std::vector<std::string> parameters, CurrentCommand current) {
-    _handsMtx.lock();
+    std::lock_guard<std::mutex> guard(_handsMtx);
 
     Command::call(parameters, current);
 
@@ -32,30 +32,30 @@ void HandsCommand::call(std::vector<std::string> parameters, CurrentCommand curr
     }
 
     else if(verb == "next") {
-        if(!isTeacher(_current.guildId, _current.userId, _aegisCore)) {
-            _aegisCore->create_message(_current.channelId, fmt::format("You must have the role \"{0}\" to use this command!", ADMIN_ROLE));
+        if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
+            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command!");
         } else {
             next();
         }
     }
 
     else if(verb == "random") {
-        if(!isTeacher(_current.guildId, _current.userId, _aegisCore)) {
-            _aegisCore->create_message(_current.channelId, fmt::format("You must have the role \"{0}\" to use this command!", ADMIN_ROLE));
+        if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
+            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command!");
         } else {
             random();
         }
     }
 
     else if(verb == "clear") {
-        if(!isTeacher(_current.guildId, _current.userId, _aegisCore)) {
-            _aegisCore->create_message(_current.channelId, fmt::format("You must have the role \"{0}\" to use this command!", ADMIN_ROLE));
+        if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
+            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command!");
         } else {
             clear();
         }
     } else if(verb == "pick") {
-        if(!isTeacher(_current.guildId, _current.userId, _aegisCore)) {
-            _aegisCore->create_message(_current.channelId, fmt::format("You must have the role \"{0}\" to use this command!", ADMIN_ROLE));
+        if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
+            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command!");
         } else {
             int number;
             try {
@@ -72,8 +72,6 @@ void HandsCommand::call(std::vector<std::string> parameters, CurrentCommand curr
     else {
         _aegisCore->create_message(_current.channelId, actionMsg);
     }
-    
-    _handsMtx.unlock();
 }
 
 void HandsCommand::up() {
@@ -210,10 +208,10 @@ CommandInfo HandsCommand::getCommandInfo() {
             "up: raise your hand",
             "down: lower your hand",
             "list: list all users with their hand raised",
-            "next: (teacher only) show the next user with a raised hand, and lower it",
-            "pick [number]: (teacher only) pick a user from the list",
-            "random: (teacher only) pick a random user with their hand raised, and lower it",
-            "clear: (teacher only) lower all hands"
+            "next: (admin only) show the next user with a raised hand, and lower it",
+            "pick [number]: (admin only) pick a user from the list",
+            "random: (admin only) pick a random user with their hand raised, and lower it",
+            "clear: (admin only) lower all hands"
         },
         "I need permission to add reactions to use this command!"
     };
