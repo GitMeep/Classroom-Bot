@@ -40,8 +40,7 @@ $ cmake .. -DCMAKE_CXX_STANDARD=17 -DBUILD_SHARED_LIBS=OFF
 ```
 4. Then, to install the library, run: `make install` (may need sudo)
 
-## Config
-
+### Building and Configuring
 
 1. Start by cloning the repository.
 2. Go to your [discord developer applications page](https://discordapp.com/developers/applications) and press "New Application". Give it some name and press the "Copy" button under "client id".
