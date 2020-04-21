@@ -40,38 +40,49 @@ $ cmake .. -DCMAKE_CXX_STANDARD=17 -DBUILD_SHARED_LIBS=OFF
 ```
 4. Then, to install the library, run: `make install` (may need sudo)
 
-### Setting up classroom bot
+## Config
+
 
 1. Start by cloning the repository.
 2. Go to your [discord developer applications page](https://discordapp.com/developers/applications) and press "New Application". Give it some name and press the "Copy" button under "client id".
-3. In the side bar in your application page, click on "Bot", and press "Add Bot". Give the bot a name, and change the icon if you want.
+3. In the side bar in your application page, click on "Bot", and press "Add Bot". Give the bot a name, and change the icon if you want. You will need the token later.
 4. Click the invite link above, but don't add the bot to the server. Instead, replace the numbers after "client_id=" in the URL with your own client id, and press enter. Then you can add your own bot to your server.
-5. On the bot page, press the "Copy" button under "token". This token should be kept a secret.
-6. In src/main.cpp, replace TOKEN with your token.
-7. Then, in the root folder of the repository, run these commands:
+5. Then, in the root folder of the repository, run these commands:
 ```sh
 $ mkdir build
 $ cd build
 $ cmake ..
 $ make -j 8
 ```
-8. You can now run the bot by typing `./questionsbot [token]` in the build directory, replacing `[token]` with your bot token. I recommend saving it as an environment variable and passing that in using `${VARIABLE_NAME_HERE}`, for example `./questionsbot ${BOT_TOKEN}`.
+6. You can now run the bot by typing `./questionsbot` in the build directory. Unless you have set the environment variables beforehand, The bot will fail on the first run. Just open the generated `config.json` and replace the values with yours (see below). Support for disabling the database is coming soon.
+
+The default config file looks like this:
+```json
+{
+    "bot": {
+        "token": "${BOT_TOKEN}",
+        "owner": "${OWNER_ID}"
+    },
+    "persistence": {
+        "url": "${DATABASE_URL}"
+    }
+}
+```
+`token` is your bot's token, this can be found on your bots page (see step 3)
+`owner` is your user id. This can be obtained by right clicking on your avatar in the sidebar in discord and clicking "Copy Id".
+`url` is your database URL in the form `postgres://username:password@host:port/database`. As said, support for disabling persistence is coming soon.
+As you can see, the default values are environment variables. When you specify a value in the format `${NAME}` the bot will try replacing it with the environment variable of the same name. If no variable is found, the field is left blank.
 
 ## Running with docker
 I have created an image on Docker Hub to run the bot easily on linux, mac and windows. If you don't have docker, start by [downlaoding it](https://www.docker.com/). When you have it up and running, the container can be started using this command, which downloads the image and runs it:
 ```sh
-docker run --publish 443:443 --env BOT_TOKEN=YOUR_TOKEN_HERE --detach --name cb meepdocker/classroom-bot:latest
+docker run --publish 443:443 --env BOT_TOKEN=YOUR_TOKEN_HERE --env DATABASE_URL=YOUR_POSTGRESQL_URL_HERE --env OWNER_ID=YOUR_DISCORD_ID_HERE --detach --name cb meepdocker/classroom-bot:latest
 ```
 This command may need sudo if you are on linux. The bot can be stopped using:
 ```sh
 docker rm --force cb
 ```
 Again, it can be a good idea to set up the token as an environment variable.
-
-## Config
-On first run, a default config file will be generated. This is where you set the bot token, database info and probably more in the future.
-Variables with a value following the pattern `${VAR_NAME}` are treated as enironment variables and will be evaluated when the config is loaded. Should an environment variable be undefined, it will evaluate to an empty string.
-If `useUrl` is true, the program will use a url to connect to the server. Otherwise, it uses `user`, `password` and `host` options.
 
 ## Developing
 If you want to help with development, awesome, here's the basic structure of the project. Please fork the repo and submit a pull request if you want to make changes.
