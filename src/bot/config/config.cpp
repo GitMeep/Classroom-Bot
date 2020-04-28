@@ -10,11 +10,12 @@ json defaultConfig = {
         {"owner", "${OWNER_ID}"},
     }},
     {"persistence", {
+        {"enabled", "${ENABLE_PERSISTENCE}"},
         {"url", "${DATABASE_URL}"},
     }}
 };
 
-Config::Config() : _log(spdlog::get("console")) {}
+Config::Config() : _log(spdlog::get("aegis")) {}
 
 void Config::loadFromFile(std::string path) {
     _log->info("Loading config from file: " + path);
@@ -47,6 +48,7 @@ void Config::loadFromFile(std::string path) {
 
 // check if string is env variable, if it is replace it with the value
 std::string replaceVar(std::string val) {
+    if(val.size() == 0) return "";
     std::string beginning = val.substr(0,2); // two first chars
     std::string last = val.substr(val.length()-1, 1);
 
@@ -97,8 +99,8 @@ void Config::writeDefaultConfig(std::string path) {
     file.open(path, std::ios::out | std::ios::trunc);
 
     if(!file.is_open()) {
-        _log->error("Could not create file!");
-        throw std::runtime_error("Could not create config file!");
+        _log->error("Could not create file.");
+        throw std::runtime_error("Could not create config file.");
     }
 
     file << defaultConfig.dump(4);

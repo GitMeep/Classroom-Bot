@@ -13,7 +13,7 @@ enum ParserException {
 };
 
 ClassroomBot::ClassroomBot(std::string token, std::shared_ptr<spdlog::logger> log, std::shared_ptr<Config> config)
-: _log(spdlog::get("console"))
+: _log(spdlog::get("aegis"))
 ,_aegisCore(std::make_shared<aegis::core>(aegis::create_bot_t().logger(log).token(token)))
 ,_config(config) {
     _aegisCore->wsdbg = true;
@@ -138,7 +138,7 @@ bool ClassroomBot::tryUpdatePresence() {
 }
 
 void ClassroomBot::updatePresence() {
-    _log->info("Updating presence!");
+    _log->info("Updating presence: " + std::to_string(_aegisCore->get_guild_count()) + " servers");
     _aegisCore->update_presence(std::to_string(_aegisCore->get_guild_count()) + " servers", aegis::gateway::objects::activity::activity_type::Watching);
 }
 

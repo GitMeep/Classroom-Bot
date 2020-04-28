@@ -22,7 +22,7 @@ class ClassroomBot;
 class Command {
 public:
     explicit Command(std::shared_ptr<ClassroomBot> classroomBot)
-    : _log(spdlog::get("console"))
+    : _log(spdlog::get("aegis"))
     , _aegisCore(classroomBot->_aegisCore)
     , _bot(classroomBot)
     {}

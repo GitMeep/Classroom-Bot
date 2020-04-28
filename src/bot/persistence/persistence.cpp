@@ -5,10 +5,25 @@
 using namespace pqxx;
 
 Persistence::Persistence(std::shared_ptr<Config> config)
-: _log(spdlog::get("console"))
+: _log(spdlog::get("aegis"))
 , _config(config) {
 
     json conf = _config->getValue("persistence");
+
+    std::string enableValue;
+    if(conf.count("enable") && !conf["enable"].is_null()) {
+        enableValue = conf["enable"];
+    } else {
+        throw std::runtime_error("Config option persistence.url not found!");
+    }
+    if(enableValue == "true") {
+        _log->info("Persistence enabled");
+        _enabled = true;
+    } else {
+        _log->info("Persistence disabled");
+        _enabled = false;
+        return;
+    }
 
     std::string url;
     if(conf.count("url") && !conf["url"].is_null()) {
@@ -31,11 +46,18 @@ Persistence::Persistence(std::shared_ptr<Config> config)
 }
 
 Persistence::~Persistence() {
-    _work->commit();
+    if(_enabled) {
+        _work->commit();
+    }
+}
+
+bool Persistence::isEnabled() {
+    return _enabled;
 }
 
 // create tables if they don't exist
 void Persistence::tryCreateTables() {
+    if(!_enabled) return;
     _work->exec0(
         "CREATE TABLE IF NOT EXISTS muted_users "
         "("
@@ -53,6 +75,7 @@ void Persistence::tryCreateTables() {
 }
 
 void Persistence::setUserMute(aegis::snowflake id) {
+    if(!_enabled) return;
     _work->exec0(
         "INSERT INTO muted_users "
         "VALUES (" + id.gets() + ");"
@@ -60,6 +83,7 @@ void Persistence::setUserMute(aegis::snowflake id) {
 }
 
 std::set<aegis::snowflake> Persistence::getMutedUsers() {
+    if(!_enabled) return std::set<aegis::snowflake>();
     pqxx::result res = _work->exec(
         "SELECT * FROM muted_users;"
     );
@@ -75,6 +99,7 @@ std::set<aegis::snowflake> Persistence::getMutedUsers() {
 }
 
 void Persistence::unsetUserMute(aegis::snowflake id) {
+    if(!_enabled) return;
     _work->exec0(
         "DELETE FROM muted_users "
         "WHERE user_id =" + id.gets() + ";"
@@ -82,6 +107,7 @@ void Persistence::unsetUserMute(aegis::snowflake id) {
 }
 
 void Persistence::setGuildSettings(aegis::snowflake guildId, GuildSettings settings) {
+    if(!_enabled) return;
     _work->exec0(
         "INSERT INTO guild_settings (guild_id, prefix, role) VALUES(" + _work->quote(guildId.get()) + ", " + _work->quote(settings.prefix) + ", " + _work->quote(settings.roleName) + ") "
         "ON CONFLICT (guild_id) DO UPDATE SET prefix=" + _work->quote(settings.prefix) + ", role=" + _work->quote(settings.roleName) + ";"
@@ -89,6 +115,7 @@ void Persistence::setGuildSettings(aegis::snowflake guildId, GuildSettings setti
 }
 
 std::unordered_map<aegis::snowflake, GuildSettings> Persistence::getAllSettings() {
+    if(!_enabled) return std::unordered_map<aegis::snowflake, GuildSettings>();
     pqxx::result res = _work->exec(
         "SELECT * FROM guild_settings;"
     );

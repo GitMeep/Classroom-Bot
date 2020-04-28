@@ -4,6 +4,7 @@
         "owner": "${OWNER_ID}"
     },
     "persistence": {
+        "enable": "${ENABLE_PERSISTENCE}",
         "url": "${DATABASE_URL}"
     }
 }

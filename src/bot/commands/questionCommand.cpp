@@ -32,7 +32,7 @@ void QuestionCommand::call(std::vector<std::string> parameters, CurrentCommand c
 
     else if(verb == "next") {
         if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
-            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command!");
+            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command.");
         } else {
             next();
         }
@@ -40,7 +40,7 @@ void QuestionCommand::call(std::vector<std::string> parameters, CurrentCommand c
 
     else if(verb == "clear") {
         if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
-            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command!");
+            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command.");
         } else {
             clear();
         }

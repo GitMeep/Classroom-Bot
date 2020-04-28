@@ -33,7 +33,7 @@ void HandsCommand::call(std::vector<std::string> parameters, CurrentCommand curr
 
     else if(verb == "next") {
         if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
-            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command!");
+            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command.");
         } else {
             next();
         }
@@ -41,7 +41,7 @@ void HandsCommand::call(std::vector<std::string> parameters, CurrentCommand curr
 
     else if(verb == "random") {
         if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
-            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command!");
+            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command.");
         } else {
             random();
         }
@@ -49,13 +49,13 @@ void HandsCommand::call(std::vector<std::string> parameters, CurrentCommand curr
 
     else if(verb == "clear") {
         if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
-            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command!");
+            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command.");
         } else {
             clear();
         }
     } else if(verb == "pick") {
         if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
-            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command!");
+            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command.");
         } else {
             int number;
             try {
@@ -77,7 +77,7 @@ void HandsCommand::call(std::vector<std::string> parameters, CurrentCommand curr
 void HandsCommand::up() {
     for(aegis::snowflake handUser : _hands[_current.guildId]) {
         if(_current.userId == handUser) {
-            _aegisCore->create_message(_current.channelId, "You already have your hand raised!");
+            _aegisCore->create_message(_current.channelId, "You already have your hand raised.");
             return;
         }
     }
@@ -163,17 +163,17 @@ void HandsCommand::random() {
 
 void HandsCommand::pick(int number) {
     if(!_hands.count(_current.guildId)) {
-        _aegisCore->create_message(_current.channelId, "No one has their hand up!");
+        _aegisCore->create_message(_current.channelId, "No one has their hand raised.");
         return;
     }
 
     if(number > _hands[_current.guildId].size()) {
-        _aegisCore->create_message(_current.channelId, "There aren't that many users with their hands up");
+        _aegisCore->create_message(_current.channelId, "There aren't that many users with their hands raised");
         return;
     }
 
     if(number < 1) {
-        _aegisCore->create_message(_current.channelId, "Please enter a number above 0!");
+        _aegisCore->create_message(_current.channelId, "Please enter a number above 0.");
         return;
     }
 
@@ -213,6 +213,6 @@ CommandInfo HandsCommand::getCommandInfo() {
             "random: (admin only) pick a random user with their hand raised, and lower it",
             "clear: (admin only) lower all hands"
         },
-        "I need permission to add reactions to use this command!"
+        "I need permission to add reactions to use this command."
     };
 }

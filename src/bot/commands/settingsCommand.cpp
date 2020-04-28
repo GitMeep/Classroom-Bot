@@ -14,6 +14,10 @@ void SettingsCommand::call(std::vector<std::string> parameters, CurrentCommand c
 
     std::string verb = parameters[0];
     if(verb == "set") {
+        if(!_bot->_persistence->isEnabled()) {
+            _aegisCore->create_message(_current.channelId, "This option is disabled because persistence is disabled.");
+            return;
+        }
         if(parameters.size() < 3) {
             _aegisCore->create_message(_current.channelId, "Command has format: settings set [setting] [value]");
             return;
@@ -28,7 +32,7 @@ void SettingsCommand::call(std::vector<std::string> parameters, CurrentCommand c
 
 void SettingsCommand::set(aegis::snowflake guildId, std::string name, std::string value) {
     if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
-        _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command!");
+        _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command.");
         return;
     }
 
@@ -36,7 +40,7 @@ void SettingsCommand::set(aegis::snowflake guildId, std::string name, std::strin
 
     if(name == "prefix") {
         if(value.size() > 1) {
-            _aegisCore->create_message(_current.channelId, "Prefix can only be 1 character!");
+            _aegisCore->create_message(_current.channelId, "Prefix can only be 1 character.");
         }
         settings.prefix = value[0];
     } else if(name == "role") {

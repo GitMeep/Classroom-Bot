@@ -63,12 +63,14 @@ The default config file looks like this:
         "owner": "${OWNER_ID}"
     },
     "persistence": {
+        "enable": "${ENABLE_PERSISTENCE}",
         "url": "${DATABASE_URL}"
     }
 }
 ```
 `token` is your bot's token, this can be found on your bots page (see step 3)
 `owner` is your user id. This can be obtained by right clicking on your avatar in the sidebar in discord and clicking "Copy Id".
+`enable` enables/disables persistence, "true" (case sensitive) means enabled, everything else is disabled.
 `url` is your database URL in the form `postgres://username:password@host:port/database`. As said, support for disabling persistence is coming soon.
 As you can see, the default values are environment variables. When you specify a value in the format `${NAME}` the bot will try replacing it with the environment variable of the same name. If no variable is found, the field is left blank.
 

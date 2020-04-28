@@ -7,13 +7,13 @@ void MuteCommand::call(std::vector<std::string> parameters, CurrentCommand curre
     Command::call(parameters, current);
 
     if(!isTeacher(current.guildId, current.userId, _aegisCore, _bot->_settingsRepo)) {
-        _aegisCore->find_channel(current.channelId)->create_message("You are not a teacher!");
+        _aegisCore->find_channel(current.channelId)->create_message("You are not a teacher.");
         return;
     }
     
     auto voiceStates = _aegisCore->find_guild(current.guildId)->get_voicestates();
     if(!voiceStates.count(current.userId)) {
-        _aegisCore->find_channel(current.channelId)->create_message("You are not in a voice channel!");
+        _aegisCore->find_channel(current.channelId)->create_message("You are not in a voice channel.");
         return;
     }
 

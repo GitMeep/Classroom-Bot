@@ -13,13 +13,11 @@ using json = nlohmann::json;
 
 int main(int argc, char *argv[])
 {
-    bool tokenCommand = true;
-    if (argc < 2)
-        tokenCommand = false;
-
-    auto log = spdlog::stdout_color_mt("console");
+    auto log = spdlog::stdout_color_mt("aegis");
     log->set_pattern("%^%Y-%m-%d %H:%M:%S.%e [%L] [th#%t]%$ : %v");
     log->set_level(spdlog::level::trace);
+
+    log->info("Starting ClassroomBot version " + std::string(BOT_VERSION));
 
     std::shared_ptr<Config> config = std::make_shared<Config>();
     try {
