@@ -144,6 +144,7 @@ void ClassroomBot::updatePresence() {
 
 void ClassroomBot::printHelp(aegis::snowflake channelId) {
     std::stringstream ss;
+    ss << "Please note that this bot is still in development. Please report any bugs to @TweetMeepsi on twitter." << std::endl;
     ss << "Commands: ```" << std::endl
     << "help: Print this help page." << std::endl;
     ss << "Aliases: " << std::endl

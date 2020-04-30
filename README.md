@@ -36,7 +36,7 @@ This bot uses the Aegis library to interface with the Discord API. To install it
 ```sh
 $ mkdir build
 $ cd build
-$ cmake .. -DCMAKE_CXX_STANDARD=17 -DBUILD_SHARED_LIBS=OFF
+$ cmake .. -DCMAKE_CXX_STANDARD=17
 ```
 4. Then, to install the library, run: `make install` (may need sudo)
 

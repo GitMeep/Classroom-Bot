@@ -10,6 +10,8 @@ add_executable(classroombot ${SRC})
 
 set_property(TARGET classroombot PROPERTY CXX_STANDARD 17)
 
+set(CMAKE_CXX_FLAGS "-rdynamic")
+
 target_compile_definitions(classroombot PUBLIC BOT_VERSION="${PROJECT_VERSION}")
 
 target_link_libraries(classroombot pqxx pq pthread ssl crypto z fmt)
