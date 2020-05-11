@@ -1,3 +1,5 @@
+[![Discord Bots](https://top.gg/api/widget/status/691945666896855072.svg)](https://top.gg/bot/691945666896855072)
+
 # Classroom Bot
 
 A bot made for easier management of online classes.

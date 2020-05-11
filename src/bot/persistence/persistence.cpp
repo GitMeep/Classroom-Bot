@@ -78,7 +78,8 @@ void Persistence::setUserMute(aegis::snowflake id) {
     if(!_enabled) return;
     _work->exec0(
         "INSERT INTO muted_users "
-        "VALUES (" + id.gets() + ");"
+        "VALUES (" + id.gets() + ")"
+        "ON CONFLICT DO NOTHING;"
     );
 }
 

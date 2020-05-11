@@ -50,6 +50,7 @@ void ClassroomBot::registerCommand(Command* command) {
 }
 
 void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
+    if(!message.has_user()) return;
     if(message.get_user().is_bot()) return;
     if(message.msg.get_content().size() == 0) return;
 
@@ -88,7 +89,7 @@ void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
     }
 
     if(commandName == "he" || commandName == "help") {
-        printHelp(message.channel.get_id());
+        printHelp(message.get_user().get_id());
         return;
     }
 
@@ -142,9 +143,9 @@ void ClassroomBot::updatePresence() {
     _aegisCore->update_presence(std::to_string(_aegisCore->get_guild_count()) + " servers", aegis::gateway::objects::activity::activity_type::Watching);
 }
 
-void ClassroomBot::printHelp(aegis::snowflake channelId) {
+void ClassroomBot::printHelp(aegis::snowflake userId) {
     std::stringstream ss;
-    ss << "Please note that this bot is still in development. Please report any bugs to @TweetMeepsi on twitter." << std::endl;
+    ss << "Please note that this bot is still in development. Please report any issues in the support server: https://discord.gg/dqmTAZY" << std::endl;
     ss << "Commands: ```" << std::endl
     << "help: Print this help page." << std::endl;
     ss << "Aliases: " << std::endl
@@ -182,7 +183,7 @@ void ClassroomBot::printHelp(aegis::snowflake channelId) {
 
     ss << "```";
 
-    _aegisCore->create_message(channelId, ss.str());
+    _aegisCore->create_dm_message(userId, ss.str());
 }
 
 std::vector<std::string> ClassroomBot::parseCommand(std::string& message, char prefix) {

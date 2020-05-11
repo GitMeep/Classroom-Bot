@@ -22,7 +22,7 @@ public:
 
 private:
     std::vector<std::string> parseCommand(std::string& message, char prefix);
-    void printHelp(aegis::snowflake channelId);
+    void printHelp(aegis::snowflake userId);
     void updatePresence();
     bool tryUpdatePresence();
 
