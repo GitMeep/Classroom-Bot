@@ -14,8 +14,11 @@ Users can raise their hand to answer/ask questions to the teacher using a text c
 ### Questions
 Students can ask questions using a text command. The teacher can then go through them one at a time.
 
+### PubChem lookup
+Look up safety information and molar mass of a compound on PubChem.
+
 ### Mute
-Tired of students talking when they shouldn't? Force mute a channel, so only the teacher can speak!
+Tired of students talking when they shouldn't? Force mute a channel, so only the teacher can speak.
 
 ### Your idea here
 Got any other ideas? Send me a tweet [@TweetMeepsi](https://twitter.com/TweetMeepsi). Check the [trello](https://trello.com/b/owJzJaVt/classroom-bot) development board to see if i am already working on it first though!
@@ -29,18 +32,9 @@ You dont need to run the bot yourself, i am already doing it (see the invite lin
 * A C++ compiler
 * libssl-dev
 * zlib1g
-
-### Installing aegis.cpp
-This bot uses the Aegis library to interface with the Discord API. To install it, follow these steps:
-1. Clone [my fork of aegis.cpp](https://github.com/GitMeep/aegis.cpp), the normal one won't work, as it doesn't support voice states yet.
-2. Run `install-deps.sh` (may need sudo)
-3. In the aegis repository, run these commands to build it:
-```sh
-$ mkdir build
-$ cd build
-$ cmake .. -DCMAKE_CXX_STANDARD=17
-```
-4. Then, to install the library, run: `make install` (may need sudo)
+* libcurl
+* [my fork of aegis.cpp](https://github.com/GitMeep/aegis.cpp), build it with -DCMAKE_CXX_STANDARD=17
+* [restclient-cpp](https://github.com/mrtazz/restclient-cpp)
 
 ### Building and Configuring
 

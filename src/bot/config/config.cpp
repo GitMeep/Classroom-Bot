@@ -10,9 +10,15 @@ json defaultConfig = {
         {"owner", "${OWNER_ID}"},
     }},
     {"persistence", {
-        {"enabled", "${ENABLE_PERSISTENCE}"},
+        {"enable", "${ENABLE_PERSISTENCE}"},
         {"url", "${DATABASE_URL}"},
+    },
+    {"topgg", {
+        {"enable", "${ENABLE_TOPGG}"},
+        {"bot_id", "${TOPGG_ID}"},
+        {"token", "${TOPGG_TOKEN}"}
     }}
+    }
 };
 
 Config::Config() : _log(spdlog::get("aegis")) {}

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(classroombot VERSION 1.4)
+project(classroombot VERSION 1.5)
 
 file(GLOB_RECURSE SRC
     "src/*.cpp"
@@ -14,6 +14,6 @@ set(CMAKE_CXX_FLAGS "-rdynamic")
 
 target_compile_definitions(classroombot PUBLIC BOT_VERSION="${PROJECT_VERSION}")
 
-target_link_libraries(classroombot pqxx pq pthread ssl crypto z fmt)
+target_link_libraries(classroombot pqxx pq pthread ssl crypto z fmt restclient-cpp.a curl)
 
 target_include_directories(classroombot PRIVATE "/usr/local/include")

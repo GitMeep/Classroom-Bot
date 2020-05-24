@@ -7,6 +7,6 @@ buildType:
             long: Build with debugging information
             buildType: Debug
         release:
-                short: release
-                long: Optimize the resulting binaries
-                buildType: Release
+            short: release
+            long: Optimize the resulting binaries
+            buildType: Release

@@ -1,6 +1,9 @@
 #include "bot.h"
 #include "commands/command.h"
 
+#include <restclient-cpp/restclient.h>
+#include <restclient-cpp/connection.h>
+
 #include <string>
 #include <chrono>
 #include <thread>
@@ -31,8 +34,10 @@ ClassroomBot::ClassroomBot(std::string token, std::shared_ptr<spdlog::logger> lo
 }
 
 void ClassroomBot::run() {
+    RestClient::init();
     _aegisCore->run();
     _aegisCore->yield();
+    RestClient::disable();
 }
 
 void ClassroomBot::registerCommand(Command* command) {
@@ -51,6 +56,10 @@ void ClassroomBot::registerCommand(Command* command) {
 
 void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
     if(!message.has_user()) return;
+    if(&message.get_user() == nullptr) {
+        _log->debug("Nullptr");
+        return;
+    }
     if(message.get_user().is_bot()) return;
     if(message.msg.get_content().size() == 0) return;
 
@@ -139,8 +148,23 @@ bool ClassroomBot::tryUpdatePresence() {
 }
 
 void ClassroomBot::updatePresence() {
-    _log->info("Updating presence: " + std::to_string(_aegisCore->get_guild_count()) + " servers");
-    _aegisCore->update_presence(std::to_string(_aegisCore->get_guild_count()) + " servers", aegis::gateway::objects::activity::activity_type::Watching);
+    int guildCount = _aegisCore->get_guild_count();
+    _log->info("Updating presence: " + std::to_string(guildCount) + " servers");
+    _aegisCore->update_presence(std::to_string(guildCount) + " servers", aegis::gateway::objects::activity::activity_type::Watching);
+
+    if(_config->getValue("topgg")["enable"] == "true") {
+        std::string topggToken = _config->getValue("topgg")["token"];
+        std::string topggId = _config->getValue("topgg")["bot_id"];
+        RestClient::Connection* conn = new RestClient::Connection("https://top.gg");
+
+        RestClient::HeaderFields headers;
+        headers["Authorization"] = topggToken;
+        headers["Content-Type"] = "application/json";
+        conn->SetHeaders(headers);
+
+        std::string data = "{\"server_count\": " + std::to_string(guildCount) + "}";
+        auto r = conn->post("/api/bots/" + topggId + "/stats", data);
+    }
 }
 
 void ClassroomBot::printHelp(aegis::snowflake userId) {
