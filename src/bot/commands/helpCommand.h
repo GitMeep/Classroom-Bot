@@ -5,9 +5,9 @@
 
 #include "command.h"
 
-class InviteCommand : public Command {
+class HelpCommand : public Command {
 public:
-    explicit InviteCommand(std::shared_ptr<ClassroomBot> classroomBot) : Command::Command(classroomBot) {}
+    explicit HelpCommand(std::shared_ptr<ClassroomBot> classroomBot) : Command::Command(classroomBot) {}
     void call(std::vector<std::string> parameters, MessageInfo current);
     CommandInfo getCommandInfo();
     bool checkPermissions(aegis::permission channelPermissions);

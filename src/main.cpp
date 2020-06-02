@@ -13,6 +13,7 @@
 #include "bot/commands/inviteCommand.h"
 #include "bot/commands/settingsCommad.h"
 #include "bot/commands/pchemCommand.h"
+#include "bot/commands/helpCommand.h"
 
 using json = nlohmann::json;
 
@@ -85,6 +86,7 @@ int main(int argc, char *argv[])
         classroomBot->registerCommand(new InviteCommand(classroomBot));
         classroomBot->registerCommand(new SettingsCommand(classroomBot));
         classroomBot->registerCommand(new PchemCommand(classroomBot));
+        classroomBot->registerCommand(new HelpCommand(classroomBot));
 
         classroomBot->run();
         return 0;

@@ -1,10 +1,16 @@
 #include "muteCommand.h"
+#include "../bot.h"
 
 #include "../utils/utils.h"
 
-void MuteCommand::call(std::vector<std::string> parameters, CurrentCommand current) {
+void MuteCommand::call(std::vector<std::string> parameters, MessageInfo current) {
     std::lock_guard<std::mutex> guard(_lock);
     Command::call(parameters, current);
+
+    if(_current.isDm) {
+        _aegisCore->create_dm_message(_current.userId, "Command not supported in DM's");
+        return;
+    }
 
     if(!isTeacher(current.guildId, current.userId, _aegisCore, _bot->_settingsRepo)) {
         _aegisCore->find_channel(current.channelId)->create_message("You are not a teacher.");
@@ -112,9 +118,9 @@ bool MuteCommand::checkPermissions(aegis::permission channelPermissions) {
 
 CommandInfo MuteCommand::getCommandInfo() {
     return {
-        {"mute", "m"},
+        "mute",
+        {"m"},
         "(Admin only) Toggles mute on the voice channel that the caller is in. Everyone in a muted channel, except teachers, get server muted. When all teachers leave a channel, it is automatically unmuted.",
-        {},
-        "I need permission to mute members and add reactions to use this command"
+        {}
     };
 }

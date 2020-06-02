@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(classroombot VERSION 1.5)
+project(classroombot VERSION 1.6)
 
 file(GLOB_RECURSE SRC
     "src/*.cpp"

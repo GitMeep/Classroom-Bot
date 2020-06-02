@@ -1,5 +1,6 @@
 #include "handsCommand.h"
 #include "../utils/utils.h"
+#include "../bot.h"
 
 #include <stdlib.h>
 #include <time.h>
@@ -8,10 +9,14 @@
 
 const std::string actionMsg = "Please enter a valid action! Options are: ```up, down, next, pick, random, list, clear```";
 
-void HandsCommand::call(std::vector<std::string> parameters, CurrentCommand current) {
+void HandsCommand::call(std::vector<std::string> parameters, MessageInfo current) {
     std::lock_guard<std::mutex> guard(_handsMtx);
-
     Command::call(parameters, current);
+    
+    if(_current.isDm) {
+        _aegisCore->create_dm_message(_current.userId, "Command not supported in DM's");
+        return;
+    }
 
     if(parameters.size() == 0) {
         _aegisCore->create_message(_current.channelId, actionMsg);
@@ -202,7 +207,8 @@ bool HandsCommand::checkPermissions(aegis::permission channelPermissions) {
 
 CommandInfo HandsCommand::getCommandInfo() {
     return {
-        {"hand", "h"},
+        "hand",
+        {"h"},
         "Show of hands",
         {
             "up: raise your hand",
@@ -212,7 +218,6 @@ CommandInfo HandsCommand::getCommandInfo() {
             "pick [number]: (admin only) pick a user from the list",
             "random: (admin only) pick a random user with their hand raised, and lower it",
             "clear: (admin only) lower all hands"
-        },
-        "I need permission to add reactions to use this command."
+        }
     };
 }

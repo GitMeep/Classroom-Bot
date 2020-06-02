@@ -39,41 +39,43 @@ You dont need to run the bot yourself, i am already doing it (see the invite lin
 ### Building and Configuring
 
 1. Start by cloning the repository.
-2. Go to your [discord developer applications page](https://discordapp.com/developers/applications) and press "New Application". Give it some name and press the "Copy" button under "client id".
-3. In the side bar in your application page, click on "Bot", and press "Add Bot". Give the bot a name, and change the icon if you want. You will need the token later.
-4. Click the invite link above, but don't add the bot to the server. Instead, replace the numbers after "client_id=" in the URL with your own client id, and press enter. Then you can add your own bot to your server.
-5. Then, in the root folder of the repository, run these commands:
+2. Clone the repository
+3. Run these commands:
 ```sh
+$ cd classroombot
 $ mkdir build
 $ cd build
 $ cmake ..
 $ make -j 8
 ```
-6. You can now run the bot by typing `./questionsbot` in the build directory. Unless you have set the environment variables beforehand, The bot will fail on the first run. Just open the generated `config.json` and replace the values with yours (see below). Support for disabling the database is coming soon.
+6. You can now run the bot by typing `./questionsbot` in the build directory. Unless you have set the environment variables beforehand, The bot will fail on the first run. Just open the generated `config.json` and replace the values with yours (see below).
 
 The default config file looks like this:
 ```json
 {
     "bot": {
-        "token": "${BOT_TOKEN}",
-        "owner": "${OWNER_ID}"
+        "token": "${BOT_TOKEN}"
     },
     "persistence": {
         "enable": "${ENABLE_PERSISTENCE}",
         "url": "${DATABASE_URL}"
+    },
+    "topgg": {
+        "enable": "${ENABLE_TOPGG}",
+        "bot_id": "${TOPGG_ID}",
+        "token": "${TOPGG_TOKEN}"
     }
 }
 ```
-`token` is your bot's token, this can be found on your bots page (see step 3)
-`owner` is your user id. This can be obtained by right clicking on your avatar in the sidebar in discord and clicking "Copy Id".
-`enable` enables/disables persistence, "true" (case sensitive) means enabled, everything else is disabled.
-`url` is your database URL in the form `postgres://username:password@host:port/database`. As said, support for disabling persistence is coming soon.
+`bot` is where you put information about the discord bot.
+`persitence` is your postgressql information. URL is in the form `postgres://username:password@host:port/database`.
+`topgg` is for updating server count on top.gg third parties running the bot shouldn't post it on top.gg, so this should be disabled.
 As you can see, the default values are environment variables. When you specify a value in the format `${NAME}` the bot will try replacing it with the environment variable of the same name. If no variable is found, the field is left blank.
 
 ## Running with docker
 I have created an image on Docker Hub to run the bot easily on linux, mac and windows. If you don't have docker, start by [downlaoding it](https://www.docker.com/). When you have it up and running, the container can be started using this command, which downloads the image and runs it:
 ```sh
-docker run --publish 443:443 --env BOT_TOKEN=YOUR_TOKEN_HERE --env DATABASE_URL=YOUR_POSTGRESQL_URL_HERE --env OWNER_ID=YOUR_DISCORD_ID_HERE --detach --name cb meepdocker/classroom-bot:latest
+docker run --publish 443:443 --env BOT_TOKEN=YOUR_TOKEN_HERE --detach --name cb meepdocker/classroom-bot:latest
 ```
 This command may need sudo if you are on linux. The bot can be stopped using:
 ```sh
@@ -82,13 +84,7 @@ docker rm --force cb
 Again, it can be a good idea to set up the token as an environment variable.
 
 ## Developing
-If you want to help with development, awesome, here's the basic structure of the project. Please fork the repo and submit a pull request if you want to make changes.
-
-### The main class
-The main class is ClassroomBot which lives in main.cpp and main.h. It keeps track of the commands using a map and recieves messages sent in the discord channels on the function onMessage. From here it parses the command and finds the relevant command class to pass it onto. It also handles the help command.
-
-### Commands
-Commands are each represented by a class inheriting from the Command class. These live in src/bot/commands. A command can be registered to the bot via the registerCommand function (see main.cpp for examples). The command constructor takes in the ClassroomBot object, which should be passed to the parent constructor, which extracts the aegis::core and saves it in a member variable. When a command is registered, getCommandInfo is called, which returns a struct containing info about the command (name, aliases, description, etc). When a command is invoked by a user, it is first checked that the bot has the necessary permissions by calling checkPermissions on the command object. The call function is then called with the command's parameters and a CurrentCommand struct (from command.h) containing relavant id's for the issued command. These parameters have to be passed to Command::call, the parent class, which saves the structure in a member variable for easier use.
+If you want to help with development, awesome, here's the basic structure of the project. Please fork the repo and submit a pull request if you want to make changes. If you want an introduction to the code, please message me on the [support server](https://discord.gg/dqmTAZY).
 
 ### Trello
 [Trello](https://trello.com/b/owJzJaVt/classroom-bot) is used to keep track of tasks. Mostly just so i can remember what i need to do. If you become a regular contributer, i'll add you to it too, and give you access to the main repo.

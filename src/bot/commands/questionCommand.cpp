@@ -1,14 +1,19 @@
 #include "questionCommand.h"
 #include "../utils/utils.h"
+#include "../bot.h"
 
 #define ADMIN_ROLE "Teacher"
 
 const std::string actionMsg = "Please enter a valid action! Options are: ```ask, list, next, clear```";
 
-void QuestionCommand::call(std::vector<std::string> parameters, CurrentCommand current) {
+void QuestionCommand::call(std::vector<std::string> parameters, MessageInfo current) {
     std::lock_guard<std::mutex> guard(_questionsMtx);
-
     Command::call(parameters, current);
+
+    if(_current.isDm) {
+        _aegisCore->create_dm_message(_current.userId, "Command not supported in DM's");
+        return;
+    }
 
     if(parameters.size() == 0) {
         _aegisCore->create_message(_current.channelId, actionMsg);
@@ -107,21 +112,20 @@ void QuestionCommand::clear() {
 }
 
 bool QuestionCommand::checkPermissions(aegis::permission channelPermissions) {
-    return
-    channelPermissions.can_add_reactions();
+    return channelPermissions.can_add_reactions();
 }
 
 CommandInfo QuestionCommand::getCommandInfo() {
     return {
-        {"question", "q"},
+        "question",
+        {"q"},
         "Ask questions",
         {
             "ask [question]: ask a question",
             "list: list all questions",
             "next: (admin only) show the next question, and remove it from queue",
             "clear: (admin only) clear the question queue"
-        },
-        "I need permission to add reactions to use this command!"
+        }
     };
 }
 

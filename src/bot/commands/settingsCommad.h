@@ -8,7 +8,7 @@
 class SettingsCommand : public Command {
 public:
     explicit SettingsCommand(std::shared_ptr<ClassroomBot> classroomBot) : Command::Command(classroomBot) {}
-    void call(std::vector<std::string> parameters, CurrentCommand current);
+    void call(std::vector<std::string> parameters, MessageInfo current);
     CommandInfo getCommandInfo();
     bool checkPermissions(aegis::permission channelPermissions);
 

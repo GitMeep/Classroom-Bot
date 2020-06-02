@@ -1,11 +1,12 @@
 #include "pchemCommand.h"
+#include "../bot.h"
 
 #include <restclient-cpp/restclient.h>
 
 const std::string REST_URL = "https://pubchem.ncbi.nlm.nih.gov/rest/pug";
 const std::string VIEW_URL = "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view";
 
-void PchemCommand::call(std::vector<std::string> parameters, CurrentCommand current) {
+void PchemCommand::call(std::vector<std::string> parameters, MessageInfo current) {
     Command::call(parameters, current);
 
     if(parameters.size() < 1) {
@@ -161,9 +162,9 @@ bool PchemCommand::checkPermissions(aegis::permission channelPermissions) {
 
 CommandInfo PchemCommand::getCommandInfo() {
     return {
+        "pubchem",
         {"pchem", "pc"},
         "Look up some basic information about a compound on pubchem",
-        {},
-        "I need permission to embed links to use this command."
+        {}
     };
 }

@@ -10,7 +10,7 @@ public:
         _aegisCore->set_on_voice_state_update(std::bind(&MuteCommand::onVoiceStateUpdate, this, std::placeholders::_1));
         loadFromDB();
     }
-    void call(std::vector<std::string> parameters, CurrentCommand current);
+    void call(std::vector<std::string> parameters, MessageInfo current);
     CommandInfo getCommandInfo();
     bool checkPermissions(aegis::permission channelPermissions);
 

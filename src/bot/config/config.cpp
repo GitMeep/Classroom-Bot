@@ -6,8 +6,7 @@
 
 json defaultConfig = {
     {"bot", {
-        {"token", "${BOT_TOKEN}"},
-        {"owner", "${OWNER_ID}"},
+        {"token", "${BOT_TOKEN}"}
     }},
     {"persistence", {
         {"enable", "${ENABLE_PERSISTENCE}"},

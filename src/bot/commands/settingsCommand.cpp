@@ -1,12 +1,17 @@
 #include "settingsCommad.h"
 #include "../utils/utils.h"
+#include "../bot.h"
 
 const std::string actionMsg = "Please enter a valid option! Options are: ```set, get```";
 
-void SettingsCommand::call(std::vector<std::string> parameters, CurrentCommand current) {
+void SettingsCommand::call(std::vector<std::string> parameters, MessageInfo current) {
+    std::lock_guard<std::mutex> guard(_mtx);
     Command::call(parameters, current);
 
-    std::lock_guard<std::mutex> guard(_mtx);
+    if(_current.isDm) {
+        _aegisCore->create_dm_message({_current.userId, "Command not supported in DM's."});
+        return;
+    }
 
     if(parameters.size() == 0) {
         _aegisCore->create_message(_current.channelId, actionMsg);
@@ -42,6 +47,7 @@ void SettingsCommand::set(aegis::snowflake guildId, std::string name, std::strin
     if(name == "prefix") {
         if(value.size() > 1) {
             _aegisCore->create_message(_current.channelId, "Prefix can only be 1 character.");
+            return;
         }
         settings.prefix = value[0];
     } else if(name == "role") {
@@ -58,12 +64,21 @@ void SettingsCommand::set(aegis::snowflake guildId, std::string name, std::strin
 void SettingsCommand::get(aegis::snowflake guildId) {
     GuildSettings settings = _bot->_settingsRepo->getSettings(guildId);
 
-    std::stringstream ss;
-    ss << "Settings for this server are: \n```";
-    ss << "Prefix: " << settings.prefix << "\n";
-    ss << "Admin role: " << settings.roleName << "\n```";
+    nlohmann::json embed {
+        {"title", "Settings for " + _aegisCore->find_guild(_current.guildId)->get_name()},
+        {"fields", json::array({
+            {
+                {"name", "Prefix"},
+                {"value", settings.prefix}
+            },
+            {
+                {"name", "Admin role name"},
+                {"value", settings.roleName}
+            }
+        })}
+    };
 
-    _aegisCore->create_message(_current.channelId, ss.str());
+    _aegisCore->create_message_embed(_current.channelId, "", embed);
 }
 
 bool SettingsCommand::checkPermissions(aegis::permission channelPermissions) {
@@ -72,13 +87,13 @@ bool SettingsCommand::checkPermissions(aegis::permission channelPermissions) {
 
 CommandInfo SettingsCommand::getCommandInfo() {
     return {
-        {"settings", "s"},
+        "settings",
+        {"s"},
         "Change the server's settings",
         {
             "set [setting] [value]: set a setting",
-            "get: get settings for your server",
-            "Valid settings are: prefix and role"
-        },
-        "Something went very wrong"
+            "get: see the settings for your server",
+            "Settings are: `prefix` and `role`"
+        }
     };
 }
