@@ -23,6 +23,9 @@ Tired of students talking when they shouldn't? Force mute a channel, so only the
 ### Your idea here
 Got any other ideas? Send me a tweet [@TweetMeepsi](https://twitter.com/TweetMeepsi). Check the [trello](https://trello.com/b/owJzJaVt/classroom-bot) development board to see if i am already working on it first though!
 
+## Getting started
+To get started using the bot, invite it to your server and assign yourself a role named "Teacher". This makes it so you can use the admin-only commands.
+
 ## Building and running
 You dont need to run the bot yourself, i am already doing it (see the invite link above). But if you want to run it yourself, here's how to do it. Note: this can only be built on linux. If you want to run it on windows, see the "Running with docker" section.
 
