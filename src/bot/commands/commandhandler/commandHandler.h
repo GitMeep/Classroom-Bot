@@ -1,14 +1,11 @@
 #pragma once
 
-#include <vector>
-#include <map>
-
 #include "../command.h"
 
 class CommandHandler {
 public:
-    bool parseAndCall(std::string input, MessageInfo messageInfo);
-    bool callCommand(std::string name, std::vector<std::string> parameters, MessageInfo messageInfo);
+    bool parseAndCall(const std::string& input, MessageInfo* messageInfo);
+    bool callCommand(const std::string& name, const std::vector<std::string>& parameters, MessageInfo* messageInfo);
     void registerCommand(Command* command);
     std::vector<CommandInfo> getInfo(std::string commandName);
 

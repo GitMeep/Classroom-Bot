@@ -20,7 +20,7 @@ json defaultConfig = {
     }
 };
 
-Config::Config() : _log(spdlog::get("aegis")) {}
+Config::Config() : _log(spdlog::get("classroombot")) {}
 
 void Config::loadFromFile(std::string path) {
     _log->info("Loading config from file: " + path);

@@ -1,5 +1,7 @@
-build/
+bin/
+obj/
 CMakeFiles/
 
 CMakeCache.txt
 Makefile
+classroombot.make

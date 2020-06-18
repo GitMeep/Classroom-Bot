@@ -3,14 +3,14 @@
         {
             "name": "Linux",
             "includePath": [
-                "/usr/local/include/*"
+                "/usr/local/include/",
+                "./src/"
             ],
-            "defines": [],
-            "compilerPath": "/usr/bin/gcc",
+            "defines": ["AEGIS_SEPARATE_COMPILATION", "BOT_VERSION=\"1.7\"", "DEBUG"],
+            "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "intelliSenseMode": "clang-x64",
-            "configurationProvider": "vector-of-bool.cmake-tools"
+            "intelliSenseMode": "gcc-x64"
         }
     ],
     "version": 4

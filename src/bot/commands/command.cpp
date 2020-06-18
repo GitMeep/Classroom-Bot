@@ -1,8 +1,9 @@
-#include "command.h"
+#include "cbpch.h"
 
+#include "command.h"
 #include "../bot.h"
 
-Command::Command(std::shared_ptr<ClassroomBot> classroomBot)
-: _log(spdlog::get("aegis"))
-, _aegisCore(classroomBot->_aegisCore)
-, _bot(classroomBot) {}
+Command::Command()
+: _log(spdlog::get("classroombot"))
+, _aegisCore(ClassroomBot::get()._aegisCore)
+, _bot(&ClassroomBot::get()) {}

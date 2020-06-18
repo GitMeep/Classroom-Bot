@@ -17,9 +17,6 @@ Students can ask questions using a text command. The teacher can then go through
 ### PubChem lookup
 Look up safety information and molar mass of a compound on PubChem.
 
-### Mute
-Tired of students talking when they shouldn't? Force mute a channel, so only the teacher can speak.
-
 ### Your idea here
 Got any other ideas? Send me a tweet [@TweetMeepsi](https://twitter.com/TweetMeepsi). Check the [trello](https://trello.com/b/owJzJaVt/classroom-bot) development board to see if i am already working on it first though!
 
@@ -46,12 +43,10 @@ You dont need to run the bot yourself, i am already doing it (see the invite lin
 3. Run these commands:
 ```sh
 $ cd classroombot
-$ mkdir build
-$ cd build
-$ cmake ..
-$ make -j 8
+$ premake5 gmake
+$ make -j8
 ```
-6. You can now run the bot by typing `./questionsbot` in the build directory. Unless you have set the environment variables beforehand, The bot will fail on the first run. Just open the generated `config.json` and replace the values with yours (see below).
+6. You can now run the bot by typing `./questionsbot` in the `bin` directory. Unless you have set the environment variables beforehand, The bot will fail on the first run. Just open the generated `config.json` and replace the values with yours (see below).
 
 The default config file looks like this:
 ```json

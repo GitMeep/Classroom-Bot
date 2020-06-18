@@ -1,12 +1,16 @@
+#include "cbpch.h"
+
 #include "commandHandler.h"
 
-bool CommandHandler::parseAndCall(std::string input, MessageInfo messageInfo) {
+bool CommandHandler::parseAndCall(const std::string& input, MessageInfo* messageInfo) {
     std::vector<std::string> parameters;
     std::stringstream ss;
     ss << input;
 
     std::string commandName;
     ss >> commandName;
+
+    if(commandName == "") return true; // empty command, do nothing
 
     std::string param;
     while(ss >> param) {
@@ -16,10 +20,12 @@ bool CommandHandler::parseAndCall(std::string input, MessageInfo messageInfo) {
     return callCommand(commandName, parameters, messageInfo);
 }
 
-bool CommandHandler::callCommand(std::string name, std::vector<std::string> parameters, MessageInfo messageInfo) {
-    std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c){ return std::tolower(c); }); // make sure name is lowercase
-
+bool CommandHandler::callCommand(const std::string& name, const std::vector<std::string>& parameters, MessageInfo* messageInfo) {
     std::string commandName = name;
+    std::transform(commandName.begin(), commandName.end(), commandName.begin(), [](unsigned char c){ return std::tolower(c); }); // make sure name is lowercase
+
+    if(commandName[0] == '?') return true; // someone wrote something like "????"", don't do anything
+    
     if (_aliases.count(name)) {
         commandName = _aliases[name];
     }

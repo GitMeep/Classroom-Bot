@@ -1,7 +1,5 @@
 #pragma once
 
-#include <aegis.hpp>
-
 struct CommandInfo {
     std::string name;
     std::vector<std::string> aliases;
@@ -21,18 +19,15 @@ class ClassroomBot;
 
 class Command {
 public:
-    explicit Command(std::shared_ptr<ClassroomBot> classroomBot);
+    Command();
 
-    virtual void call(std::vector<std::string> parameters, MessageInfo current) {
-        _current = current;
-    }
+    virtual void call(const std::vector<std::string>& parameters, MessageInfo* current) = 0;
 
     virtual CommandInfo getCommandInfo() = 0;
 
 protected:
     std::shared_ptr<spdlog::logger> _log;
     std::shared_ptr<aegis::core> _aegisCore;
-    std::shared_ptr<ClassroomBot> _bot;
-    MessageInfo _current;
+    ClassroomBot* _bot;
 
 };

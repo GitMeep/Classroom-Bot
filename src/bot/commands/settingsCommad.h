@@ -7,13 +7,11 @@
 
 class SettingsCommand : public Command {
 public:
-    explicit SettingsCommand(std::shared_ptr<ClassroomBot> classroomBot) : Command::Command(classroomBot) {}
-    void call(std::vector<std::string> parameters, MessageInfo current);
+    void call(const std::vector<std::string>& parameters, MessageInfo* current);
     CommandInfo getCommandInfo();
-    bool checkPermissions(aegis::permission channelPermissions);
 
 private:
-    void set(aegis::snowflake guildId, std::string name, std::string value);
-    void get(aegis::snowflake guildId);
+    void set(MessageInfo* current, aegis::snowflake guildId, std::string name, std::string value);
+    void get(MessageInfo* current, aegis::snowflake guildId);
     std::mutex _mtx;
 };

@@ -63,6 +63,13 @@
         "valarray": "cpp",
         "*.ipp": "cpp",
         "bitset": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "unordered_set": "cpp",
+        "*.ixx": "cpp",
+        "*.txx": "cpp",
+        "bit": "cpp",
+        "charconv": "cpp",
+        "*.mxx": "cpp",
+        "regex": "cpp"
     }
 }

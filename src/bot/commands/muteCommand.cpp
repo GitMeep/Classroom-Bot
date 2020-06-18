@@ -1,89 +1,64 @@
 #include "muteCommand.h"
 #include "../bot.h"
+#include "bot/persistence/repo/muteRepo.h"
 
 #include "../utils/utils.h"
 
-void MuteCommand::call(std::vector<std::string> parameters, MessageInfo current) {
-    std::lock_guard<std::mutex> guard(_lock);
-    Command::call(parameters, current);
-
-    if(_current.isDm) {
-        _aegisCore->create_dm_message(_current.userId, "Command not supported in DM's");
+void MuteCommand::call(const std::vector<std::string>& parameters, MessageInfo* current) {
+    if(current->isDm) {
+        _aegisCore->create_dm_message(current->userId, "Command not supported in DM's");
         return;
     }
 
-    if(!isTeacher(current.guildId, current.userId, _aegisCore, _bot->_settingsRepo)) {
-        _aegisCore->find_channel(current.channelId)->create_message("You are not a teacher.");
+    if(!isTeacher(current->guildId, current->userId, _aegisCore, _bot->_settingsRepo)) {
+        _aegisCore->find_channel(current->channelId)->create_message("You are not a teacher.");
         return;
     }
     
-    auto voiceStates = _aegisCore->find_guild(current.guildId)->get_voicestates();
-    if(!voiceStates.count(current.userId)) {
-        _aegisCore->find_channel(current.channelId)->create_message("You are not in a voice channel.");
+    auto voiceStates = _aegisCore->find_guild(current->guildId)->get_voicestates();
+    if(!voiceStates.count(current->userId)) {
+        _aegisCore->find_channel(current->channelId)->create_message("You are not in a voice channel.");
         return;
     }
 
-    aegis::snowflake voiceChannel = voiceStates[current.userId].channel_id;
+    aegis::snowflake voiceChannel = voiceStates[current->userId].channel_id;
 
-    if(_mutedChannels.count(voiceChannel)) {
+    if(_bot->m_MuteRepo->isChannelMuted(voiceChannel)) {
         changeChannelMuteState(voiceChannel, false);
-        _aegisCore->find_channel(current.channelId)->create_reaction(current.messageId, "%F0%9F%94%88"); // 🔈
+        _aegisCore->find_channel(current->channelId)->create_reaction(current->messageId, "%F0%9F%94%88"); // 🔈
     } else {
         changeChannelMuteState(voiceChannel, true);
-        _aegisCore->find_channel(current.channelId)->create_reaction(current.messageId, "%F0%9F%94%87"); // 🔇
+        _aegisCore->find_channel(current->channelId)->create_reaction(current->messageId, "%F0%9F%94%87"); // 🔇
     }
 }
 
-void MuteCommand::loadFromDB() {
-    auto users = _bot->_persistence->getMutedUsers();
-    _mutedUsers = users;
-}
-
 void MuteCommand::onVoiceStateUpdate(aegis::gateway::events::voice_state_update obj) {
-    if(_mutedChannels.count(obj.channel_id) && !obj.mute) { // if someone joins a muted channel, and they are not mute already, mute them
+    bool channelMute = _bot->m_MuteRepo->isChannelMuted(obj.channel_id);
+    if(channelMute && !obj.mute) { // if someone joins a muted channel, and they are not mute already, mute them
         changeMemberMuteState(obj.user_id, obj.guild_id, obj.channel_id, true);
         return;
     }
 
-    if(!_mutedChannels.count(obj.channel_id)) { // user left or joined an unmuted channel
-        // unmute user
-        if(obj.mute && _mutedUsers.count(obj.user_id) && (obj.channel_id.get() != 0)) // if someone we muted joins an unmuted channel, unmute them
+    if(!channelMute) { // user left or joined an unmuted channel
+        auto mutedUsers = _bot->m_MuteRepo->getMutedUsers(obj.guild_id);
+        // unmute user if they are muted and it was the bot that muted them
+        if(obj.mute && mutedUsers.count(obj.user_id) && (obj.channel_id.get() != 0)) // if someone we muted joins an unmuted channel, unmute them (if someone leaves a channel, the channel id will be 0, so don't do anything in that case)
             changeMemberMuteState(obj.user_id, obj.guild_id, obj.channel_id, false);
 
-        // if a teacher leaves, check if the channel they were in has any more teachers, if not unmute it.
-        if(isTeacher(obj.guild_id, obj.user_id, _aegisCore, _bot->_settingsRepo) && _teachers.count(obj.user_id)) {
-            aegis::snowflake channel = _teachers[obj.user_id];
-            if(!doesChannelHaveTeacher(channel)) {
-                changeChannelMuteState(channel, false);
-            }
-            _teachers.erase(obj.user_id);
-        }
     }
-}
-
-bool MuteCommand::doesChannelHaveTeacher(aegis::snowflake channelId) {
-    aegis::snowflake guildId = _aegisCore->find_channel(channelId)->get_guild_id();
-
-    auto voiceStates = _aegisCore->find_guild(guildId)->get_voicestates();
-    auto it = voiceStates.begin();
-    while(it != voiceStates.end()) {
-        if(it->second.channel_id == channelId && isTeacher(guildId, it->second.user_id, _aegisCore, _bot->_settingsRepo))
-            return true;
-        it++;
-    }
-    return false;
 }
 
 void MuteCommand::changeChannelMuteState(aegis::snowflake channelId, bool mute) {
     if(mute) {
-        if(_mutedChannels.count(channelId))
+        if(_bot->m_MuteRepo->isChannelMuted(channelId))
             return;
-        _mutedChannels.emplace(channelId);
+        _bot->m_MuteRepo->muteChannel(channelId);
     } else {
-        _mutedChannels.erase(channelId);
+        _bot->m_MuteRepo->unmuteChannel(channelId);
     }
     aegis::snowflake guildId = _aegisCore->find_channel(channelId)->get_guild_id();
 
+    // update everyone currently in the voice channel
     auto voiceStates = _aegisCore->find_guild(guildId)->get_voicestates();
     auto it = voiceStates.begin();
     while(it != voiceStates.end()) {
@@ -98,29 +73,19 @@ void MuteCommand::changeChannelMuteState(aegis::snowflake channelId, bool mute) 
 void MuteCommand::changeMemberMuteState(aegis::snowflake userId, aegis::snowflake guildId, aegis::snowflake channelId, bool mute) {
     if(!isTeacher(guildId, userId, _aegisCore, _bot->_settingsRepo)) {// don't touch teachers
         if(mute) {
-            _mutedUsers.emplace(userId);
-            _bot->_persistence->setUserMute(userId);
+            _bot->m_MuteRepo->muteUser(guildId, userId);
         } else {
-            _mutedUsers.erase(userId);
-            _bot->_persistence->unsetUserMute(userId);
+            _bot->m_MuteRepo->unmuteUser(guildId, userId);
         }
         _aegisCore->find_guild(guildId)->modify_guild_member(userId, aegis::lib::nullopt, mute, aegis::lib::nullopt, aegis::lib::nullopt, aegis::lib::nullopt);
-    } else {
-        _teachers.emplace(userId, channelId);
     }
-}
-
-bool MuteCommand::checkPermissions(aegis::permission channelPermissions) {
-    return
-    channelPermissions.can_voice_mute() &&
-    channelPermissions.can_add_reactions();
 }
 
 CommandInfo MuteCommand::getCommandInfo() {
     return {
         "mute",
         {"m"},
-        "(Admin only) Toggles mute on the voice channel that the caller is in. Everyone in a muted channel, except teachers, get server muted. When all teachers leave a channel, it is automatically unmuted.",
+        "(Admin only) Toggles mute on the voice channel that you are in. Everyone in a muted channel, except teachers, get server muted. This way you can easily mute a class who wont stop talking.",
         {}
     };
 }

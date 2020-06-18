@@ -1,16 +1,14 @@
+#include "cbpch.h"
+
 #include "pchemCommand.h"
 #include "../bot.h"
-
-#include <restclient-cpp/restclient.h>
 
 const std::string REST_URL = "https://pubchem.ncbi.nlm.nih.gov/rest/pug";
 const std::string VIEW_URL = "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view";
 
-void PchemCommand::call(std::vector<std::string> parameters, MessageInfo current) {
-    Command::call(parameters, current);
-
+void PchemCommand::call(const std::vector<std::string>& parameters, MessageInfo* current) {
     if(parameters.size() < 1) {
-        _aegisCore->create_message(_current.channelId, "You need to enter a query.");
+        _aegisCore->create_message(current->channelId, "You need to enter a query.");
         return;
     }
 
@@ -24,7 +22,7 @@ void PchemCommand::call(std::vector<std::string> parameters, MessageInfo current
         param++;
     }
 
-    _aegisCore->find_channel(_current.channelId)->create_reaction(aegis::create_reaction_t().message_id(_current.messageId).emoji_text("%E2%9C%85"));
+    _aegisCore->find_channel(current->channelId)->create_reaction(aegis::create_reaction_t().message_id(current->messageId).emoji_text("%E2%9C%85"));
 
     std::string cid;
     try {
@@ -36,7 +34,7 @@ void PchemCommand::call(std::vector<std::string> parameters, MessageInfo current
     }
     
     if(cid == "") {
-        _aegisCore->create_message(_current.channelId, "Couldn't find that compound. Try entering a CID or name.");
+        _aegisCore->create_message(current->channelId, "Couldn't find that compound. Try entering a CID or name.");
         return;
     }
 
@@ -51,9 +49,9 @@ void PchemCommand::call(std::vector<std::string> parameters, MessageInfo current
 
     std::string warningLabels;
     for(std::string label : res.warningLabels) {
-        warningLabels += label + ",";
+        warningLabels += label + ", ";
     }
-    warningLabels = warningLabels.substr(0, warningLabels.length()-1);
+    warningLabels = warningLabels.substr(0, warningLabels.length()-2);
     if(res.warningLabels.size() < 1) warningLabels = "None";
 
     if(res.precautions.length() < 1) res.precautions = "None";
@@ -64,18 +62,22 @@ void PchemCommand::call(std::vector<std::string> parameters, MessageInfo current
         {"thumbnail", {
             {"url", res.structUrl}
         }},
-        {"fields", json::array({
+        {"fields", nlohmann::json::array({
             {
-                {"name", "Precautionary Statement Codes"},
-                {"value", res.precautions}
+                {"name", "Formula"},
+                {"value", res.formula}
+            },
+            {
+                {"name", "Molecular Mass"},
+                {"value", res.molMass + " g/mol"}
             },
             {
                 {"name", "Pictograms"},
                 {"value", warningLabels}
             },
             {
-                {"name", "Molecular Mass"},
-                {"value", res.molMass + " g/mol"}
+                {"name", "Precautionary Statement Codes"},
+                {"value", res.precautions}
             }
         })},
         {"url", "https://pubchem.ncbi.nlm.nih.gov/compound/" + cid},
@@ -83,7 +85,7 @@ void PchemCommand::call(std::vector<std::string> parameters, MessageInfo current
         {"footer", {{"text", "GHS reference: " + res.ghsReference}}}
     };
 
-    auto response = _aegisCore->create_message_embed(_current.channelId, "", embed);
+    auto response = _aegisCore->create_message_embed(current->channelId, "", embed);
 
 }
 
@@ -93,7 +95,7 @@ std::string PchemCommand::getCID(std::string query) {
         return "";
     }
 
-    nlohmann::json body = json::parse(r.body);
+    nlohmann::json body = nlohmann::json::parse(r.body);
     int cid = body["IdentifierList"]["CID"][0];
     return std::to_string(cid);
 }
@@ -107,7 +109,7 @@ PCResult PchemCommand::getInfo(std::string cid) {
 
     auto r = RestClient::get(VIEW_URL + "/data/compound/" + cid + "/JSON?heading=Computed+Properties");
 
-    body = json::parse(r.body);
+    body = nlohmann::json::parse(r.body);
     record = body["Record"];
     res.molMass = std::to_string((int)record["Section"][0]["Section"][0]["Section"][0]["Information"][0]["Value"]["Number"][0]);
 
@@ -124,7 +126,7 @@ PCResult PchemCommand::getInfo(std::string cid) {
         return res;
     }
 
-    body = json::parse(r.body);
+    body = nlohmann::json::parse(r.body);
     record = body["Record"];
 
     int refNumber = record["Reference"][0]["ReferenceNumber"];
@@ -149,22 +151,21 @@ PCResult PchemCommand::getInfo(std::string cid) {
         }
     }
 
+    r = RestClient::get(VIEW_URL + "/data/compound/" + cid + "/JSON?heading=Molecular+Formula");
+    body = nlohmann::json::parse(r.body);
+
+    res.formula = body["Record"]["Section"][0]["Section"][0]["Information"][0]["Value"]["StringWithMarkup"][0]["String"];
+
     return res;
-
-}
-
-bool PchemCommand::checkPermissions(aegis::permission channelPermissions) {
-    if(!channelPermissions.can_embed()) {
-        return false;
-    }
-    return true;
 }
 
 CommandInfo PchemCommand::getCommandInfo() {
     return {
         "pubchem",
         {"pchem", "pc"},
-        "Look up some basic information about a compound on pubchem",
-        {}
+        "Search information about a compound on pubchem",
+        {
+            "`[name | cid]`: search by names or compound id"
+        }
     };
 }

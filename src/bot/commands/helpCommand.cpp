@@ -1,9 +1,11 @@
+#include "cbpch.h"
+
 #include "helpCommand.h"
 #include "../bot.h"
 
-void HelpCommand::call(std::vector<std::string> parameters, MessageInfo current) {
-    Command::call(parameters, current);
+#include "../commands/commandhandler/commandHandler.h"
 
+void HelpCommand::call(const std::vector<std::string>& parameters, MessageInfo* current) {
     std::string commandName = "";
     if (parameters.size()) {
         commandName = parameters[0];
@@ -11,7 +13,7 @@ void HelpCommand::call(std::vector<std::string> parameters, MessageInfo current)
 
     std::vector<CommandInfo> commands = _bot->_commandHandler.getInfo(commandName);
     if (!commands.size()) {
-        _aegisCore->create_message(_current.channelId, "Unknown command.");
+        _aegisCore->create_message(current->channelId, "Unknown command.");
         return;
     }
 
@@ -19,8 +21,8 @@ void HelpCommand::call(std::vector<std::string> parameters, MessageInfo current)
 
     bool detail = commandName != "";
     if (detail) {
-        if(!_current.isDm) {
-            _aegisCore->create_message(current.channelId, "Help about a specific command is only supported in DM's.");
+        if(!current->isDm) {
+            _aegisCore->create_message(current->channelId, "Help about a specific command is only supported in DM's.");
             return;
         }
         CommandInfo command = commands[0];
@@ -65,18 +67,14 @@ void HelpCommand::call(std::vector<std::string> parameters, MessageInfo current)
         }
     }
 
-    _aegisCore->create_dm_message({current.userId, "", embed});
-}
-
-bool HelpCommand::checkPermissions(aegis::permission channelPermissions) {
-    return true;
+    _aegisCore->create_dm_message({current->userId, "", embed});
 }
 
 CommandInfo HelpCommand::getCommandInfo() {
     return {
         "help",
         {"he"},
-        "Display this help page. Use `help` [command] to get information about a specific command.",
+        "Display this help page. Use `help [command]` to get more information about a specific command.",
         {
             "`[command]` to get help about a specific command."
         }

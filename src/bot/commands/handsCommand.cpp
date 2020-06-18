@@ -1,215 +1,208 @@
+#include "cbpch.h"
+
 #include "handsCommand.h"
 #include "../utils/utils.h"
 #include "../bot.h"
-
-#include <stdlib.h>
-#include <time.h>
-
-#define ADMIN_ROLE "Teacher"
+#include "../persistence/repo/handRepo.h"
 
 const std::string actionMsg = "Please enter a valid action! Options are: ```up, down, next, pick, random, list, clear```";
 
-void HandsCommand::call(std::vector<std::string> parameters, MessageInfo current) {
-    std::lock_guard<std::mutex> guard(_handsMtx);
-    Command::call(parameters, current);
+void HandsCommand::call(const std::vector<std::string>& parameters, MessageInfo* current) {
     
-    if(_current.isDm) {
-        _aegisCore->create_dm_message(_current.userId, "Command not supported in DM's");
+    if(current->isDm) {
+        _aegisCore->create_dm_message(current->userId, "Command not supported in DM's");
         return;
     }
 
     if(parameters.size() == 0) {
-        _aegisCore->create_message(_current.channelId, actionMsg);
+        _aegisCore->create_message(current->channelId, actionMsg);
         return;
     }
 
     std::string verb = parameters[0];
     if(verb == "up") {
-        up();
+        up(current);
     }
 
     else if(verb == "down") {
-        down();
+        down(current);
     }
 
     else if(verb == "list") {
-        list();
+        list(current);
     }
 
     else if(verb == "next") {
-        if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
-            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command.");
+        if(!isTeacher(current->guildId, current->userId, _aegisCore, _bot->_settingsRepo)) {
+            _aegisCore->create_message(current->channelId, "You must have the admin role to use this command.");
         } else {
-            next();
+            next(current);
         }
     }
 
     else if(verb == "random") {
-        if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
-            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command.");
+        if(!isTeacher(current->guildId, current->userId, _aegisCore, _bot->_settingsRepo)) {
+            _aegisCore->create_message(current->channelId, "You must have the admin role to use this command.");
         } else {
-            random();
+            random(current);
         }
     }
 
     else if(verb == "clear") {
-        if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
-            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command.");
+        if(!isTeacher(current->guildId, current->userId, _aegisCore, _bot->_settingsRepo)) {
+            _aegisCore->create_message(current->channelId, "You must have the admin role to use this command.");
         } else {
-            clear();
+            clear(current);
         }
     } else if(verb == "pick") {
-        if(!isTeacher(_current.guildId, _current.userId, _aegisCore, _bot->_settingsRepo)) {
-            _aegisCore->create_message(_current.channelId, "You must have the admin role to use this command.");
+        if(!isTeacher(current->guildId, current->userId, _aegisCore, _bot->_settingsRepo)) {
+            _aegisCore->create_message(current->channelId, "You must have the admin role to use this command.");
         } else {
             int number;
             try {
                 number = std::stoi(parameters[1]);
             } catch(std::invalid_argument) {
-                _aegisCore->create_message(_current.channelId, "Please enter a valid number");
+                _aegisCore->create_message(current->channelId, "Please enter a valid number");
             } catch(std::out_of_range) {
-                _aegisCore->create_message(_current.channelId, "Please enter a reasonable number");
+                _aegisCore->create_message(current->channelId, "Please enter a reasonable number");
             }
-            pick(number);
+            pick(current, number);
         }
     }
 
     else {
-        _aegisCore->create_message(_current.channelId, actionMsg);
+        _aegisCore->create_message(current->channelId, actionMsg);
     }
 }
 
-void HandsCommand::up() {
-    for(aegis::snowflake handUser : _hands[_current.guildId]) {
-        if(_current.userId == handUser) {
-            _aegisCore->create_message(_current.channelId, "You already have your hand raised.");
+void HandsCommand::up(MessageInfo* current) {
+    auto hands = _bot->_handRepo->get(current->guildId);
+
+    for(auto hand : hands) {
+        auto handUser = hand;
+        if(current->userId.get() == handUser) {
+            _aegisCore->create_message(current->channelId, "You already have your hand raised.");
             return;
         }
     }
 
-    _hands[_current.guildId].emplace_back(_current.userId);
-    _aegisCore->find_channel(_current.channelId)->create_reaction(aegis::create_reaction_t().message_id(_current.messageId).emoji_text("%E2%9C%85"));
+    _bot->_handRepo->raise(current->guildId, current->userId);
+
+    _aegisCore->find_channel(current->channelId)->create_reaction(aegis::create_reaction_t().message_id(current->messageId).emoji_text("%E2%9C%85"));
 }
 
-void HandsCommand::down() {
-    _hands[_current.guildId].remove(_current.userId);
+void HandsCommand::down(MessageInfo* current) {
+    _bot->_handRepo->lower(current->guildId, current->userId);
 
-    if(_hands[_current.guildId].size() == 0) {
-        _hands.erase(_current.guildId);
-    }
-    _aegisCore->find_channel(_current.channelId)->create_reaction(aegis::create_reaction_t().message_id(_current.messageId).emoji_text("%E2%9C%85"));
+    _aegisCore->find_channel(current->channelId)->create_reaction(aegis::create_reaction_t().message_id(current->messageId).emoji_text("%E2%9C%85"));
 }
 
-void HandsCommand::next() {
-    if(_hands[_current.guildId].size() == 0) {
-        _aegisCore->create_message(_current.channelId, "No hands up");
+void HandsCommand::next(MessageInfo* current) {
+    auto hands = _bot->_handRepo->get(current->guildId);
+
+    if(!hands.size()) {
+        _aegisCore->create_message(current->channelId, "No hands up");
         return;
     }
-    aegis::snowflake user = _hands[_current.guildId].front();
-    std::string username = getUsername(user, _current.guildId, _aegisCore);
-    _hands[_current.guildId].pop_front();
-    
-    if(_hands[_current.guildId].size() == 0) {
-        _hands.erase(_current.guildId);
-    }
 
-    _aegisCore->create_message(_current.channelId, "```" + username + "```");
+    aegis::snowflake user = hands.front();
+    std::string username = getUsername(user, current->guildId, _aegisCore);
+
+    _bot->_handRepo->lower(current->guildId, user);
+
+    _aegisCore->create_message(current->channelId, "```" + username + "```");
 }
 
-void HandsCommand::clear() {
-    _hands[_current.guildId].clear();
-    _hands.erase(_current.guildId);
-    _aegisCore->find_channel(_current.channelId)->create_reaction(aegis::create_reaction_t().message_id(_current.messageId).emoji_text("%E2%9C%85"));
+void HandsCommand::clear(MessageInfo* current) {
+    _bot->_handRepo->clear(current->guildId);
+
+    _aegisCore->find_channel(current->channelId)->create_reaction(aegis::create_reaction_t().message_id(current->messageId).emoji_text("%E2%9C%85"));
 }
 
-void HandsCommand::list() {
-    if(!_hands.count(_current.guildId)) {
-        _aegisCore->create_message(_current.channelId, "No hands up");
+void HandsCommand::list(MessageInfo* current) {
+    auto hands = _bot->_handRepo->get(current->guildId);
+
+    if(!hands.size()) {
+        _aegisCore->create_message(current->channelId, "No hands up");
         return;
     }
     std::stringstream ss;
     ss << "Users with their hand up:```";
 
     int number = 1;
-    auto it = _hands[_current.guildId].begin();
-    while(it != _hands[_current.guildId].end()) {
-        ss << number << ": " << getUsername(*it, _current.guildId, _aegisCore) << "\n";
+    auto it = hands.begin();
+    while (it != hands.end()) {
+        ss << number << ": " << getUsername(*it, current->guildId, _aegisCore) << "\n";
         it++;
         number++;
     }
     ss << "```\n";
-    _aegisCore->create_message(_current.channelId, ss.str());
+    _aegisCore->create_message(current->channelId, ss.str());
 }
 
-void HandsCommand::random() {
-    if(_hands[_current.guildId].size() == 0) {
-        _aegisCore->create_message(_current.channelId, "No hands up");
+void HandsCommand::random(MessageInfo* current) {
+    auto hands = _bot->_handRepo->get(current->guildId);
+
+    if(!hands.size()) {
+        _aegisCore->create_message(current->channelId, "No hands up");
         return;
     }
-    srand(time(NULL));
-    int random = rand() % _hands[_current.guildId].size(); // random number between 0 and size of guild hands
 
-    auto it = _hands[_current.guildId].begin();
-    while(random) { // go to random element in guild hands
+    std::srand(std::time(NULL));
+    int random = std::rand() % hands.size(); // random number between 0 and size of hands
+
+    auto it = hands.begin();
+    while(random) { // go to random element in hands
         it++;
         random--;
     }
 
     aegis::snowflake user = *it;
-    std::string username = getUsername(user, _current.guildId, _aegisCore);
-    _hands[_current.guildId].remove(user);
+    std::string username = getUsername(user, current->guildId, _aegisCore);
 
-    if(_hands[_current.guildId].size() == 0) {
-        _hands.erase(_current.guildId);
-    }
+    _bot->_handRepo->lower(current->guildId, user);
 
-    _aegisCore->create_message(_current.channelId, "```" + username + "```");
+    _aegisCore->create_message(current->channelId, "```" + username + "```");
 }
 
-void HandsCommand::pick(int number) {
-    if(!_hands.count(_current.guildId)) {
-        _aegisCore->create_message(_current.channelId, "No one has their hand raised.");
+void HandsCommand::pick(MessageInfo* current, int number) {
+    auto hands = _bot->_handRepo->get(current->guildId);
+
+    if(!hands.size()) {
+        _aegisCore->create_message(current->channelId, "No one has their hand raised.");
         return;
     }
 
-    if(number > _hands[_current.guildId].size()) {
-        _aegisCore->create_message(_current.channelId, "There aren't that many users with their hands raised");
+    if(number > hands.size()) {
+        _aegisCore->create_message(current->channelId, "There aren't that many users with their hands raised");
         return;
     }
 
     if(number < 1) {
-        _aegisCore->create_message(_current.channelId, "Please enter a number above 0.");
+        _aegisCore->create_message(current->channelId, "Please enter a number above 0.");
         return;
     }
 
     number--; // start at 0
-    auto it = _hands[_current.guildId].begin();
+    auto it = hands.begin();
     while(number) {
         it++;
         number--;
     }
 
     aegis::snowflake user = *it;
-    std::string username = getUsername(user, _current.guildId, _aegisCore);
-    _hands[_current.guildId].remove(user);
+    std::string username = getUsername(user, current->guildId, _aegisCore);
+    
+    _bot->_handRepo->lower(current->guildId, user);
 
-    if(_hands[_current.guildId].size() == 0) {
-        _hands.erase(_current.guildId);
-    }
-
-    _aegisCore->create_message(_current.channelId, "```" + username + "```");
-}
-
-bool HandsCommand::checkPermissions(aegis::permission channelPermissions) {
-    return
-    channelPermissions.can_add_reactions();
+    _aegisCore->create_message(current->channelId, "```" + username + "```");
 }
 
 CommandInfo HandsCommand::getCommandInfo() {
     return {
         "hand",
         {"h"},
-        "Show of hands",
+        "Show of hands. Raise or lower your hand to indicate a question or an answer to one.",
         {
             "up: raise your hand",
             "down: lower your hand",
