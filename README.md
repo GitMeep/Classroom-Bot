@@ -14,6 +14,9 @@ Users can raise their hand to answer/ask questions to the teacher using a text c
 ### Questions
 Students can ask questions using a text command. The teacher can then go through them one at a time.
 
+### Mute
+Tired of students talking when they shouldn't? Force mute a channel, so only the teacher can speak.
+
 ### PubChem lookup
 Look up safety information and molar mass of a compound on PubChem.
 
@@ -26,27 +29,45 @@ To get started using the bot, invite it to your server and assign yourself a rol
 ## Building and running
 You dont need to run the bot yourself, i am already doing it (see the invite link above). But if you want to run it yourself, here's how to do it. Note: this can only be built on linux. If you want to run it on windows, see the "Running with docker" section.
 
-### Requirements
-* CMake
-* Make
-* A C++ compiler
-* libssl-dev
-* zlib1g
-* libcurl
-* [my fork of aegis.cpp](https://github.com/GitMeep/aegis.cpp), build it with -DCMAKE_CXX_STANDARD=17
-* [restclient-cpp](https://github.com/mrtazz/restclient-cpp)
-
 ### Building and Configuring
+#### Note: it is easier to just run the bot as a docker image, see [Running with docker](#Running-with-docker)
+1. Start by installing the dependencies:
+`sudo apt-get install -y libssl-dev zlib1g libpq-dev libcurl4-openssl-dev git libcurl4 automake libtool make g++ g++-9`
 
-1. Start by cloning the repository.
-2. Clone the repository
-3. Run these commands:
+2. Then, clone my fork of aegis:
+`$ git clone https://github.com/GitMeep/aegis.cpp.git`
+
+3. Build and install aegis:
 ```sh
+$ cd aegis.cpp
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+$ sudo make install
+$ cd ../..
+```
+
+4. Then clone and install restclient-cpp
+```sh
+$ git clone https://github.com/mrtazz/restclient-cpp.git
+$ cd restclient-cpp
+$ ./autogen.sh
+$ ./configure
+$ sudo make install
+$ cd ..
+```
+
+5. lastly, clone and build the bot
+```sh
+$ git clone https://github.com/GitMeep/Classroom-Bot.git
 $ cd classroombot
 $ premake5 gmake
-$ make -j8
+$ make -j8 config=release
+$ cp ./default_config.json ./bin/config.json
 ```
-6. You can now run the bot by typing `./questionsbot` in the `bin` directory. Unless you have set the environment variables beforehand, The bot will fail on the first run. Just open the generated `config.json` and replace the values with yours (see below).
+
+6. The bot can now be started by running `./questionsbot` in the `bin` directory. To configure the bot (set the token), edit ./bin/config.json
 
 The default config file looks like this:
 ```json
@@ -82,7 +103,7 @@ docker rm --force cb
 Again, it can be a good idea to set up the token as an environment variable.
 
 ## Developing
-If you want to help with development, awesome, here's the basic structure of the project. Please fork the repo and submit a pull request if you want to make changes. If you want an introduction to the code, please message me on the [support server](https://discord.gg/dqmTAZY).
+If you want to help with development, awesome! Please fork the repo and submit a pull request if you want to make changes. If you want an introduction to the code, please message me on the [support server](https://discord.gg/dqmTAZY).
 
 ### Trello
 [Trello](https://trello.com/b/owJzJaVt/classroom-bot) is used to keep track of tasks. Mostly just so i can remember what i need to do. If you become a regular contributer, i'll add you to it too, and give you access to the main repo.
