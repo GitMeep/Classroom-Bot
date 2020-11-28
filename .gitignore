@@ -1,6 +1,8 @@
 bin/
 obj/
 CMakeFiles/
+lib/
+.devcontainer/
 
 CMakeCache.txt
 Makefile

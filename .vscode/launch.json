@@ -12,7 +12,9 @@
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/bin",
-            "environment": [],
+            "environment": [
+                {"name": "LD_LIBRARY_PATH", "value": "/usr/local/lib"}
+            ],
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [

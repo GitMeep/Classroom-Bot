@@ -32,7 +32,7 @@ You dont need to run the bot yourself, i am already doing it (see the invite lin
 ### Building and Configuring
 Note: it is easier to just run the bot as a docker image, see [Running with docker](#Running-with-docker). This procedure is made for ubuntu 20.04, it might not work on other distros.
 
-1. Start running the setup script. This will install the dependencies and downgrade libssl to libssl1.1 (aegis.cpp doesn't work with versions greater than that, for some reason):
+1. Run the setup script. This will install all the dependencies. This might take a while:
 
 ```
 $ ./setup.sh
@@ -41,12 +41,12 @@ $ ./setup.sh
 
 2. then you can build the bot
 ```sh
-$ premake5 gmake
+$ ./premake.sh
 $ make -j3 config=release
 $ cp ./default_config.json ./bin/config.json
 ```
 
-3. The bot can now be started by running `./questionsbot` in the `bin` directory. To configure the bot (set the token), edit ./bin/config.json
+3. The bot can now be started by running `./questionsbot` in the `bin` directory. To configure the bot (set the token), edit bin/config.json. Note: If you are developing in a container, port 443 needs to be forwarded.
 
 The default config file looks like this:
 ```json
