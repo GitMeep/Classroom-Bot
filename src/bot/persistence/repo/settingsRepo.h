@@ -1,7 +1,7 @@
 #pragma once
 
-#include "bot/persistence/model/settings.h"
-#include "bot/persistence/cache.h"
+#include <bot/persistence/model/settings.h>
+#include <bot/persistence/db.h>
 
 class DB;
 
@@ -10,15 +10,13 @@ class GuildCache;
 
 class SettingsRepository {
 public:
-    SettingsRepository(const std::shared_ptr<DB>& db);
+    SettingsRepository();
 
     Settings get(const aegis::snowflake& guildId);
-    void save(const Settings& settings);
+    void save(const aegis::snowflake& guildId, const Settings& settings);
 
 private:
     std::shared_ptr<DB> m_DB;
+    std::shared_ptr<Encryption> m_Encryption;
     std::shared_ptr<spdlog::logger> m_Log;
-    GuildCache<Settings> m_Cache;
-
-    bool m_InvalidTable = false;
 };

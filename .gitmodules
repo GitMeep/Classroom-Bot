@@ -1,0 +1,6 @@
+[submodule "submodules/aegis"]
+	path = submodules/aegis
+	url = https://github.com/GitMeep/aegis.cpp.git
+[submodule "submodules/restclient-cpp"]
+	path = submodules/restclient-cpp
+	url = https://github.com/mrtazz/restclient-cpp.git

@@ -1,9 +1,9 @@
-#include "cbpch.h"
+#include <cbpch.h>
 
-#include "command.h"
-#include "../bot.h"
+#include <bot/commands/command.h>
+#include <bot/bot.h>
 
 Command::Command()
-: _log(spdlog::get("classroombot"))
-, _aegisCore(ClassroomBot::get()._aegisCore)
-, _bot(&ClassroomBot::get()) {}
+: m_Log(ClassroomBot::get().getLog())
+, m_AegisCore(ClassroomBot::get().getAegis())
+, m_Bot(&ClassroomBot::get()) {}

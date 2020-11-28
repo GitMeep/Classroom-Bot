@@ -10,15 +10,16 @@ class ClassroomBot;
 class Config {
 public:
     Config();
-    void loadFromFile(std::string path);
-    json getValue(std::string key);
+    void loadFromFile(const std::string& path);
+    json get();
     bool isLoaded();
+    json operator[](const std::string& key);
     
 private:
-    void writeDefaultConfig(std::string path);
+    void writeDefaultConfig(const std::string& path);
     void fillEnvVars();
-    bool _loaded = false;
-    json _config;
-    std::shared_ptr<spdlog::logger> _log;
+    bool m_Loaded = false;
+    json m_Config;
+    std::shared_ptr<spdlog::logger> m_Log;
 
 };

@@ -1,8 +1,6 @@
 #pragma once
 
-#include <aegis.hpp>
-
-#include "command.h"
+#include <bot/commands/command.h>
 
 class QuestionCommand : public Command {
 public:

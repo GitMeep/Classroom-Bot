@@ -1,7 +1,14 @@
-#include "cbpch.h"
+#include <cbpch.h>
 
-#include "commandHandler.h"
+#include <bot/commands/commandhandler/commandHandler.h>
 
+/**
+ * Parses a command from a string input and information about the messsage, and calls it.
+ * 
+ * @param input The raw message from Discord to parse
+ * @param messageInfo The message info object containing the author, channel, guild, etc.
+ * @returns True, if command was found and called, false otherwise
+*/
 bool CommandHandler::parseAndCall(const std::string& input, MessageInfo* messageInfo) {
     std::vector<std::string> parameters;
     std::stringstream ss;
@@ -20,44 +27,57 @@ bool CommandHandler::parseAndCall(const std::string& input, MessageInfo* message
     return callCommand(commandName, parameters, messageInfo);
 }
 
+/**
+ * Call a command by it's name, parameters and message info
+ * 
+ * @param name Name of the command
+ * @param parameters The paramters to pass to the command
+ * @param messageInfo Message info object
+ * @returns true, if the command was found, false if not
+ */
 bool CommandHandler::callCommand(const std::string& name, const std::vector<std::string>& parameters, MessageInfo* messageInfo) {
     std::string commandName = name;
     std::transform(commandName.begin(), commandName.end(), commandName.begin(), [](unsigned char c){ return std::tolower(c); }); // make sure name is lowercase
 
     if(commandName[0] == '?') return true; // someone wrote something like "????"", don't do anything
     
-    if (_aliases.count(name)) {
-        commandName = _aliases[name];
+    if (m_Aliases.count(name)) {
+        commandName = m_Aliases[name];
     }
 
-    if(!_commands.count(commandName)) return false;
+    if(!m_Commands.count(commandName)) return false;
 
-    _commands[commandName]->call(parameters, messageInfo);
+    m_Commands[commandName]->call(parameters, messageInfo);
     return true;
 }
 
+/**
+ * Register a new command
+ * 
+ * @param command Pointer to the command
+*/
 void CommandHandler::registerCommand(Command* command) {
     CommandInfo info = command->getCommandInfo();
 
-    if (_commands.count(info.name)) return; // command already exists
-    if (_aliases.count(info.name)) return; // command already exists
+    if (m_Commands.count(info.name)) return; // command already exists
+    if (m_Aliases.count(info.name)) return; // command already exists
 
-    _commands[info.name] = std::shared_ptr<Command>(command);
-    _commandInfos[info.name] = info;
+    m_Commands[info.name] = std::shared_ptr<Command>(command);
+    m_CommandInfos[info.name] = info;
 
     auto alias = info.aliases.begin();
     while (alias != info.aliases.end()) {
-        _aliases[*alias] = info.name;
+        m_Aliases[*alias] = info.name;
         alias++;
     }
     
 }
 
-std::vector<CommandInfo> CommandHandler::getInfo(std::string commandName) {
+std::vector<CommandInfo> CommandHandler::getInfo(const std::string& commandName) {
     std::vector<CommandInfo> info;
     if(commandName == "") {
-        auto help = _commandInfos.begin();
-        while(help != _commandInfos.end()) {
+        auto help = m_CommandInfos.begin();
+        while(help != m_CommandInfos.end()) {
             info.emplace_back(help->second);
             help++;
         }
@@ -65,12 +85,12 @@ std::vector<CommandInfo> CommandHandler::getInfo(std::string commandName) {
     }
 
     std::string name = commandName;
-    if (_aliases.count(name)) {
-        name = _aliases[commandName];
+    if (m_Aliases.count(name)) {
+        name = m_Aliases[commandName];
     }
 
-    if(_commandInfos.count(name)) {
-        info.emplace_back(_commandInfos[name]);
+    if(m_CommandInfos.count(name)) {
+        info.emplace_back(m_CommandInfos[name]);
         return info;
     }
 

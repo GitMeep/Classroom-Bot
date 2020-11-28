@@ -1,9 +1,6 @@
 #pragma once
 
-#include <aegis.hpp>
-#include <list>
-
-#include "command.h"
+#include <bot/commands/command.h>
 
 struct PCResult {
     std::string name;
@@ -23,6 +20,6 @@ public:
     CommandInfo getCommandInfo();
 
 private:
-    std::string getCID(std::string query);
-    PCResult getInfo(std::string cid);
+    std::string getCID(const std::string& query);
+    PCResult getInfo(const std::string& cid);
 };

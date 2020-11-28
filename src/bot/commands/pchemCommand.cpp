@@ -1,14 +1,14 @@
-#include "cbpch.h"
+#include <cbpch.h>
 
-#include "pchemCommand.h"
-#include "../bot.h"
+#include <bot/commands/pchemCommand.h>
+#include <bot/bot.h>
 
 const std::string REST_URL = "https://pubchem.ncbi.nlm.nih.gov/rest/pug";
 const std::string VIEW_URL = "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view";
 
 void PchemCommand::call(const std::vector<std::string>& parameters, MessageInfo* current) {
     if(parameters.size() < 1) {
-        _aegisCore->create_message(current->channelId, "You need to enter a query.");
+        m_AegisCore->create_message(current->channelId, "You need to enter a query.");
         return;
     }
 
@@ -22,7 +22,7 @@ void PchemCommand::call(const std::vector<std::string>& parameters, MessageInfo*
         param++;
     }
 
-    _aegisCore->find_channel(current->channelId)->create_reaction(aegis::create_reaction_t().message_id(current->messageId).emoji_text("%E2%9C%85"));
+    m_AegisCore->find_channel(current->channelId)->create_reaction(aegis::create_reaction_t().message_id(current->messageId).emoji_text("%E2%9C%85"));
 
     std::string cid;
     try {
@@ -34,7 +34,7 @@ void PchemCommand::call(const std::vector<std::string>& parameters, MessageInfo*
     }
     
     if(cid == "") {
-        _aegisCore->create_message(current->channelId, "Couldn't find that compound. Try entering a CID or name.");
+        m_AegisCore->create_message(current->channelId, "Couldn't find that compound. Try entering a CID or name.");
         return;
     }
 
@@ -85,11 +85,11 @@ void PchemCommand::call(const std::vector<std::string>& parameters, MessageInfo*
         {"footer", {{"text", "GHS reference: " + res.ghsReference}}}
     };
 
-    auto response = _aegisCore->create_message_embed(current->channelId, "", embed);
+    auto response = m_AegisCore->create_message_embed(current->channelId, "", embed);
 
 }
 
-std::string PchemCommand::getCID(std::string query) {
+std::string PchemCommand::getCID(const std::string& query) {
     auto r = RestClient::get(REST_URL + "/compound/name/" + query + "/cids/JSON");
     if(r.code != 200) {
         return "";
@@ -100,7 +100,7 @@ std::string PchemCommand::getCID(std::string query) {
     return std::to_string(cid);
 }
 
-PCResult PchemCommand::getInfo(std::string cid) {
+PCResult PchemCommand::getInfo(const std::string& cid) {
     PCResult res;
     res.structUrl = REST_URL + "/compound/cid/" + cid + "/PNG";
 

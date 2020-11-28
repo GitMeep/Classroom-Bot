@@ -5,6 +5,7 @@ then
     echo "Usage: ./buildImage.sh [version]"
 else
     ./premake.sh
-    make -j8 config=release
+    make clean config=release
+    make -j3 config=release
     sudo docker build -t meepdocker/classroom-bot:latest -t meepdocker/classroom-bot:$1 .
 fi

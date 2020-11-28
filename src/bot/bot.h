@@ -1,6 +1,6 @@
 #pragma once
 
-#include "commands/commandhandler/commandHandler.h"
+#include <bot/commands/commandhandler/commandHandler.h>
 
 class Command;
 class Config;
@@ -31,25 +31,37 @@ class ClassroomBot {
 public:
     void registerCommand(Command* command);
     void onMessage(aegis::gateway::events::message_create message);
-    void init(const std::string& token, const std::shared_ptr<Config>& config);
+    void init();
     bool run();
 
     static ClassroomBot& get();
-    
-    std::shared_ptr<Config> _config;
-    std::shared_ptr<aegis::core> _aegisCore;
-    std::shared_ptr<SettingsRepository> _settingsRepo;
-    std::shared_ptr<QuestionRepository>_questionRepo;
-    std::shared_ptr<HandRepository> _handRepo;
-    std::shared_ptr<MuteRepository> m_MuteRepo;
-    CommandHandler _commandHandler;
+
+    std::shared_ptr<Config> getConfig();
+    std::shared_ptr<aegis::core> getAegis();
+    std::shared_ptr<SettingsRepository> getSettingsRepo();
+    std::shared_ptr<QuestionRepository> getQuestionRepo();
+    std::shared_ptr<HandRepository> getHandRepo();
+    std::shared_ptr<MuteRepository> getMuteRepo();
+    std::shared_ptr<DB> getDatabase();
+    std::shared_ptr<spdlog::logger> getLog();
+    std::shared_ptr<CommandHandler> getCommandHandler();
 
 private:
     void updatePresence();
 
-    std::shared_ptr<spdlog::logger> _log;
-    std::shared_ptr<DB> _database;
+    std::shared_ptr<Config> m_Config;
+    std::shared_ptr<aegis::core> m_AegisCore;
+    std::shared_ptr<SettingsRepository> m_SettingsRepo;
+    std::shared_ptr<QuestionRepository> m_QuestionRepo;
+    std::shared_ptr<HandRepository> m_HandRepo;
+    std::shared_ptr<MuteRepository> m_MuteRepo;
+    std::shared_ptr<DB> m_Database;
+    std::shared_ptr<CommandHandler> m_CommandHandler;
+
+    std::shared_ptr<spdlog::logger> m_Log;
     std::unique_ptr<asio::steady_timer> m_PresenceTimer;
+
+    std::chrono::system_clock::time_point m_StartupTime;
 
     unsigned char m_PresenceState = 0;
     bool m_Initialized = false;

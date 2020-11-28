@@ -70,6 +70,9 @@
         "bit": "cpp",
         "charconv": "cpp",
         "*.mxx": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "strstream": "cpp",
+        "complex": "cpp",
+        "typeindex": "cpp"
     }
 }

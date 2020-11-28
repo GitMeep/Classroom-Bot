@@ -4,9 +4,14 @@
             "name": "Linux",
             "includePath": [
                 "/usr/local/include/",
+                "/usr/local/include/mongocxx/v_noabi",
+                "/usr/local/include/bsoncxx/v_noabi",
+                "/usr/local/include/libmongoc-1.0",
+                "/usr/local/include/libbson-1.0",
+                "/usr/include/",
                 "./src/"
             ],
-            "defines": ["AEGIS_SEPARATE_COMPILATION", "BOT_VERSION=\"1.7\"", "DEBUG"],
+            "defines": ["AEGIS_SEPARATE_COMPILATION", "BOT_VERSION=\"debug\"", "DEBUG"],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",
             "cppStandard": "c++17",

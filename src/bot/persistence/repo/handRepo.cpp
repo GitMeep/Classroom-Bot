@@ -1,76 +1,82 @@
-#include "cbpch.h"
+#include <cbpch.h>
 
-#include "bot/persistence/repo/handRepo.h"
-#include "bot/persistence/cache.h"
+#include <bot/bot.h>
+#include <bot/persistence/repo/handRepo.h>
 
-HandRepository::HandRepository(const std::shared_ptr<DB>& db) : m_DB(db) {
-    m_Log = spdlog::get("classroombot");
+#include <cstdint>
+#include <iostream>
+#include <vector>
+#include <bsoncxx/json.hpp>
+#include <mongocxx/client.hpp>
+#include <mongocxx/stdx.hpp>
+#include <mongocxx/uri.hpp>
+#include <bsoncxx/builder/stream/helpers.hpp>
+#include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/builder/stream/array.hpp>
 
-    bool tableValid = m_DB->verifyTable("Hands", {
-        {"guildId", "bigint"},
-        {"userId", "bigint"},
-        {"raisedWhen", "timestamp without time zone"}
-    });
+#include <chrono>
 
-    if (!tableValid) {
-        m_Log->warn("Hands table invalid, won't save settings to database");
-        m_InvalidTable = true;
-    }
+using bsoncxx::builder::stream::close_array;
+using bsoncxx::builder::stream::close_document;
+using bsoncxx::builder::stream::document;
+using bsoncxx::builder::stream::finalize;
+using bsoncxx::builder::stream::open_array;
+using bsoncxx::builder::stream::open_document;
 
-    m_DB->prepare("getHands", "SELECT \"userId\" FROM \"Hands\" WHERE \"guildId\" = $1 ORDER BY \"raisedWhen\" ASC;");
-    m_DB->prepare("raiseHand", "INSERT INTO \"Hands\" VALUES ($1, $2, current_timestamp);");
-    m_DB->prepare("lowerHand", "DELETE FROM \"Hands\" WHERE \"guildId\" = $1 AND \"userId\" = $2");
-    m_DB->prepare("clearHands", "DELETE FROM \"Hands\" WHERE \"guildId\" = $1");
+HandRepository::HandRepository() {
+    m_Log = ClassroomBot::get().getLog();
+
+    m_DB = ClassroomBot::get().getDatabase();
 }
 
-std::list<aegis::snowflake> HandRepository::get(const aegis::snowflake& guildId) {
-    if(m_Cache.has(guildId) || m_InvalidTable) {
-        return m_Cache.get(guildId);
-    }
-
-    auto res = m_DB->execPrep("getHands", guildId.gets());
+std::list<aegis::snowflake> HandRepository::get(const aegis::snowflake& channelId) {
+    auto client = m_DB->requestClient();
+    mongocxx::cursor result
+        = (*client)[m_DB->dbName()]["Hands"].find(document{} << "channelId" << channelId.gets() << finalize);
 
     std::list<aegis::snowflake> hands;
-
-    auto it = res.begin();
-    while (it != res.end()) {
-        hands.push_back({it[0].as<long>()});
-        it++;
+    for(auto doc : result) {
+        std::string value = doc["userId"].get_utf8().value.to_string();
+        hands.emplace_back(value);
     }
-
-    m_Cache.save(guildId, hands);
 
     return hands;
 }
 
-void HandRepository::raise(const aegis::snowflake& guildId, const aegis::snowflake& user) {
-    if(!m_InvalidTable) {
-        m_DB->execPrep("raiseHand", guildId.gets(), user.gets());
-    }
-
-    auto hands = m_Cache.get(guildId);
-    hands.push_back(user);
-    m_Cache.save(guildId, hands);
+void HandRepository::raise(const aegis::snowflake& channelId, const aegis::snowflake& user) {
+    auto client = m_DB->requestClient();
+    (*client)[m_DB->dbName()]["Hands"].insert_one(document{}
+        << "channelId" << channelId.gets()
+        << "userId" << user.gets()
+        << "updated" << bsoncxx::types::b_date(std::chrono::system_clock::now())
+        << finalize
+    );
 }
 
-void HandRepository::lower(const aegis::snowflake& guildId, const aegis::snowflake& user) {
-    if(!m_InvalidTable) {
-        m_DB->execPrep("lowerHand", guildId.gets(), user.gets());
-    }
-
-    auto hands = m_Cache.get(guildId);
-    hands.erase(std::find(hands.begin(), hands.end(), user));
-    if(!hands.size()) {
-        m_Cache.forget(guildId);
-    } else {
-        m_Cache.save(guildId, hands);
-    }
+void HandRepository::lower(const aegis::snowflake& channelId, const aegis::snowflake& user) {
+    auto client = m_DB->requestClient();
+    (*client)[m_DB->dbName()]["Hands"].delete_one(document{}
+        << "channelId" <<channelId.gets()
+        << "userId" << user.gets()
+        << finalize
+    );
 }
 
-void HandRepository::clear(const aegis::snowflake& guildId) {
-    if(!m_InvalidTable) {
-        m_DB->execPrep("clearHands", guildId.gets());
-    }
+void HandRepository::clear(const aegis::snowflake& channelId) {
+    auto client = m_DB->requestClient();
+    (*client)[m_DB->dbName()]["Hands"].delete_many(document{}
+        << "channelId" << channelId.gets()
+        << finalize
+    );
+}
 
-    m_Cache.forget(guildId);
+void HandRepository::expire() {
+    auto expiryCliff = std::chrono::system_clock::now() - std::chrono::hours(29 * 24); //29 days * 24 hrs/day
+    auto client = m_DB->requestClient();
+    (*client)[m_DB->dbName()]["Hands"].delete_many(document{}
+        << "updated" << open_document
+            << "$lt" << bsoncxx::types::b_date(expiryCliff)
+        << close_document
+        << finalize
+    );
 }

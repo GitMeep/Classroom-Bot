@@ -1,88 +1,86 @@
-#include "cbpch.h"
+#include <cbpch.h>
 
-#include "questionRepo.h"
-#include "bot/persistence/model/question.h"
+#include <bot/bot.h>
+#include <bot/persistence/repo/questionRepo.h>
+#include <bot/persistence/model/question.h>
 
-QuestionRepository::QuestionRepository(const std::shared_ptr<DB>& db) : m_DB(db) {
-    m_Log = spdlog::get("classroombot");
+#include <cstdint>
+#include <iostream>
+#include <vector>
+#include <bsoncxx/json.hpp>
+#include <mongocxx/client.hpp>
+#include <mongocxx/stdx.hpp>
+#include <mongocxx/uri.hpp>
+#include <bsoncxx/builder/stream/helpers.hpp>
+#include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/builder/stream/array.hpp>
 
-    bool tableValid = m_DB->verifyTable("Questions", {
-        {"guildId", "bigint"},
-        {"userId", "bigint"},
-        {"question", "text"},
-        {"askedWhen", "timestamp without time zone"}
-    });
+using bsoncxx::builder::stream::close_array;
+using bsoncxx::builder::stream::close_document;
+using bsoncxx::builder::stream::document;
+using bsoncxx::builder::stream::finalize;
+using bsoncxx::builder::stream::open_array;
+using bsoncxx::builder::stream::open_document;
 
-    if (!tableValid) {
-        m_Log->warn("Questions table invalid, won't save settings to database");
-        m_InvalidTable = true;
-    }
+QuestionRepository::QuestionRepository() {
+    m_Log = ClassroomBot::get().getLog();
 
-    m_DB->prepare("getQuestions", "SELECT \"guildId\", \"userId\", \"question\" FROM \"Questions\" WHERE \"guildId\" = $1 ORDER BY \"askedWhen\" ASC;");
-    m_DB->prepare("askQuestion", "INSERT INTO \"Questions\" VALUES ($1, $2, $3, current_timestamp);");
-    m_DB->prepare("dismissQuestion", "DELETE FROM \"Questions\" WHERE \"guildId\" = $1 AND \"userId\" = $2");
-    m_DB->prepare("clearQuestions", "DELETE FROM \"Questions\" WHERE \"guildId\" = $1");
+    m_DB = ClassroomBot::get().getDatabase();
+    this->m_Encryption = m_DB->encryption;
 }
 
-std::deque<Question> QuestionRepository::get(aegis::snowflake guildId) {
-    if(m_Cache.has(guildId) || m_InvalidTable) {
-        return m_Cache.get(guildId);
-    }
-
-    auto res = m_DB->execPrep("getQuestions", guildId.gets());
+std::deque<Question> QuestionRepository::get(aegis::snowflake channelId) {
+    auto client = m_DB->requestClient();
+    mongocxx::cursor result
+        = (*client)[m_DB->dbName()]["Questions"].find(document{} << "channelId" << channelId.gets() << finalize);
 
     std::deque<Question> questions;
+    for(auto doc : result) {
+        std::string userId = doc["userId"].get_utf8().value.to_string();
+        std::string question = doc["question"].get_utf8().value.to_string();
+        std::string decryptedQuestion = m_Encryption->decrypt(question);
 
-    auto it = res.begin();
-    while (it != res.end()) {
-        questions.push_back({
-            it[0].as<long>(), // guild id
-            it[1].as<long>(), // user id
-            it[2].c_str()     // question
-        });
-        it++;
+        questions.emplace_back(userId, decryptedQuestion);
     }
-
-    m_Cache.save(guildId, questions);
 
     return questions;
 }
 
-void QuestionRepository::ask(const aegis::snowflake& guildId, const aegis::snowflake& userId, const std::string& question) {
-    if(!m_InvalidTable) {
-        m_DB->execPrep("askQuestion", guildId.gets(), userId.gets(), question);
-    }
-
-    auto questions = m_Cache.get(guildId);
-    questions.push_back({guildId, userId, question});
-    m_Cache.save(guildId, questions);
+void QuestionRepository::ask(const aegis::snowflake& channelId, const aegis::snowflake& userId, const std::string& question) {
+    auto client = m_DB->requestClient();
+    (*client)[m_DB->dbName()]["Questions"].insert_one(document{}
+        << "channelId" << channelId.gets()
+        << "userId" << userId.gets()
+        << "question" <<  m_Encryption->encrypt(question)
+        << "updated" << bsoncxx::types::b_date(std::chrono::system_clock::now())
+        << finalize
+    );
 }
 
-void QuestionRepository::dismiss(const aegis::snowflake& guildId, const aegis::snowflake& userId) {
-    if(!m_InvalidTable) {
-        m_DB->execPrep("dismissQuestion", guildId.gets(), userId.gets());
-    }
-
-    auto questions = m_Cache.get(guildId);
-    auto it = questions.begin();
-    while(it != questions.end()) {
-        if(it->guildId == guildId && it->userId == userId) {
-            break;
-        }
-        it++;
-    }
-    questions.erase(it);
-    if (!questions.size()) {
-        m_Cache.forget(guildId);
-    } else {
-        m_Cache.save(guildId, questions);
-    }
+void QuestionRepository::dismiss(const aegis::snowflake& channelId, const aegis::snowflake& userId) {
+    auto client = m_DB->requestClient();
+    (*client)[m_DB->dbName()]["Questions"].delete_one(document{}
+        << "channelId" << channelId.gets()
+        << "userId" << userId.gets()
+        << finalize
+    );
 }
 
-void QuestionRepository::clear(const aegis::snowflake& guildId) {
-    if(!m_InvalidTable) {
-        m_DB->execPrep("clearQuestions", guildId.gets());
-    }
+void QuestionRepository::clear(const aegis::snowflake& channelId) {
+    auto client = m_DB->requestClient();
+    (*client)[m_DB->dbName()]["Questions"].delete_many(document{}
+        << "channelId" << channelId.gets()
+        << finalize
+    );
+}
 
-    m_Cache.forget(guildId);
+void QuestionRepository::expire() {
+    auto expiryCliff = std::chrono::system_clock::now() - std::chrono::hours(29 * 24); //29 days * 24 hrs/day
+    auto client = m_DB->requestClient();
+    (*client)[m_DB->dbName()]["Questions"].delete_many(document{}
+        << "updated" << open_document
+            << "$lt" << bsoncxx::types::b_date(expiryCliff)
+        << close_document
+        << finalize
+    );
 }

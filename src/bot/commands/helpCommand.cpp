@@ -1,9 +1,9 @@
-#include "cbpch.h"
+#include <cbpch.h>
 
-#include "helpCommand.h"
-#include "../bot.h"
+#include <bot/commands/helpCommand.h>
+#include <bot/bot.h>
 
-#include "../commands/commandhandler/commandHandler.h"
+#include <bot/commands/commandhandler/commandHandler.h>
 
 void HelpCommand::call(const std::vector<std::string>& parameters, MessageInfo* current) {
     std::string commandName = "";
@@ -11,9 +11,9 @@ void HelpCommand::call(const std::vector<std::string>& parameters, MessageInfo* 
         commandName = parameters[0];
     }
 
-    std::vector<CommandInfo> commands = _bot->_commandHandler.getInfo(commandName);
+    std::vector<CommandInfo> commands = m_Bot->getCommandHandler()->getInfo(commandName);
     if (!commands.size()) {
-        _aegisCore->create_message(current->channelId, "Unknown command.");
+        m_AegisCore->create_message(current->channelId, "Unknown command.");
         return;
     }
 
@@ -21,10 +21,10 @@ void HelpCommand::call(const std::vector<std::string>& parameters, MessageInfo* 
 
     bool detail = commandName != "";
     if (detail) {
-        if(!current->isDm) {
-            _aegisCore->create_message(current->channelId, "Help about a specific command is only supported in DM's.");
+        /*if(!current->isDm) {
+            m_AegisCore->create_message(current->channelId, "Help about a specific command is only supported in DM's.");
             return;
-        }
+        }*/
         CommandInfo command = commands[0];
         embed["title"] = command.name;
         embed["description"] = command.description;
@@ -55,8 +55,10 @@ void HelpCommand::call(const std::vector<std::string>& parameters, MessageInfo* 
         embed["title"] = "Commands";
         embed["description"] = "To use the admin only commands, you need a role named \"Teacher\". The name of this role can be changed with the `settings` command. If you have any questions or want to report a bug, join the [support server](https://discord.gg/dqmTAZY). If you like the bot, please upvote it on [top.gg](https://top.gg/bot/691945666896855072)";
         auto command = commands.begin();
+        
+        std::string commandName;
         while (command != commands.end()) {
-            std::string commandName = command->name;
+            commandName = command->name;
             auto alias = command->aliases.begin();
             while (alias != command->aliases.end()) {
                 commandName += " | " + *alias;
@@ -67,7 +69,7 @@ void HelpCommand::call(const std::vector<std::string>& parameters, MessageInfo* 
         }
     }
 
-    _aegisCore->create_dm_message({current->userId, "", embed});
+    m_AegisCore->create_message_embed(current->channelId, "", embed);
 }
 
 CommandInfo HelpCommand::getCommandInfo() {

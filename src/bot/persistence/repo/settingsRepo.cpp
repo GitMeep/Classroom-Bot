@@ -1,63 +1,68 @@
-#include "cbpch.h"
+#include <cbpch.h>
 
-#include "bot/persistence/db.h"
-#include "settingsRepo.h"
+#include <bot/bot.h>
 
-const Settings defaultSettings {0, "?", "Teacher"};
+#include <bot/persistence/db.h>
+#include <bot/persistence/repo/settingsRepo.h>
 
-SettingsRepository::SettingsRepository(const std::shared_ptr<DB>& db) : m_DB(db) {
-    m_Log = spdlog::get("classroombot");
+#include <cstdint>
+#include <iostream>
+#include <vector>
+#include <bsoncxx/json.hpp>
+#include <mongocxx/client.hpp>
+#include <mongocxx/stdx.hpp>
+#include <mongocxx/uri.hpp>
+#include <bsoncxx/builder/stream/helpers.hpp>
+#include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/builder/stream/array.hpp>
 
-    bool tableValid = m_DB->verifyTable("Settings", {
-        {"guildId", "bigint"},
-        {"prefix", "text"},
-        {"roleName", "text"}
-    });
+using bsoncxx::builder::stream::close_array;
+using bsoncxx::builder::stream::close_document;
+using bsoncxx::builder::stream::document;
+using bsoncxx::builder::stream::finalize;
+using bsoncxx::builder::stream::open_array;
+using bsoncxx::builder::stream::open_document;
 
-    if (!tableValid) {
-        m_Log->warn("Settings table invalid, won't save settings to database");
-        m_InvalidTable = true;
-        return;
-    }
+const Settings defaultSettings {"?", "Teacher"};
 
-    m_DB->prepare("getSettings", "SELECT * FROM \"Settings\" WHERE \"guildId\" = $1");
-    m_DB->prepare("updateSettings", "UPDATE \"Settings\" SET \"prefix\" = $1, \"roleName\" = $2 WHERE \"guildId\" = $3;");
-    m_DB->prepare("insertSettings", "INSERT INTO \"Settings\" VALUES ($1, $2, $3)");
+SettingsRepository::SettingsRepository() {
+    m_Log = ClassroomBot::get().getLog();
+
+    m_DB = ClassroomBot::get().getDatabase();
+    this->m_Encryption = m_DB->encryption;
 }
 
 Settings SettingsRepository::get(const aegis::snowflake& guildId) {
-    if(m_Cache.has(guildId)) {
-        return m_Cache.get(guildId);
-    } else if(m_InvalidTable) {
-        return defaultSettings;
+    auto client = m_DB->requestClient();
+    auto result = (*client)[m_DB->dbName()]["Settings"].find_one(document{}
+        << "guildId" << guildId.gets()
+        << finalize
+    );
+
+    if(result) {
+        std::string prefix = m_Encryption->decrypt(result->view()["prefix"].get_utf8().value.to_string());
+        if(prefix == "") return defaultSettings;
+        return {
+            prefix,
+            m_Encryption->decrypt(result->view()["roleName"].get_utf8().value.to_string()),
+        };
     }
 
-    pqxx::result res = m_DB->execPrep("getSettings", guildId.gets());
-
-    if (res.size() == 0) { // not found
-        return defaultSettings;
-    }
-
-    pqxx::row row = res[0];
-
-    Settings settings;
-    settings.guildId = row[0].as<unsigned long>();
-    settings.prefix = row[1].c_str();
-    settings.roleName = row[2].c_str();
-
-    m_Cache.save(guildId, settings);
-
-    return settings;
+    return defaultSettings;
 }
 
-void SettingsRepository::save(const Settings& settings) {
-    if(!m_InvalidTable) {
-        auto res = m_DB->execPrep("updateSettings", settings.prefix, settings.roleName, settings.guildId);
-    
-        if (res.affected_rows() == 0) { // settings dont exist yet, create them in the DB
-            m_DB->execPrep("insertSettings", settings.guildId, settings.prefix, settings.roleName);
-        }
-    }
-
-    m_Cache.save(settings.guildId, settings);
+void SettingsRepository::save(const aegis::snowflake& guildId, const Settings& settings) {
+    auto client = m_DB->requestClient();
+    (*client)[m_DB->dbName()]["Settings"].update_one(
+    document{}
+        << "guildId" << guildId.gets()
+    << finalize,
+    document{}
+        << "$set" << open_document
+            << "prefix" << m_Encryption->encrypt(settings.prefix)
+            << "roleName" << m_Encryption->encrypt(settings.roleName)
+        << close_document
+    << finalize,
+    mongocxx::options::update().upsert(true)
+    );
 }

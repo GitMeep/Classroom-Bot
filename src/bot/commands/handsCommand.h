@@ -1,6 +1,6 @@
 #pragma once
 
-#include "command.h"
+#include <bot/commands/command.h>
 
 class HandsCommand : public Command {
 public:

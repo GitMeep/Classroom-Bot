@@ -1,9 +1,13 @@
 #pragma once
 
-#include "cbpch.h"
+#include <cbpch.h>
 
 struct Question {
-    long guildId;
-    long userId;
+    aegis::snowflake userId;
     std::string question;
+
+    Question(std::string userId_, std::string question_) {
+        userId = aegis::snowflake(userId_);
+        question = question_;
+    }
 };

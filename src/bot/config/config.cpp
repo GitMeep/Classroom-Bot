@@ -1,5 +1,5 @@
-#include "config.h"
-#include "../bot.h"
+#include <bot/config/config.h>
+#include <bot/bot.h>
 
 #include <fstream>
 #include <cstdlib>
@@ -20,17 +20,16 @@ json defaultConfig = {
     }
 };
 
-Config::Config() : _log(spdlog::get("classroombot")) {}
+Config::Config() : m_Log(ClassroomBot::get().getLog()) {}
 
-void Config::loadFromFile(std::string path) {
-    _log->info("Loading config from file: " + path);
+void Config::loadFromFile(const std::string& path) {
+    m_Log->info("Loading config from file: " + path);
     std::fstream file;
     file.open(path, std::ios::in);
 
     if(!file.is_open()) {
-        _log->error("Could not open config file, creating default");
-        writeDefaultConfig(path);
-        _config = defaultConfig;
+        m_Log->error("Could not open config file, using default config.");
+        m_Config = defaultConfig;
     } else {
         std::string jsonString;
         file.seekg(0, std::ios::end);
@@ -41,14 +40,14 @@ void Config::loadFromFile(std::string path) {
 
         try {
             json j = json::parse(jsonString);
-            _config = j;
+            m_Config = j;
         } catch (json::parse_error& e) {
-            _log->info("Failed to parse settings: \n" + std::string(e.what()));
+            m_Log->info("Failed to parse settings: \n" + std::string(e.what()));
             throw std::runtime_error("Couldn't load settings! To generate a clean config file, delete your existing one and run the program again.");
         }
     }
     fillEnvVars();
-    _loaded = true;
+    m_Loaded = true;
 }
 
 // check if string is env variable, if it is replace it with the value
@@ -84,30 +83,17 @@ json replaceEnvVars(json& js) {
 
 // searches config for values contained within ${} and replaces it with the environmen variable
 void Config::fillEnvVars() {
-    replaceEnvVars(_config);
+    replaceEnvVars(m_Config);
 }
 
-json Config::getValue(std::string key) {
-    if(_config.count(key) && !_config[key].is_null() && _loaded) {
-        return _config[key];
-    } else {
-        return {};
-    }
+json Config::operator[](const std::string& key) {
+    return m_Config[key];
+}
+
+json Config::get() {
+    return m_Config;
 }
 
 bool Config::isLoaded() {
-    return _loaded;
-}
-
-void Config::writeDefaultConfig(std::string path) {
-    std::fstream file;
-    file.open(path, std::ios::out | std::ios::trunc);
-
-    if(!file.is_open()) {
-        _log->error("Could not create file.");
-        throw std::runtime_error("Could not create config file.");
-    }
-
-    file << defaultConfig.dump(4);
-    file.close();
+    return m_Loaded;
 }

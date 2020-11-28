@@ -1,37 +1,52 @@
-#include "cbpch.h"
+#include <cbpch.h>
 
-#include "bot/bot.h"
+#include <bot/bot.h>
+#include <bot/config/config.h>
 
-#include "bot/commands/questionCommand.h"
-#include "bot/commands/handsCommand.h"
-#include "bot/commands/inviteCommand.h"
-#include "bot/commands/settingsCommad.h"
-#include "bot/commands/pchemCommand.h"
-#include "bot/commands/helpCommand.h"
-#include "bot/commands/muteCommand.h"
+#include <bot/commands/questionCommand.h>
+#include <bot/commands/handsCommand.h>
+#include <bot/commands/inviteCommand.h>
+#include <bot/commands/settingsCommand.h>
+#include <bot/commands/pchemCommand.h>
+#include <bot/commands/helpCommand.h>
+#include <bot/commands/muteCommand.h>
 
-#include "bot/config/config.h"
+#include <execinfo.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <iostream>
 
-int main(int argc, char *argv[])
-{
-    auto log = spdlog::stdout_color_mt("classroombot");
-    log->set_pattern("%^%Y-%m-%d %H:%M:%S.%e [%L] [th#%t]%$ : %v");
-    log->set_level(spdlog::level::trace);
+void print_backtrace(int sig) {
+    printf("Signal: %d", sig);
+    int j, nptrs;
+    void *buffer[100];
+    char **strings;
 
-    std::shared_ptr<Config> config = std::make_shared<Config>();
-    try {
-        config->loadFromFile("config.json");
-    } catch (std::runtime_error& e) {
-        log->error(std::string(e.what()));
-        return 1;
+    nptrs = backtrace(buffer, 100);
+
+    strings = backtrace_symbols(buffer, nptrs);
+    if (strings == NULL) {
+        perror("backtrace_symbols");
+        exit(EXIT_FAILURE);
     }
 
-    std::string token = config->getValue("bot")["token"];
+   for (j = 0; j < nptrs; j++)
+        printf("%s\n", strings[j]);
+
+   free(strings);
+
+   exit(1);
+}
+
+int main() {
+    signal(SIGSEGV, print_backtrace);
+    signal(SIGBUS, print_backtrace);
 
     try
     {
         ClassroomBot& classroomBot = ClassroomBot::get();
-        classroomBot.init(token, config);
+        classroomBot.init();
 
         classroomBot.registerCommand(new QuestionCommand());
         classroomBot.registerCommand(new HandsCommand());
@@ -45,9 +60,10 @@ int main(int argc, char *argv[])
 
         return 0;
     }
-    catch (std::runtime_error &e)
+    catch (std::system_error &e)
     {
-        log->error("Bot failed with error message: \n" + std::string(e.what()));
+        std::cout << "Bot failed with error message: \n" << std::string(e.what()) << std::endl;
+        print_backtrace(0);
         return 1;
     }
 }

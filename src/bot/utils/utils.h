@@ -1,7 +1,7 @@
 #pragma once
 
 #include <aegis.hpp>
-#include "../persistence/repo/settingsRepo.h"
+#include <bot/persistence/repo/settingsRepo.h>
 
-std::string getUsername(aegis::snowflake userId, aegis::snowflake guildId, std::shared_ptr<aegis::core> core);
-bool isTeacher(aegis::snowflake guildId, aegis::snowflake userId, std::shared_ptr<aegis::core> core, std::shared_ptr<SettingsRepository> settings);
+std::string getUsername(const aegis::snowflake& userId, const aegis::snowflake& guildId);
+bool isTeacher(const aegis::snowflake& guildId, const aegis::snowflake& userId);

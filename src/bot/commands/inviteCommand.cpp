@@ -1,9 +1,9 @@
-#include "cbpch.h"
+#include <cbpch.h>
 
-#include "inviteCommand.h"
+#include <bot/commands/inviteCommand.h>
 
 void InviteCommand::call(const std::vector<std::string>& parameters, MessageInfo* current) {
-    _aegisCore->create_dm_message(current->userId, "Invite me to your server using this link: \nhttps://discordapp.com/api/oauth2/authorize?client_id=691945666896855072&permissions=297888850&scope=bot");
+    m_AegisCore->create_dm_message(current->userId, "Invite me to your server using this link: \nhttps://discordapp.com/api/oauth2/authorize?client_id=691945666896855072&permissions=297888850&scope=bot");
 }
 
 CommandInfo InviteCommand::getCommandInfo() {

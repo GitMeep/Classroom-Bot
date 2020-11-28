@@ -1,49 +1,69 @@
-#include "cbpch.h"
+#include <cbpch.h>
 
-#include "commands/command.h"
-#include "config/config.h"
-#include "bot/persistence/db.h"
-#include "persistence/repo/settingsRepo.h"
-#include "persistence/repo/handRepo.h"
-#include "persistence/repo/questionRepo.h"
-#include "persistence/repo/muteRepo.h"
+#include <bot/commands/command.h>
+#include <bot/config/config.h>
+#include <bot/persistence/db.h>
+#include <bot/persistence/repo/settingsRepo.h>
+#include <bot/persistence/repo/handRepo.h>
+#include <bot/persistence/repo/questionRepo.h>
+#include <bot/persistence/repo/muteRepo.h>
 
-#include "bot.h"
+#include <bot/bot.h>
 
 enum ParserException {
     NOT_A_COMMAND,
     EMPTY_COMMAND
 };
 
-void ClassroomBot::init(const std::string& token, const std::shared_ptr<Config>& config) {
-    _log = spdlog::get("classroombot");
-    _log->info("Starting ClassroomBot version " + std::string(BOT_VERSION));
+void ClassroomBot::init() {
+    m_StartupTime = std::chrono::system_clock::now();
 
-    _aegisCore = std::make_shared<aegis::core>(aegis::create_bot_t().token(token));
-    _config = config;
-    _aegisCore->wsdbg = true;
+    m_Log = spdlog::stdout_color_mt("classroombot");
+    m_Log->set_pattern("%^%Y-%m-%d %H:%M:%S.%e [%L] [ClassroomBot] [th#%t]%$ : %v");
+    m_Log->set_level(spdlog::level::trace);
 
-    _aegisCore->set_on_message_create(std::bind(&ClassroomBot::onMessage, this, std::placeholders::_1));
-    _aegisCore->set_on_message_create_dm(std::bind(&ClassroomBot::onMessage, this, std::placeholders::_1));
+    m_Log->info("Starting ClassroomBot version " + std::string(BOT_VERSION));
 
-    if(!_config->isLoaded()) {
+    m_Config = std::make_shared<Config>();
+    try {
+        m_Config->loadFromFile("config.json");
+    } catch (std::runtime_error& e) {
+        m_Log->error(std::string(e.what()));
+        return;
+    }
+
+    if(!m_Config->isLoaded()) {
         throw std::runtime_error("Invalid config supplied to ClassroomBot!");
     }
 
-    nlohmann::json persistence = _config->getValue("persistence");
-    bool persistenceEnabled = persistence["enable"] == "true";
-    std::string connString = persistence["url"];
+    std::string token = m_Config->get()["bot"]["token"];
+    m_AegisCore = std::make_shared<aegis::core>(aegis::create_bot_t()
+        .token(token)
+        .log_level(spdlog::level::debug)
+        .log_format("%^%Y-%m-%d %H:%M:%S.%e [%L] [Aegis] [th#%t]%$ : %v")
+        .intents(
+            aegis::intent::Guilds |
+            //aegis::intent::GuildMembers |
+            aegis::intent::GuildVoiceStates |
+            aegis::intent::GuildMessages |
+            aegis::intent::GuildMessageReactions |
+            aegis::intent::DirectMessages |
+            aegis::intent::DirectMessageReactions
+        ));
 
-    _database = std::make_shared<DB>(connString);
+    m_AegisCore->set_on_message_create(std::bind(&ClassroomBot::onMessage, this, std::placeholders::_1));
+    m_AegisCore->set_on_message_create_dm(std::bind(&ClassroomBot::onMessage, this, std::placeholders::_1));
 
-    _settingsRepo = std::make_shared<SettingsRepository>(_database);
-    _questionRepo = std::make_shared<QuestionRepository>(_database);
-    _handRepo = std::make_shared<HandRepository>(_database);
-    m_MuteRepo = std::make_shared<MuteRepository>(_database);
+    m_Database = std::make_shared<DB>();
+    m_SettingsRepo = std::make_shared<SettingsRepository>();
+    m_QuestionRepo = std::make_shared<QuestionRepository>();
+    m_HandRepo = std::make_shared<HandRepository>();
+    m_MuteRepo = std::make_shared<MuteRepository>();
 
-    m_PresenceTimer = std::make_unique<asio::steady_timer>(_aegisCore->get_io_context(), asio::chrono::minutes(1));
-    asio::post(_aegisCore->get_io_context(), [this] {
-        //m_PresenceTimer->async_wait(std::bind(&ClassroomBot::updatePresence, this));
+    m_CommandHandler = std::make_shared<CommandHandler>();
+
+    m_PresenceTimer = std::make_unique<asio::steady_timer>(m_AegisCore->get_io_context(), asio::chrono::minutes(1));
+    asio::post(m_AegisCore->get_io_context(), [this] {
         updatePresence();
     });
 
@@ -59,24 +79,23 @@ bool ClassroomBot::run() {
     if(!m_Initialized) return m_Initialized;
 
     RestClient::init();
-    _aegisCore->run();
-    _aegisCore->yield();
+    m_AegisCore->run();
+    m_AegisCore->yield();
     RestClient::disable();
 
     return true;
 }
 
 void ClassroomBot::registerCommand(Command* command) {
-    _commandHandler.registerCommand(command);
+    m_CommandHandler->registerCommand(command);
 }
 
 void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
     if(!message.has_user()) return;
     if(&message.get_user() == nullptr) return;
-    if(message.get_user().is_bot()) return;
     if(message.msg.get_content().size() == 0) return;
 
-    std::string prefix = _settingsRepo->get(message.channel.get_guild_id()).prefix;
+    std::string prefix = m_SettingsRepo->get(message.channel.get_guild_id()).prefix;
     if(message.msg.is_dm()) prefix = "?";
 
     std::string content = message.msg.get_content();
@@ -94,31 +113,40 @@ void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
         message.get_user().get_id(),
         message.msg.is_dm()
     };
-    bool success = _commandHandler.parseAndCall(content, &info);
+    bool success = m_CommandHandler->parseAndCall(content, &info);
 
     if (!success) {
         message.channel.create_message("Unknown command");
+        return;
     }
 }
 
 void ClassroomBot::updatePresence() {
-    int guildCount = _aegisCore->get_guild_count();
+    int guildCount = m_AegisCore->get_guild_count();
+    auto now = std::chrono::system_clock::now();
+    auto uptime = std::chrono::duration_cast<std::chrono::hours>(now - m_StartupTime);
+
+    m_Log->info("Uptime: " + std::to_string(uptime.count()) + " hours");
+
     switch (m_PresenceState) {
         case 0:
-            _aegisCore->update_presence("?help", aegis::gateway::objects::activity::activity_type::Watching);
+            m_AegisCore->update_presence("?help", aegis::gateway::objects::activity::activity_type::Watching);
             break;
         
+        case 1:
+            m_AegisCore->update_presence(std::to_string(guildCount) + " servers", aegis::gateway::objects::activity::activity_type::Watching);
+            break;
+
         default:
-            _aegisCore->update_presence(std::to_string(guildCount) + " servers", aegis::gateway::objects::activity::activity_type::Watching);
             break;
     }
 
     m_PresenceState++;
     m_PresenceState = m_PresenceState % 2;
 
-    if(_config->getValue("topgg")["enable"] == "true") {
-        std::string topggToken = _config->getValue("topgg")["token"];
-        std::string topggId = _config->getValue("topgg")["bot_id"];
+    if(m_Config->get()["topgg"]["enable"] == "true") {
+        std::string topggToken = m_Config->get()["topgg"]["token"];
+        std::string topggId = m_Config->get()["topgg"]["bot_id"];
         RestClient::Connection* conn = new RestClient::Connection("https://top.gg");
 
         RestClient::HeaderFields headers;
@@ -128,8 +156,51 @@ void ClassroomBot::updatePresence() {
 
         std::string data = "{\"server_count\": " + std::to_string(guildCount) + "}";
         auto r = conn->post("/api/bots/" + topggId + "/stats", data);
+
+        delete conn;
     }
+
+    m_HandRepo->expire();
+    m_QuestionRepo->expire();
 
     m_PresenceTimer->expires_after(asio::chrono::minutes(1));
     m_PresenceTimer->async_wait(std::bind(&ClassroomBot::updatePresence, this));
+
+}
+
+
+std::shared_ptr<Config> ClassroomBot::getConfig() {
+    return this->m_Config;
+}
+
+std::shared_ptr<aegis::core> ClassroomBot::getAegis() {
+    return this->m_AegisCore;
+}
+
+std::shared_ptr<SettingsRepository> ClassroomBot::getSettingsRepo() {
+    return this->m_SettingsRepo;
+}
+
+std::shared_ptr<QuestionRepository> ClassroomBot::getQuestionRepo() {
+    return this->m_QuestionRepo;
+}
+
+std::shared_ptr<HandRepository> ClassroomBot::getHandRepo() {
+    return this->m_HandRepo;
+}
+
+std::shared_ptr<MuteRepository> ClassroomBot::getMuteRepo() {
+    return this->m_MuteRepo;
+}
+
+std::shared_ptr<DB> ClassroomBot::getDatabase() {
+    return this->m_Database;
+}
+
+std::shared_ptr<spdlog::logger> ClassroomBot::getLog() {
+    return this->m_Log;
+}
+
+std::shared_ptr<CommandHandler> ClassroomBot::getCommandHandler() {
+    return this->m_CommandHandler;
 }

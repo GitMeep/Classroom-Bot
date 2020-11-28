@@ -26,8 +26,8 @@ public:
     virtual CommandInfo getCommandInfo() = 0;
 
 protected:
-    std::shared_ptr<spdlog::logger> _log;
-    std::shared_ptr<aegis::core> _aegisCore;
-    ClassroomBot* _bot;
+    std::shared_ptr<spdlog::logger> m_Log;
+    std::shared_ptr<aegis::core> m_AegisCore;
+    ClassroomBot* m_Bot;
 
 };
