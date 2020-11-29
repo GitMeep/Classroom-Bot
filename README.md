@@ -26,7 +26,7 @@ Got any other ideas? Send me a tweet [@TweetMeepsi](https://twitter.com/TweetMee
 ## Getting started
 To get started using the bot, [invite it to your server](https://discordapp.com/api/oauth2/authorize?client_id=691945666896855072&permissions=297888850&scope=bot) and use the command `?help` to see a list of commands. Use `?help [command]` to get detailed info about a command.
 
-## Building and running
+# Building and running
 You dont need to run the bot yourself, i am already doing it (see the invite link above). But if you want to run it yourself, here's how to do it. Note: this can only be built on linux. If you want to run it on windows, see the "Running with docker" section.
 
 ### Building and Configuring
@@ -99,3 +99,6 @@ If you want to help with development, awesome! Please fork the repo and submit a
 
 ### Trello
 [Trello](https://trello.com/b/owJzJaVt/classroom-bot) is used to keep track of tasks. Mostly just so i can remember what i need to do. If you become a regular contributer, i'll add you to it too, and give you access to the main repo.
+
+# License
+See the [LICENSE](LICENSE.txt) file
