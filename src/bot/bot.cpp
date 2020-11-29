@@ -43,7 +43,7 @@ void ClassroomBot::init() {
         .log_format("%^%Y-%m-%d %H:%M:%S.%e [%L] [Aegis] [th#%t]%$ : %v")
         .intents(
             aegis::intent::Guilds |
-            //aegis::intent::GuildMembers |
+            aegis::intent::GuildMembers |
             aegis::intent::GuildVoiceStates |
             aegis::intent::GuildMessages |
             aegis::intent::GuildMessageReactions |

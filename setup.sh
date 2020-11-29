@@ -25,8 +25,8 @@ sudo make install
 
 # downgrade libssl
 cd ../..
-mkdir lib
-cd lib
+mkdir vendor
+cd vendor
 rm libssl-dev_1.1.1-1ubuntu2.1~18.04.6_amd64.deb
 rm libssl1.1_1.1.1-1ubuntu2.1~18.04.6_amd64.deb
 wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl-dev_1.1.1-1ubuntu2.1~18.04.6_amd64.deb
