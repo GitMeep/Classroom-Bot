@@ -34,7 +34,7 @@ std::set<aegis::snowflake> MuteRepository::getMutedUsers(const aegis::snowflake&
 
     std::set<aegis::snowflake> users;
     for (auto doc : result) {
-        std::string value = doc["userId"].get_utf8().value.to_string();
+        std::string value = doc["userId"].get_string().value.to_string();
         std::string decryptedValue = value;
         users.emplace(decryptedValue);
     }

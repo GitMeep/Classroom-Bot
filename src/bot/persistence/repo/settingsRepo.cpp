@@ -40,11 +40,11 @@ Settings SettingsRepository::get(const aegis::snowflake& guildId) {
     );
 
     if(result) {
-        std::string prefix = m_Encryption->decrypt(result->view()["prefix"].get_utf8().value.to_string());
+        std::string prefix = m_Encryption->decrypt(result->view()["prefix"].get_string().value.to_string());
         if(prefix == "") return defaultSettings;
         return {
             prefix,
-            m_Encryption->decrypt(result->view()["roleName"].get_utf8().value.to_string()),
+            m_Encryption->decrypt(result->view()["roleName"].get_string().value.to_string()),
         };
     }
 

@@ -36,8 +36,8 @@ std::deque<Question> QuestionRepository::get(aegis::snowflake channelId) {
 
     std::deque<Question> questions;
     for(auto doc : result) {
-        std::string userId = doc["userId"].get_utf8().value.to_string();
-        std::string question = doc["question"].get_utf8().value.to_string();
+        std::string userId = doc["userId"].get_string().value.to_string();
+        std::string question = doc["question"].get_string().value.to_string();
         std::string decryptedQuestion = m_Encryption->decrypt(question);
 
         questions.emplace_back(userId, decryptedQuestion);
