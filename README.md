@@ -32,17 +32,21 @@ You dont need to run the bot yourself, i am already doing it (see the invite lin
 ### Building and Configuring
 Note: it is easier to just run the bot as a docker image, see [Running with docker](#Running-with-docker). This procedure is made for ubuntu 20.04, it might not work on other distros.
 
-1. Run the setup script. This will install all the dependencies. This might take a while:
+
+If you are on windows, i suggest using an [ubuntu container to develop in visual studio code](https://code.visualstudio.com/docs/remote/containers). The configuration for this repository already exists in the `.devcontainer` folder. Just press the little icon in the lower left corner of the VSCode window while the docker daemon is running and select `Remote-Container: Open Folder in Container`, then open the repository folder.
+
+Prerequisites:
+You need a Mongo database to run the bot. I suggest using [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) to run one in the cloud. You can also run it locally.
+
+1. After cloning this repo, run the setup script. This will install all the dependencies. It might take a while:
 
 ```
 $ ./setup.sh
 ```
 
-
 2. then you can build the bot
 ```sh
-$ ./premake.sh
-$ make -j3 config=release
+$ make -j4 config=release
 $ cp ./default_config.json ./bin/config.json
 ```
 
