@@ -9,10 +9,10 @@ WORKDIR /usr/src/classroombot
 RUN apt-get install -y wget libicu-dev
 RUN wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl-dev_1.1.1-1ubuntu2.1~18.04.6_amd64.deb http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1-1ubuntu2.1~18.04.6_amd64.deb
 RUN dpkg -i libssl-dev_1.1.1-1ubuntu2.1~18.04.6_amd64.deb libssl1.1_1.1.1-1ubuntu2.1~18.04.6_amd64.deb
-COPY ./vendor/libmongocxx.so /usr/local/lib/libmongocxx.so._noabi
-COPY ./vendor/libbsoncxx.so /usr/local/lib/libbsoncxx.so._noabi
-COPY ./vendor/libbson-1.0.so.0 /usr/local/lib/libbson-1.0.so.0
-COPY ./vendor/libmongoc-1.0.so.0 /usr/local/lib/libmongoc-1.0.so.0
+COPY ./libs/libmongocxx.so /usr/local/lib/libmongocxx.so._noabi
+COPY ./libs/libbsoncxx.so /usr/local/lib/libbsoncxx.so._noabi
+COPY ./libs/libbson-1.0.so.0 /usr/local/lib/libbson-1.0.so.0
+COPY ./libs/libmongoc-1.0.so.0 /usr/local/lib/libmongoc-1.0.so.0
 COPY ./bin/classroombot .
 COPY ./default_config.json ./config.json
 
