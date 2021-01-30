@@ -1,3 +1,4 @@
+#include <cbpch.h>
 #include <bot/utils/utils.h>
 #include <mutex>
 #include <bot/bot.h>
@@ -7,13 +8,16 @@ std::string getUsername(const aegis::snowflake& userId, const aegis::snowflake& 
     auto core = ClassroomBot::get().getAegis();
 
     aegis::user* user = core->find_guild(guildId)->find_member(userId);
-    if (user == nullptr) return "Unknown user";
+    if (user == nullptr) {
+        spdlog::get("classroombot")->error("Couldn't get username of member " + userId.gets() + " in guild " + guildId.gets());
+        return "Unknown user";
+    }
     std::string username = user->get_name(guildId);
     if(username.size()==0) username = user->get_username();
     return username;
 }
 
-bool isTeacher(const aegis::snowflake& guildId, const aegis::snowflake& userId) {
+bool isAdmin(const aegis::snowflake& guildId, const aegis::snowflake& userId) {
     auto guild = ClassroomBot::get().getAegis()->find_guild(guildId);
     auto settings = ClassroomBot::get().getSettingsRepo();
     std::string adminRole = settings->get(guildId).roleName;

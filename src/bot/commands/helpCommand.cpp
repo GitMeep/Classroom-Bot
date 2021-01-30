@@ -5,7 +5,7 @@
 
 #include <bot/commands/commandhandler/commandHandler.h>
 
-void HelpCommand::call(const std::vector<std::string>& parameters, MessageInfo* current) {
+void HelpCommand::call(const std::vector<std::string>& parameters, CommandContext* ctx) {
     std::string commandName = "";
     if (parameters.size()) {
         commandName = parameters[0];
@@ -13,7 +13,7 @@ void HelpCommand::call(const std::vector<std::string>& parameters, MessageInfo* 
 
     std::vector<CommandInfo> commands = m_Bot->getCommandHandler()->getInfo(commandName);
     if (!commands.size()) {
-        m_AegisCore->create_message(current->channelId, "Unknown command.");
+        ctx->respond("unknown_cmd");
         return;
     }
 
@@ -21,8 +21,8 @@ void HelpCommand::call(const std::vector<std::string>& parameters, MessageInfo* 
 
     bool detail = commandName != "";
     if (detail) {
-        /*if(!current->isDm) {
-            m_AegisCore->create_message(current->channelId, "Help about a specific command is only supported in DM's.");
+        /*if(!isAdmin->isDm) {
+            m_AegisCore->create_message(ctx->getChannelId(), "Help about a specific command is only supported in DM's.");
             return;
         }*/
         CommandInfo command = commands[0];
@@ -69,7 +69,11 @@ void HelpCommand::call(const std::vector<std::string>& parameters, MessageInfo* 
         }
     }
 
-    m_AegisCore->create_message_embed(current->channelId, "", embed);
+    aegis::create_message_t msg;
+    msg.content("");
+    msg.embed(embed);
+    msg.user_id(ctx->getUserId());
+    m_AegisCore->create_dm_message(msg);
 }
 
 CommandInfo HelpCommand::getCommandInfo() {

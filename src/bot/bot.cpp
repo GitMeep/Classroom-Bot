@@ -7,6 +7,7 @@
 #include <bot/persistence/repo/handRepo.h>
 #include <bot/persistence/repo/questionRepo.h>
 #include <bot/persistence/repo/muteRepo.h>
+#include <bot/localization/localization.h>
 
 #include <bot/bot.h>
 
@@ -39,7 +40,11 @@ void ClassroomBot::init() {
     std::string token = m_Config->get()["bot"]["token"];
     m_AegisCore = std::make_shared<aegis::core>(aegis::create_bot_t()
         .token(token)
-        .log_level(spdlog::level::debug)
+    #ifdef DEBUG
+        .log_level(spdlog::level::trace)
+    #else
+        .log_level(spdlog::level::warn)
+    #endif
         .log_format("%^%Y-%m-%d %H:%M:%S.%e [%L] [Aegis] [th#%t]%$ : %v")
         .intents(
             aegis::intent::Guilds |
@@ -59,6 +64,7 @@ void ClassroomBot::init() {
     m_QuestionRepo = std::make_shared<QuestionRepository>();
     m_HandRepo = std::make_shared<HandRepository>();
     m_MuteRepo = std::make_shared<MuteRepository>();
+    m_Localization = std::make_shared<Localization>();
 
     m_CommandHandler = std::make_shared<CommandHandler>();
 
@@ -106,14 +112,14 @@ void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
     if(isHelp) prefix = "?";
     content = content.substr(prefix.length());
 
-    MessageInfo info = {
+    CommandContext ctx(
         message.msg.get_id(),
         message.channel.get_id(),
         message.channel.get_guild_id(),
         message.get_user().get_id(),
         message.msg.is_dm()
-    };
-    bool success = m_CommandHandler->parseAndCall(content, &info);
+    );
+    bool success = m_CommandHandler->parseAndCall(content, &ctx);
 
     if (!success) {
         message.channel.create_message("Unknown command");
@@ -203,4 +209,8 @@ std::shared_ptr<spdlog::logger> ClassroomBot::getLog() {
 
 std::shared_ptr<CommandHandler> ClassroomBot::getCommandHandler() {
     return this->m_CommandHandler;
+}
+
+std::shared_ptr<Localization> ClassroomBot::getLocalization() {
+    return this->m_Localization;
 }

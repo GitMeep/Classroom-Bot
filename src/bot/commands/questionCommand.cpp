@@ -4,16 +4,14 @@
 #include <bot/persistence/repo/questionRepo.h>
 #include <bot/persistence/model/question.h>
 
-const std::string actionMsg = "Please enter a valid action! Options are: ```ask, list, next, clear```";
-
-void QuestionCommand::call(const std::vector<std::string>& parameters, MessageInfo* current) {
-    if(current->isDm) {
-        m_AegisCore->create_dm_message(current->userId, "Command not supported in DM's");
+void QuestionCommand::call(const std::vector<std::string>& parameters, CommandContext* ctx) {
+    if(ctx->isDM()) {
+        ctx->respond("no_dm");
         return;
     }
 
     if(parameters.size() == 0) {
-        m_AegisCore->create_message(current->channelId, actionMsg);
+        ctx->respond("question_usage");
         return;
     }
 
@@ -26,52 +24,51 @@ void QuestionCommand::call(const std::vector<std::string>& parameters, MessageIn
         while(i != parameters.end()) {
             ss << *i++ << " ";
         }
-        ask(current, ss.str());
+        ask(ctx, ss.str());
     }
 
     else if(verb == "list") {
-        list(current);
+        list(ctx);
     }
 
     else if(verb == "next") {
-        if(!isTeacher(current->guildId, current->userId)) {
-            m_AegisCore->create_message(current->channelId, "You must have the admin role to use this command.");
+        if(!ctx->isAdmin()) {
+            ctx->respond("admin_required");
         } else {
-            next(current);
+            next(ctx);
         }
     }
 
     else if(verb == "clear") {
-        if(!isTeacher(current->guildId, current->userId)) {
-            m_AegisCore->create_message(current->channelId, "You must have the admin role to use this command.");
+        if(!ctx->isAdmin()) {
+            ctx->respond("admin_required");
         } else {
-            clear(current);
+            clear(ctx);
         }
     }
 
     else {
-        m_AegisCore->create_message(current->channelId, actionMsg);
+        ctx->respond("question_usage");
     }
 }
 
-void QuestionCommand::ask(MessageInfo* current, std::string question) {
-    auto questions = m_Bot->getQuestionRepo()->get(current->guildId);
+void QuestionCommand::ask(CommandContext* ctx, std::string question) {
+    auto questions = m_Bot->getQuestionRepo()->get(ctx->getChannelId());
     
     if(questions.size() >= 50) {
-        m_AegisCore->create_message(current->channelId, "Queue limit reached (50 questions)");
+        ctx->respond("question_limit");
         return;
     }
     
-    m_Bot->getQuestionRepo()->ask(current->channelId, current->userId, question);
-
-    m_AegisCore->find_channel(current->channelId)->create_reaction(aegis::create_reaction_t().message_id(current->messageId).emoji_text("%E2%9C%85"));
+    m_Bot->getQuestionRepo()->ask(ctx->getChannelId(), ctx->getUserId(), question);
+    ctx->confirm();
 }
 
-void QuestionCommand::list(MessageInfo* current) {
-    auto questions = m_Bot->getQuestionRepo()->get(current->channelId);
+void QuestionCommand::list(CommandContext* ctx) {
+    auto questions = m_Bot->getQuestionRepo()->get(ctx->getChannelId());
 
     if(!questions.size()) {
-        m_AegisCore->create_message(current->channelId, "No questions");
+        ctx->respond("no_questions");
         return;
     }
 
@@ -80,34 +77,34 @@ void QuestionCommand::list(MessageInfo* current) {
 
     auto it = questions.cbegin();
     while (it != questions.cend()) {
-        ss << getUsername(it->userId, current->guildId) << ": " << it->question << std::endl;
+        ss << getUsername(it->userId, ctx->getGuildId()) << ": " << it->question << std::endl;
         it++;
     }
 
     ss << "```" << std::endl;
 
-    m_AegisCore->create_message(current->channelId, ss.str());
+    ctx->respondUnlocalized(ss.str());
 }
 
-void QuestionCommand::next(MessageInfo* current) {
-    auto questions = m_Bot->getQuestionRepo()->get(current->channelId);
+void QuestionCommand::next(CommandContext* ctx) {
+    auto questions = m_Bot->getQuestionRepo()->get(ctx->getChannelId());
 
     if(questions.size() == 0) {
-        m_AegisCore->create_message(current->channelId, "No questions");
+        ctx->respond("no_questions");
         return;
     }
 
     Question question = questions.front();
     
-    m_Bot->getQuestionRepo()->dismiss(current->channelId, question.userId);
+    m_Bot->getQuestionRepo()->dismiss(ctx->getChannelId(), question.userId);
 
-    std::string username = getUsername(question.userId, current->guildId);
-    m_AegisCore->create_message(current->channelId, fmt::format("```{0}: {1}```", username, question.question));
+    std::string username = getUsername(question.userId, ctx->getGuildId());
+    ctx->respondUnlocalized(fmt::format("```{0}: {1}```", username, question.question));
 }
 
-void QuestionCommand::clear(MessageInfo* current) {
-    m_Bot->getQuestionRepo()->clear(current->channelId);
-    m_AegisCore->find_channel(current->channelId)->create_reaction(aegis::create_reaction_t().message_id(current->messageId).emoji_text("%E2%9C%85"));
+void QuestionCommand::clear(CommandContext* ctx) {
+    m_Bot->getQuestionRepo()->clear(ctx->getChannelId());
+    ctx->confirm();
 }
 
 

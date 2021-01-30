@@ -9,7 +9,7 @@
  * @param messageInfo The message info object containing the author, channel, guild, etc.
  * @returns True, if command was found and called, false otherwise
 */
-bool CommandHandler::parseAndCall(const std::string& input, MessageInfo* messageInfo) {
+bool CommandHandler::parseAndCall(const std::string& input, CommandContext* ctx) {
     std::vector<std::string> parameters;
     std::stringstream ss;
     ss << input;
@@ -24,7 +24,7 @@ bool CommandHandler::parseAndCall(const std::string& input, MessageInfo* message
         parameters.emplace_back(param);
     }
 
-    return callCommand(commandName, parameters, messageInfo);
+    return callCommand(commandName, parameters, ctx);
 }
 
 /**
@@ -35,7 +35,7 @@ bool CommandHandler::parseAndCall(const std::string& input, MessageInfo* message
  * @param messageInfo Message info object
  * @returns true, if the command was found, false if not
  */
-bool CommandHandler::callCommand(const std::string& name, const std::vector<std::string>& parameters, MessageInfo* messageInfo) {
+bool CommandHandler::callCommand(const std::string& name, const std::vector<std::string>& parameters, CommandContext* ctx) {
     std::string commandName = name;
     std::transform(commandName.begin(), commandName.end(), commandName.begin(), [](unsigned char c){ return std::tolower(c); }); // make sure name is lowercase
 
@@ -47,7 +47,7 @@ bool CommandHandler::callCommand(const std::string& name, const std::vector<std:
 
     if(!m_Commands.count(commandName)) return false;
 
-    m_Commands[commandName]->call(parameters, messageInfo);
+    m_Commands[commandName]->call(parameters, ctx);
     return true;
 }
 

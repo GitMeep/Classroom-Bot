@@ -9,6 +9,7 @@ class QuestionRepository;
 class HandRepository;
 class MuteRepository;
 class DB;
+class Localization;
 
 namespace aegis {
     class core;
@@ -45,6 +46,7 @@ public:
     std::shared_ptr<DB> getDatabase();
     std::shared_ptr<spdlog::logger> getLog();
     std::shared_ptr<CommandHandler> getCommandHandler();
+    std::shared_ptr<Localization> getLocalization();
 
 private:
     void updatePresence();
@@ -57,6 +59,7 @@ private:
     std::shared_ptr<MuteRepository> m_MuteRepo;
     std::shared_ptr<DB> m_Database;
     std::shared_ptr<CommandHandler> m_CommandHandler;
+    std::shared_ptr<Localization> m_Localization;
 
     std::shared_ptr<spdlog::logger> m_Log;
     std::unique_ptr<asio::steady_timer> m_PresenceTimer;

@@ -1,8 +1,8 @@
 #!/bin/sh
 
 ./premake.sh
-make clean config=release
-make -j3 config=release
+#make clean config=release
+make -j4 config=release
 
 sudo heroku container:login
 sudo heroku container:push worker --app questions-bot

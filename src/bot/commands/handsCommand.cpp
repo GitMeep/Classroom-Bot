@@ -1,161 +1,159 @@
 #include <cbpch.h>
 
 #include <bot/commands/handsCommand.h>
+#include <bot/localization/localization.h>
 #include <bot/utils/utils.h>
 #include <bot/bot.h>
 #include <bot/persistence/repo/handRepo.h>
 
 const std::string actionMsg = "Please enter a valid action. Options are: ```up, down, next, pick, random, list, clear```";
 
-void HandsCommand::call(const std::vector<std::string>& parameters, MessageInfo* current) {
+void HandsCommand::call(const std::vector<std::string>& parameters, CommandContext* ctx) {
     
-    if(current->isDm) {
-        m_AegisCore->create_dm_message(current->userId, "Command not supported in DM's");
+    if(ctx->isDM()) {
+        ctx->respond("no_dm");
         return;
     }
 
     if(parameters.size() == 0) {
-        m_AegisCore->create_message(current->channelId, actionMsg);
+        ctx->respond("hand_usage");
         return;
     }
 
     std::string verb = parameters[0];
     if(verb == "up") {
-        up(current);
+        up(ctx);
     }
 
     else if(verb == "down") {
-        down(current);
+        down(ctx);
     }
 
     else if(verb == "list") {
-        list(current);
+        list(ctx);
     }
 
     else if(verb == "next") {
-        if(!isTeacher(current->guildId, current->userId)) {
-            m_AegisCore->create_message(current->channelId, "You must have the admin role to use this command.");
+        if(!ctx->isAdmin()) {
+            ctx->respond("admin_required");
             return;
         } else {
-            next(current);
+            next(ctx);
         }
     }
 
     else if(verb == "random") {
-        if(!isTeacher(current->guildId, current->userId)) {
-            m_AegisCore->create_message(current->channelId, "You must have the admin role to use this command.");
+        if(!ctx->isAdmin()) {
+            ctx->respond("admin_required");
             return;
         } else {
-            random(current);
+            random(ctx);
         }
     }
 
     else if(verb == "clear") {
-        if(!isTeacher(current->guildId, current->userId)) {
-            m_AegisCore->create_message(current->channelId, "You must have the admin role to use this command.");
+        if(!ctx->isAdmin()) {
+            ctx->respond("admin_required");
             return;
         } else {
-            clear(current);
+            clear(ctx);
         }
     } else if(verb == "pick") {
-        if(!isTeacher(current->guildId, current->userId)) {
-            m_AegisCore->create_message(current->channelId, "You must have the admin role to use this command.");
+        if(!ctx->isAdmin()) {
+            ctx->respond("admin_required");
             return;
         } else {
             if (parameters.size() < 2) {
-                m_AegisCore->create_message(current->channelId, "Please enter the number to pick.");
+                ctx->respond("pick_number");
                 return;
             }
             int number;
             try {
                 number = std::stoi(parameters[1]);
             } catch(std::invalid_argument) {
-                m_AegisCore->create_message(current->channelId, "Please enter a valid number");
+                ctx->respond("valid_number");
             } catch(std::out_of_range) {
-                m_AegisCore->create_message(current->channelId, "Please enter a reasonable number");
+                ctx->respond("reasonable_number");
             }
-            pick(current, number);
+            pick(ctx, number);
         }
     } else {
-        m_AegisCore->create_message(current->channelId, actionMsg);
+        ctx->respond("hand_usage");
     }
 }
 
-void HandsCommand::up(MessageInfo* current) {
-    auto hands = m_Bot->getHandRepo()->get(current->channelId);
+void HandsCommand::up(CommandContext* ctx) {
+    auto hands = m_Bot->getHandRepo()->get(ctx->getChannelId());
 
     for(auto hand : hands) {
         auto handUser = hand;
-        if(current->userId.get() == handUser) {
-            m_AegisCore->create_message(current->channelId, "You already have your hand raised.");
+        if(ctx->getUserId().get() == handUser) {
+            ctx->respond("already_raised");
             return;
         }
     }
 
     if (hands.size() >= 50) {
-        m_AegisCore->create_message(current->channelId, "Queue limit reached (50 hands)");
+        ctx->respond("hand_limit");
         return;
     }
 
-    m_Bot->getHandRepo()->raise(current->channelId, current->userId);
-
-    m_AegisCore->find_channel(current->channelId)->create_reaction(aegis::create_reaction_t().message_id(current->messageId).emoji_text("%E2%9C%85"));
+    m_Bot->getHandRepo()->raise(ctx->getChannelId(), ctx->getUserId());
+    ctx->confirm();
 }
 
-void HandsCommand::down(MessageInfo* current) {
-    m_Bot->getHandRepo()->lower(current->channelId, current->userId);
-
-    m_AegisCore->find_channel(current->channelId)->create_reaction(aegis::create_reaction_t().message_id(current->messageId).emoji_text("%E2%9C%85"));
+void HandsCommand::down(CommandContext* ctx) {
+    m_Bot->getHandRepo()->lower(ctx->getChannelId(), ctx->getUserId());
+    ctx->confirm();
 }
 
-void HandsCommand::next(MessageInfo* current) {
-    auto hands = m_Bot->getHandRepo()->get(current->channelId);
+void HandsCommand::next(CommandContext* ctx) {
+    auto hands = m_Bot->getHandRepo()->get(ctx->getChannelId());
 
     if(!hands.size()) {
-        m_AegisCore->create_message(current->channelId, "No hands up");
+        ctx->respond("no_hands");
         return;
     }
 
     aegis::snowflake user = hands.front();
-    std::string username = getUsername(user, current->guildId);
+    std::string username = getUsername(user, ctx->getGuildId());
 
-    m_Bot->getHandRepo()->lower(current->channelId, user);
-
-    m_AegisCore->create_message(current->channelId, "```" + username + "```");
+    m_Bot->getHandRepo()->lower(ctx->getChannelId(), user);
+    ctx->respondUnlocalized("```" + username + "```");
 }
 
-void HandsCommand::clear(MessageInfo* current) {
-    m_Bot->getHandRepo()->clear(current->channelId);
-
-    m_AegisCore->find_channel(current->channelId)->create_reaction(aegis::create_reaction_t().message_id(current->messageId).emoji_text("%E2%9C%85"));
+void HandsCommand::clear(CommandContext* ctx) {
+    m_Bot->getHandRepo()->clear(ctx->getChannelId());
+    ctx->confirm();
 }
 
-void HandsCommand::list(MessageInfo* current) {
-    auto hands = m_Bot->getHandRepo()->get(current->channelId);
+void HandsCommand::list(CommandContext* ctx) {
+    auto hands = m_Bot->getHandRepo()->get(ctx->getChannelId());
 
     if(!hands.size()) {
-        m_AegisCore->create_message(current->channelId, "No hands up");
+        ctx->respond("no_hands");
         return;
     }
     std::stringstream ss;
-    ss << "Users with their hand up:```";
+    ss << ClassroomBot::get().getLocalization()->getString("eng", "hand_up_users") + ":```";
 
     int number = 1;
     auto it = hands.begin();
+    auto guildId = ctx->getGuildId();
     while (it != hands.end()) {
-        ss << number << ": " << getUsername(*it, current->guildId) << "\n";
+        ss << number << ": " << getUsername(*it, guildId) << "\n";
         it++;
         number++;
     }
     ss << "```\n";
-    m_AegisCore->create_message(current->channelId, ss.str());
+    ctx->respondUnlocalized(ss.str());
 }
 
-void HandsCommand::random(MessageInfo* current) {
-    auto hands = m_Bot->getHandRepo()->get(current->channelId);
+void HandsCommand::random(CommandContext* ctx) {
+    auto hands = m_Bot->getHandRepo()->get(ctx->getChannelId());
 
     if(!hands.size()) {
-        m_AegisCore->create_message(current->channelId, "No hands up");
+        ctx->respond("no_hands");
         return;
     }
 
@@ -169,28 +167,28 @@ void HandsCommand::random(MessageInfo* current) {
     }
 
     aegis::snowflake user = *it;
-    std::string username = getUsername(user, current->guildId);
+    std::string username = getUsername(user, ctx->getGuildId());
 
-    m_Bot->getHandRepo()->lower(current->guildId, user);
+    m_Bot->getHandRepo()->lower(ctx->getChannelId(), user);
 
-    m_AegisCore->create_message(current->channelId, "```" + username + "```");
+    ctx->respondUnlocalized("```" + username + "```");
 }
 
-void HandsCommand::pick(MessageInfo* current, int number) {
-    auto hands = m_Bot->getHandRepo()->get(current->channelId);
+void HandsCommand::pick(CommandContext* ctx, int number) {
+    auto hands = m_Bot->getHandRepo()->get(ctx->getChannelId());
 
     if(!hands.size()) {
-        m_AegisCore->create_message(current->channelId, "No one has their hand raised.");
+        ctx->respond("no_hands");
         return;
     }
 
     if(number > hands.size()) {
-        m_AegisCore->create_message(current->channelId, "There aren't that many users with their hands raised");
+        ctx->respond("hand_oor");
         return;
     }
 
     if(number < 1) {
-        m_AegisCore->create_message(current->channelId, "Please enter a number above 0.");
+        ctx->respond("above_zero");
         return;
     }
 
@@ -202,11 +200,11 @@ void HandsCommand::pick(MessageInfo* current, int number) {
     }
 
     aegis::snowflake user = *it;
-    std::string username = getUsername(user, current->guildId);
+    std::string username = getUsername(user, ctx->getGuildId());
     
-    m_Bot->getHandRepo()->lower(current->guildId, user);
+    m_Bot->getHandRepo()->lower(ctx->getChannelId(), user);
 
-    m_AegisCore->create_message(current->channelId, "```" + username + "```");
+    ctx->respondUnlocalized("```" + username + "```");
 }
 
 CommandInfo HandsCommand::getCommandInfo() {

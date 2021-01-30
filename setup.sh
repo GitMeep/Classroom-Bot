@@ -1,6 +1,6 @@
 #!/bin/sh
-sudo apt-get update
-sudo apt-get install -y libssl-dev zlib1g libpq-dev libcurl4-openssl-dev libcurl4 automake libtool make g++ g++-9 libcrypto++-dev libboost-all-dev libcrypto++-dev libfmt-dev wget cmake libssl-dev libsasl2-dev gdb
+sudo apt update
+sudo apt install -y libssl-dev zlib1g libpq-dev libcurl4-openssl-dev libcurl4 automake libtool make g++ g++-9 libcrypto++-dev libboost-all-dev libcrypto++-dev libfmt-dev wget cmake libssl-dev libsasl2-dev gdb curl
 
 # download submodules (aegis.cpp and restclient-cpp)
 git submodule update --init --recursive
@@ -28,11 +28,7 @@ sudo make install
 cd ../..
 mkdir vendor
 cd vendor
-rm libssl-dev_1.1.1-1ubuntu2.1~18.04.6_amd64.deb
-rm libssl1.1_1.1.1-1ubuntu2.1~18.04.6_amd64.deb
-wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl-dev_1.1.1-1ubuntu2.1~18.04.6_amd64.deb
-wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1-1ubuntu2.1~18.04.6_amd64.deb
-sudo dpkg -i libssl-dev_1.1.1-1ubuntu2.1~18.04.6_amd64.deb libssl1.1_1.1.1-1ubuntu2.1~18.04.6_amd64.deb
+./downgrade_libss.sh
 
 # libmongoc
 if [ ! -d "./mongo/" ]; then

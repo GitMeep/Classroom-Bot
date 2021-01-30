@@ -4,8 +4,8 @@
 
 class CommandHandler {
 public:
-    bool parseAndCall(const std::string& input, MessageInfo* messageInfo);
-    bool callCommand(const std::string& name, const std::vector<std::string>& parameters, MessageInfo* messageInfo);
+    bool parseAndCall(const std::string& input, CommandContext* ctx);
+    bool callCommand(const std::string& name, const std::vector<std::string>& parameters, CommandContext* ctx);
     void registerCommand(Command* command);
     std::vector<CommandInfo> getInfo(const std::string& commandName);
 

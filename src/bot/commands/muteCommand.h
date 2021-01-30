@@ -9,7 +9,7 @@ public:
     MuteCommand() : Command::Command() {
         m_AegisCore->set_on_voice_state_update(std::bind(&MuteCommand::onVoiceStateUpdate, this, std::placeholders::_1));
     }
-    void call(const std::vector<std::string>& parameters, MessageInfo* current);
+    void call(const std::vector<std::string>& parameters, CommandContext* ctx);
     CommandInfo getCommandInfo();
 
 private:

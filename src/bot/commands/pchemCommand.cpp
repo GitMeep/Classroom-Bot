@@ -6,9 +6,9 @@
 const std::string REST_URL = "https://pubchem.ncbi.nlm.nih.gov/rest/pug";
 const std::string VIEW_URL = "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view";
 
-void PchemCommand::call(const std::vector<std::string>& parameters, MessageInfo* current) {
+void PchemCommand::call(const std::vector<std::string>& parameters, CommandContext* ctx) {
     if(parameters.size() < 1) {
-        m_AegisCore->create_message(current->channelId, "You need to enter a query.");
+        m_AegisCore->create_message(ctx->getChannelId(), "You need to enter a query.");
         return;
     }
 
@@ -22,7 +22,7 @@ void PchemCommand::call(const std::vector<std::string>& parameters, MessageInfo*
         param++;
     }
 
-    m_AegisCore->find_channel(current->channelId)->create_reaction(aegis::create_reaction_t().message_id(current->messageId).emoji_text("%E2%9C%85"));
+    ctx->waitTyping();
 
     std::string cid;
     try {
@@ -34,7 +34,7 @@ void PchemCommand::call(const std::vector<std::string>& parameters, MessageInfo*
     }
     
     if(cid == "") {
-        m_AegisCore->create_message(current->channelId, "Couldn't find that compound. Try entering a CID or name.");
+        ctx->respond("comp_not_found");
         return;
     }
 
@@ -85,8 +85,8 @@ void PchemCommand::call(const std::vector<std::string>& parameters, MessageInfo*
         {"footer", {{"text", "GHS reference: " + res.ghsReference}}}
     };
 
-    auto response = m_AegisCore->create_message_embed(current->channelId, "", embed);
-
+    ctx->respondEmbedUnlocalized("", embed);
+    m_AegisCore->find_channel(ctx->getChannelId())->delete_own_reaction(ctx->getMessageId(), "⌛");
 }
 
 std::string PchemCommand::getCID(const std::string& query) {

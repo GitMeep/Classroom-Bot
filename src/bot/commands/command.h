@@ -7,12 +7,35 @@ struct CommandInfo {
     std::vector<std::string> options;
 };
 
-struct MessageInfo {
-    aegis::snowflake messageId;
-    aegis::snowflake channelId;
-    aegis::snowflake guildId;
-    aegis::snowflake userId;
-    bool isDm;
+class CommandContext {
+public:
+    CommandContext(const aegis::snowflake& messageId, const aegis::snowflake& channelId, const aegis::snowflake& guildId, const aegis::snowflake& userId, bool isDM);
+
+    void respond(const std::string& strName);
+    void respondEmbed(const std::string& strName, const nlohmann::json& embed);
+    void respondUnlocalized(const std::string& message);
+    void respondEmbedUnlocalized(const std::string& message, const nlohmann::json& embed);
+    void confirm();
+    void deny();
+    void wait();
+    void mute();
+    void unmute();
+    void waitTyping();
+
+    bool isDM();
+    bool isAdmin();
+
+    aegis::snowflake getGuildId();
+    aegis::snowflake getMessageId();
+    aegis::snowflake getUserId();
+    aegis::snowflake getChannelId();
+
+private:
+    aegis::snowflake m_MessageId;
+    aegis::snowflake m_ChannelId;
+    aegis::snowflake m_GuildId;
+    aegis::snowflake m_UserId;
+    bool m_IsDM;
 };
 
 class ClassroomBot;
@@ -21,7 +44,7 @@ class Command {
 public:
     Command();
 
-    virtual void call(const std::vector<std::string>& parameters, MessageInfo* current) = 0;
+    virtual void call(const std::vector<std::string>& parameters, CommandContext* ctx) = 0;
 
     virtual CommandInfo getCommandInfo() = 0;
 

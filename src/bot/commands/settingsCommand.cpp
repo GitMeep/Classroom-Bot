@@ -4,42 +4,42 @@
 #include <bot/commands/settingsCommand.h>
 #include <bot/bot.h>
 
-void SettingsCommand::call(const std::vector<std::string>& parameters, MessageInfo* current) {
-    if(current->isDm) {
-        m_AegisCore->create_dm_message({current->userId, "Command not supported in DM's."});
+void SettingsCommand::call(const std::vector<std::string>& parameters, CommandContext* ctx) {
+    if(ctx->isDM()) {
+        ctx->respond("no_dm");
         return;
     }
 
     if(parameters.size() == 0) {
-        m_AegisCore->create_message(current->channelId, "Command has format: settings set [setting] [value] \nValid settings are `prefix` and `role`.");
+        ctx->respond("settings_usage");
         return;
     }
 
     std::string verb = parameters[0];
     if(verb == "set") {
         if(parameters.size() < 3) {
-            m_AegisCore->create_message(current->channelId, "Command has format: settings set [setting] [value] \nValid settings are `prefix` and `role`.");
+            ctx->respond("settings_usage");
             return;
         }
-        set(current, current->guildId, parameters[1], parameters[2]);
+        set(ctx, ctx->getGuildId(), parameters[1], parameters[2]);
     }
 
     if(verb == "get") {
-        get(current, current->guildId);
+        get(ctx, ctx->getGuildId());
     }
 
 }
 
-void SettingsCommand::set(MessageInfo* current, const aegis::snowflake& guildId, const std::string& name, const std::string& value) {
-    if(!isTeacher(current->guildId, current->userId)) {
-        m_AegisCore->create_message(current->channelId, "You must have the admin role to use this command.");
+void SettingsCommand::set(CommandContext* ctx, const aegis::snowflake& guildId, const std::string& name, const std::string& value) {
+    if(!ctx->isAdmin()) {
+        ctx->respond("admin_required");
         return;
     }
 
     if(value.length() >= 3) {
         std::string beginning = value.substr(0, 3);
         if(beginning == "<@!" || beginning == "<@&") {
-            m_AegisCore->create_message(current->channelId, "Please enter something without @ in front.");
+            ctx->respond("no_att");
             return;
         }
     }
@@ -51,19 +51,19 @@ void SettingsCommand::set(MessageInfo* current, const aegis::snowflake& guildId,
     } else if(name == "role") {
         settings.roleName = value;
     } else {
-        m_AegisCore->create_message(current->channelId, "Please enter a valid setting. Options are: ```prefix, role```");
+        ctx->respond("settings_usage");
         return;
     }
 
     m_Bot->getSettingsRepo()->save(guildId, settings);
-    m_AegisCore->find_channel(current->channelId)->create_reaction(aegis::create_reaction_t().message_id(current->messageId).emoji_text("%E2%9C%85"));
+    ctx->confirm();
 }
 
-void SettingsCommand::get(MessageInfo* current, const aegis::snowflake& guildId) {
+void SettingsCommand::get(CommandContext* ctx, const aegis::snowflake& guildId) {
     Settings settings = m_Bot->getSettingsRepo()->get(guildId);
 
     nlohmann::json embed {
-        {"title", "Settings for " + m_AegisCore->find_guild(current->guildId)->get_name()},
+        {"title", "Settings for " + m_AegisCore->find_guild(ctx->getGuildId())->get_name()},
         {"fields", nlohmann::json::array({
             {
                 {"name", "Prefix"},
@@ -76,7 +76,7 @@ void SettingsCommand::get(MessageInfo* current, const aegis::snowflake& guildId)
         })}
     };
 
-    m_AegisCore->create_message_embed(current->channelId, "", embed);
+    m_AegisCore->create_message_embed(ctx->getChannelId(), "", embed);
 }
 
 CommandInfo SettingsCommand::getCommandInfo() {

@@ -36,7 +36,7 @@ std::list<aegis::snowflake> HandRepository::get(const aegis::snowflake& channelI
 
     std::list<aegis::snowflake> hands;
     for(auto doc : result) {
-        std::string value = doc["userId"].get_string().value.to_string();
+        std::string value = doc["userId"].get_utf8().value.to_string();
         hands.emplace_back(value);
     }
 

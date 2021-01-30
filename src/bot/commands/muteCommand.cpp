@@ -4,31 +4,48 @@
 
 #include <bot/utils/utils.h>
 
-void MuteCommand::call(const std::vector<std::string>& parameters, MessageInfo* current) {
-    if(current->isDm) {
-        m_AegisCore->create_dm_message(current->userId, "Command not supported in DM's");
+void MuteCommand::call(const std::vector<std::string>& parameters, CommandContext* ctx) {
+    if(ctx->isDM()) {
+        ctx->respond("no_dm");
         return;
     }
 
-    if(!isTeacher(current->guildId, current->userId)) {
-        m_AegisCore->find_channel(current->channelId)->create_message("You are not a teacher.");
+    if(!ctx->isAdmin()) {
+        ctx->respond("admin_required");
         return;
     }
     
-    auto voiceStates = m_AegisCore->find_guild(current->guildId)->get_voicestates();
-    if(!voiceStates.count(current->userId)) {
-        m_AegisCore->find_channel(current->channelId)->create_message("You are not in a voice channel.");
+    auto voiceStates = m_AegisCore->find_guild(ctx->getGuildId())->get_voicestates();
+    if(!voiceStates.count(ctx->getUserId()) && parameters.size() < 1) {
+        ctx->respond("not_in_vc");
         return;
     }
 
-    aegis::snowflake voiceChannel = voiceStates[current->userId].channel_id;
+    aegis::snowflake voiceChannel;
+    if(parameters.size() < 1) {
+        voiceChannel = voiceStates[ctx->getUserId()].channel_id;
+    } else {
+        try {
+            voiceChannel = aegis::snowflake(parameters[0]);
+        } catch (std::invalid_argument& e) {
+            ctx->respond("invald_id");
+            return;
+        }
+        if(
+        m_AegisCore->find_guild(ctx->getGuildId())->find_channel(voiceChannel) == nullptr ||
+        m_AegisCore->find_guild(ctx->getGuildId())->find_channel(voiceChannel)->get_type() != aegis::gateway::objects::channel::channel_type::Voice) {
+            ctx->respond("vc_not_exist");
+            return;
+        }
+    }
+    
 
     if(m_Bot->getMuteRepo()->isChannelMuted(voiceChannel)) {
-        changeChannelMuteState(current->guildId, voiceChannel, false);
-        m_AegisCore->find_channel(current->channelId)->create_reaction(current->messageId, "%F0%9F%94%88"); // 🔈
+        changeChannelMuteState(ctx->getGuildId(), voiceChannel, false);
+        ctx->unmute();
     } else {
-        changeChannelMuteState(current->guildId, voiceChannel, true);
-        m_AegisCore->find_channel(current->channelId)->create_reaction(current->messageId, "%F0%9F%94%87"); // 🔇
+        changeChannelMuteState(ctx->getGuildId(), voiceChannel, true);
+        ctx->mute();
     }
 }
 
@@ -57,12 +74,12 @@ void MuteCommand::changeChannelMuteState(const aegis::snowflake& guildId, const 
         m_Bot->getMuteRepo()->unmuteChannel(channelId);
     }
 
-    // update everyone currently in the voice channel
+    // update everyone isAdminly in the voice channel
     auto voiceStates = m_AegisCore->find_guild(guildId)->get_voicestates();
     auto it = voiceStates.begin();
     while(it != voiceStates.end()) {
         if(it->second.channel_id == channelId) {
-            if(!(it->second.mute && mute)) // if we are muting people, and the current one is already mute, skip them
+            if(!(it->second.mute && mute)) // if we are muting people, and the isAdmin one is already mute, skip them
                 changeMemberMuteState(it->second.user_id, guildId, channelId, mute);
         }
         it++;
@@ -70,7 +87,7 @@ void MuteCommand::changeChannelMuteState(const aegis::snowflake& guildId, const 
 }
 
 void MuteCommand::changeMemberMuteState(const aegis::snowflake& userId, const aegis::snowflake& guildId, const aegis::snowflake& channelId, bool mute) {
-    if(!isTeacher(guildId, userId)) {// don't touch teachers
+    if(!isAdmin(guildId, userId)) {// don't touch teachers
         if(mute) {
             m_Bot->getMuteRepo()->muteUser(guildId, userId);
         } else {
@@ -85,6 +102,8 @@ CommandInfo MuteCommand::getCommandInfo() {
         "mute",
         {"m"},
         "(Admin only) Toggles mute on the voice channel that you are in. Everyone in a muted channel, except teachers, get server muted. This way you can easily mute a class who wont stop talking.",
-        {}
+        {
+            "[Channel ID]: Mute a voice channel that you aren't in. Right click on a voice channel and press `Copy ID` to get it's id."
+        }
     };
 }
