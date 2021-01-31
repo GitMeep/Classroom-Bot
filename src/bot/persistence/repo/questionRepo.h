@@ -2,7 +2,7 @@
 
 #include <bot/persistence/db.h>
 #include <bot/persistence/model/question.h>
-
+#include <Poco/LRUCache.h>
 class QuestionRepository {
 public:
     QuestionRepository();
@@ -15,6 +15,8 @@ public:
     void expire();
 
 private:
+    Poco::LRUCache<aegis::snowflake, std::deque<Question>> m_Cache;
+
     std::shared_ptr<DB> m_DB;
     std::shared_ptr<Encryption> m_Encryption;
     std::shared_ptr<spdlog::logger> m_Log;

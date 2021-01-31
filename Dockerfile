@@ -1,20 +1,20 @@
-FROM ubuntu:20.04
+FROM ubuntu:20.04 as builder
 
 ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /src/
+RUN apt update && apt install -y git openssl libssl-dev zlib1g libpq-dev libcurl4-openssl-dev libcurl4 automake libtool make g++ g++-9 libcrypto++-dev libboost-all-dev libcrypto++-dev libfmt-dev wget cmake libssl-dev libsasl2-dev gdb curl
+COPY ./dockerbuilder.sh .
+COPY ./downgrade_libssl.sh .
+RUN ./dockerbuilder.sh
 
-RUN apt-get update && apt-get install -y zlib1g libpq-dev libcurl4-openssl-dev libcurl4 libcrypto++-dev libcrypto++-dev libfmt-dev
-
-WORKDIR /usr/src/classroombot
-# install older version of libssl, the newer versions cause the bot to be unable to connect to discord
-RUN apt-get install -y wget libicu-dev
-RUN wget http://mirrors.kernel.org/ubuntu/pool/main/o/openssl/libssl-dev_1.1.1-1ubuntu2.1~18.04.7_amd64.deb http://mirrors.kernel.org/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1-1ubuntu2.1~18.04.7_amd64.deb
-RUN dpkg -i libssl-dev_1.1.1-1ubuntu2.1~18.04.7_amd64.deb libssl1.1_1.1.1-1ubuntu2.1~18.04.7_amd64.deb
-COPY ./libs/libmongocxx.so /usr/local/lib/libmongocxx.so._noabi
-COPY ./libs/libbsoncxx.so /usr/local/lib/libbsoncxx.so._noabi
-COPY ./libs/libbson-1.0.so.0 /usr/local/lib/libbson-1.0.so.0
-COPY ./libs/libmongoc-1.0.so.0 /usr/local/lib/libmongoc-1.0.so.0
-COPY ./bin/classroombot .
+FROM ubuntu:20.04
+WORKDIR /classroombot/
+COPY --from=builder /usr/local/lib ./libs/
+COPY --from=builder ["/lib/x86_64-linux-gnu/libcrypto++.so.6", "./libs/"]
+COPY ./docker_runtime_libs.sh .
+RUN ./docker_runtime_libs.sh
 COPY ./default_config.json ./config.json
+COPY ./bin/classroombot .
 
-ENV LD_LIBRARY_PATH=/usr/local/lib
+ENV LD_LIBRARY_PATH=/classroombot/libs/;/lib/x86_64-linux-gnu/
 CMD ./classroombot

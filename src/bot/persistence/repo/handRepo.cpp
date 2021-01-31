@@ -25,11 +25,14 @@ using bsoncxx::builder::stream::open_document;
 
 HandRepository::HandRepository() {
     m_Log = ClassroomBot::get().getLog();
-
     m_DB = ClassroomBot::get().getDatabase();
 }
 
 std::list<aegis::snowflake> HandRepository::get(const aegis::snowflake& channelId) {
+    if(m_Cache.has(channelId)) {
+        return *(m_Cache.get(channelId));
+    }
+
     auto client = m_DB->requestClient();
     mongocxx::cursor result
         = (*client)[m_DB->dbName()]["Hands"].find(document{} << "channelId" << channelId.gets() << finalize);
@@ -40,10 +43,19 @@ std::list<aegis::snowflake> HandRepository::get(const aegis::snowflake& channelI
         hands.emplace_back(value);
     }
 
+    m_Cache.add(channelId, hands);
+
     return hands;
 }
 
 void HandRepository::raise(const aegis::snowflake& channelId, const aegis::snowflake& user) {
+    if(m_Cache.has(channelId)) {
+        auto list = m_Cache.get(channelId);
+        list->emplace_back(user);
+    } else {
+        m_Cache.add(channelId, {user});
+    }
+
     auto client = m_DB->requestClient();
     (*client)[m_DB->dbName()]["Hands"].insert_one(document{}
         << "channelId" << channelId.gets()
@@ -54,6 +66,14 @@ void HandRepository::raise(const aegis::snowflake& channelId, const aegis::snowf
 }
 
 void HandRepository::lower(const aegis::snowflake& channelId, const aegis::snowflake& user) {
+    if(m_Cache.has(channelId)) {
+        auto list = m_Cache.get(channelId);
+        list->remove(user);
+        if(list->size() == 0) {
+            m_Cache.remove(channelId);
+        }
+    }
+
     auto client = m_DB->requestClient();
     (*client)[m_DB->dbName()]["Hands"].delete_one(document{}
         << "channelId" <<channelId.gets()
@@ -63,6 +83,8 @@ void HandRepository::lower(const aegis::snowflake& channelId, const aegis::snowf
 }
 
 void HandRepository::clear(const aegis::snowflake& channelId) {
+    m_Cache.remove(channelId);
+
     auto client = m_DB->requestClient();
     (*client)[m_DB->dbName()]["Hands"].delete_many(document{}
         << "channelId" << channelId.gets()

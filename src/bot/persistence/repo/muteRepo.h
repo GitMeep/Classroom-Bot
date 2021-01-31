@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bot/persistence/db.h>
+#include <Poco/LRUCache.h>
 
 class MuteRepository {
 public:
@@ -16,6 +17,9 @@ public:
     void cleanCache();
 
 private:
+    Poco::LRUCache<aegis::snowflake, bool> m_ChannelCache; // channel id, mute status
+    Poco::LRUCache<aegis::snowflake, std::set<aegis::snowflake>> m_UsersCache; // guild, users
+
     std::shared_ptr<DB> m_DB;
     std::shared_ptr<spdlog::logger> m_Log;
 };

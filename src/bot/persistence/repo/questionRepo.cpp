@@ -30,6 +30,10 @@ QuestionRepository::QuestionRepository() {
 }
 
 std::deque<Question> QuestionRepository::get(aegis::snowflake channelId) {
+    if(m_Cache.has(channelId)) {
+        return *(m_Cache.get(channelId));
+    }
+
     auto client = m_DB->requestClient();
     mongocxx::cursor result
         = (*client)[m_DB->dbName()]["Questions"].find(document{} << "channelId" << channelId.gets() << finalize);
@@ -43,10 +47,16 @@ std::deque<Question> QuestionRepository::get(aegis::snowflake channelId) {
         questions.emplace_back(userId, decryptedQuestion);
     }
 
+    m_Cache.add(channelId, questions);
+
     return questions;
 }
 
 void QuestionRepository::ask(const aegis::snowflake& channelId, const aegis::snowflake& userId, const std::string& question) {
+    if(m_Cache.has(channelId)) {
+        m_Cache.get(channelId)->emplace_back(userId.gets(), question);
+    }
+    
     auto client = m_DB->requestClient();
     (*client)[m_DB->dbName()]["Questions"].insert_one(document{}
         << "channelId" << channelId.gets()
@@ -58,6 +68,21 @@ void QuestionRepository::ask(const aegis::snowflake& channelId, const aegis::sno
 }
 
 void QuestionRepository::dismiss(const aegis::snowflake& channelId, const aegis::snowflake& userId) {
+    if(m_Cache.has(channelId)) {
+        auto deque = m_Cache.get(channelId);
+
+        auto it = deque->begin();
+        while(it != deque->end()) {
+            if(it->userId == userId) break;
+            it++;
+        }
+        deque->erase(it);
+
+        if(deque->size() == 0) {
+            m_Cache.remove(channelId);
+        }
+    }
+
     auto client = m_DB->requestClient();
     (*client)[m_DB->dbName()]["Questions"].delete_one(document{}
         << "channelId" << channelId.gets()
@@ -67,6 +92,8 @@ void QuestionRepository::dismiss(const aegis::snowflake& channelId, const aegis:
 }
 
 void QuestionRepository::clear(const aegis::snowflake& channelId) {
+    m_Cache.remove(channelId);
+
     auto client = m_DB->requestClient();
     (*client)[m_DB->dbName()]["Questions"].delete_many(document{}
         << "channelId" << channelId.gets()

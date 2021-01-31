@@ -1,19 +1,23 @@
 #!/bin/sh
 sudo apt update
-sudo apt install -y libssl-dev zlib1g libpq-dev libcurl4-openssl-dev libcurl4 automake libtool make g++ g++-9 libcrypto++-dev libboost-all-dev libcrypto++-dev libfmt-dev wget cmake libssl-dev libsasl2-dev gdb curl
+sudo apt install -y openssl libssl-dev zlib1g libpq-dev libcurl4-openssl-dev libcurl4 automake libtool make g++ g++-9 libcrypto++-dev libboost-all-dev libcrypto++-dev libfmt-dev wget cmake libssl-dev libsasl2-dev gdb curl
 
-# download submodules (aegis.cpp and restclient-cpp)
-git submodule update --init --recursive
+# clone dependencies (aegis.cpp, restclient-cpp poco)
+mkdir vendor
+cd vendor
+git clone --recursive https://github.com/GitMeep/aegis.cpp.git
+git clone https://github.com/mrtazz/restclient-cpp.git
+git clone https://github.com/pocoproject/poco.git
 
 # aegis
-cd submodules/aegis
+cd aegis.cpp
 sudo ./install-deps.sh
 if [ ! -d "./build/" ]; then
   mkdir build
 fi
 cd build
 cmake -DCMAKE_CXX_COMPILER=g++-9 -DCMAKE_CXX_STANDARD=17 ..
-make -j3
+make -j4
 sudo make install
 
 cd ../..
@@ -24,11 +28,17 @@ cd restclient-cpp
 ./autoconfigure
 sudo make install
 
-# downgrade libssl
+cd ../poco
+if [ ! -d "./cmake-build/" ]; then
+  mkdir cmake-build
+fi
+cd cmake-build
+cmake ..
+sudo cmake --build . --target install -j4
 cd ../..
-mkdir vendor
-cd vendor
-./downgrade_libss.sh
+
+# downgrade libssl
+../downgrade_libssl.sh
 
 # libmongoc
 if [ ! -d "./mongo/" ]; then

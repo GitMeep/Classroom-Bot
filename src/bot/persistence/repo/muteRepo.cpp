@@ -24,11 +24,14 @@ using bsoncxx::builder::stream::open_document;
 
 MuteRepository::MuteRepository() {
     m_Log = ClassroomBot::get().getLog();
-
     m_DB = ClassroomBot::get().getDatabase();
 }
 
 std::set<aegis::snowflake> MuteRepository::getMutedUsers(const aegis::snowflake& guildId) {
+    if(m_UsersCache.has(guildId)) {
+        return *(m_UsersCache.get(guildId));
+    }
+    
     auto client = m_DB->requestClient();
     auto result = (*client)[m_DB->dbName()]["MutedUsers"].find(document{} << "guildId" << guildId.gets() << finalize);
 
@@ -39,11 +42,17 @@ std::set<aegis::snowflake> MuteRepository::getMutedUsers(const aegis::snowflake&
         users.emplace(decryptedValue);
     }
 
+    m_UsersCache.add(guildId, users);
+
     return users;
 
 }
 
 void MuteRepository::muteUser(const aegis::snowflake& guildId, const aegis::snowflake& user) {
+    if(m_UsersCache.has(guildId)) {
+        m_UsersCache.get(guildId)->emplace(user);
+    }
+
     auto client = m_DB->requestClient();
     auto result = (*client)[m_DB->dbName()]["MutedUsers"].insert_one(document{}
         << "guildId" << guildId.gets()
@@ -53,6 +62,14 @@ void MuteRepository::muteUser(const aegis::snowflake& guildId, const aegis::snow
 }
 
 void MuteRepository::unmuteUser(const aegis::snowflake& guildId, const aegis::snowflake& user) {
+    if(m_UsersCache.has(guildId)) {
+        auto list = m_UsersCache.get(guildId);
+        list->erase(user);
+        if(list->size() == 0) {
+            m_UsersCache.remove(guildId);
+        }
+    }
+
     auto client = m_DB->requestClient();
     (*client)[m_DB->dbName()]["MutedUsers"].delete_one(document{}
         << "guildId" << guildId.gets()
@@ -62,16 +79,24 @@ void MuteRepository::unmuteUser(const aegis::snowflake& guildId, const aegis::sn
 }
 
 bool MuteRepository::isChannelMuted(const aegis::snowflake& channelId) {
+    if(m_ChannelCache.has(channelId)) {
+        return *(m_ChannelCache.get(channelId));
+    }
+
     auto client = m_DB->requestClient();
     auto result =  (*client)[m_DB->dbName()]["MutedChannels"].find_one(document{}
         << "channelId" << channelId.gets()
         << finalize
     );
 
-    return result ? true : false;
+    m_ChannelCache.add(channelId, (bool)result);
+
+    return (bool)result;
 }
 
 void MuteRepository::muteChannel(const aegis::snowflake& channelId) {
+    m_ChannelCache.add(channelId, true);
+
     auto client = m_DB->requestClient();
     auto result =  (*client)[m_DB->dbName()]["MutedChannels"].insert_one(document{}
         << "channelId" << channelId.gets()
@@ -80,6 +105,8 @@ void MuteRepository::muteChannel(const aegis::snowflake& channelId) {
 }
 
 void MuteRepository::unmuteChannel(const aegis::snowflake& channelId) {
+    m_ChannelCache.add(channelId, false);
+
     auto client = m_DB->requestClient();
     auto result =  (*client)[m_DB->dbName()]["MutedChannels"].delete_one(document{}
         << "channelId" << channelId.gets()

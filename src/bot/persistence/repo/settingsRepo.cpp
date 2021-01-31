@@ -33,6 +33,10 @@ SettingsRepository::SettingsRepository() {
 }
 
 Settings SettingsRepository::get(const aegis::snowflake& guildId) {
+    if(m_Cache.has(guildId)) {
+        return *(m_Cache.get(guildId));
+    }
+
     auto client = m_DB->requestClient();
     auto result = (*client)[m_DB->dbName()]["Settings"].find_one(document{}
         << "guildId" << guildId.gets()
@@ -42,16 +46,21 @@ Settings SettingsRepository::get(const aegis::snowflake& guildId) {
     if(result) {
         std::string prefix = m_Encryption->decrypt(result->view()["prefix"].get_utf8().value.to_string());
         if(prefix == "") return defaultSettings;
-        return {
+        Settings settings = {
             prefix,
             m_Encryption->decrypt(result->view()["roleName"].get_utf8().value.to_string()),
         };
+        m_Cache.add(guildId, settings);
+        return settings;
     }
 
+    m_Cache.add(guildId, defaultSettings);
     return defaultSettings;
 }
 
 void SettingsRepository::save(const aegis::snowflake& guildId, const Settings& settings) {
+    m_Cache.add(guildId, settings);
+
     auto client = m_DB->requestClient();
     (*client)[m_DB->dbName()]["Settings"].update_one(
     document{}

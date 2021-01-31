@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bot/persistence/db.h>
+#include <Poco/LRUCache.h>
 
 class HandRepository {
 public:
@@ -14,6 +15,8 @@ public:
     void expire();
 
 private:
+    Poco::LRUCache<aegis::snowflake, std::list<aegis::snowflake>> m_Cache;
+
     std::shared_ptr<DB> m_DB;
     std::shared_ptr<spdlog::logger> m_Log;
 };
