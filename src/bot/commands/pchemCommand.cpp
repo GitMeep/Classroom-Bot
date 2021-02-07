@@ -4,8 +4,9 @@
 #include <bot/commands/pchemCommand.h>
 #include <bot/bot.h>
 
-const std::string REST_URL = "https://pubchem.ncbi.nlm.nih.gov/rest/pug";
-const std::string VIEW_URL = "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view";
+const std::string HOST = "pubchem.ncbi.nlm.nih.gov";
+const std::string REST_URI = "/rest/pug";
+const std::string VIEW_URI = "/rest/pug_view";
 
 void PchemCommand::call(int verb, const std::vector<std::string>& parameters, CommandContext* ctx) {
     if(parameters.size() < 1) {
@@ -92,35 +93,49 @@ void PchemCommand::call(int verb, const std::vector<std::string>& parameters, Co
 }
 
 std::string PchemCommand::getCID(const std::string& query) {
-    auto r = RestClient::get(REST_URL + "/compound/name/" + query + "/cids/JSON");
-    if(r.code != 200) {
+    Poco::Net::HTTPSClientSession session(HOST, 443);
+    Poco::Net::HTTPRequest req("GET", REST_URI + "/compound/name/" + query + "/cids/JSON");
+
+    session.sendRequest(req);
+    Poco::Net::HTTPResponse res;
+    std::string bodyString(std::istreambuf_iterator<char>(session.receiveResponse(res)), {});
+
+    if(res.getStatus() != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
         return "";
     }
 
-    nlohmann::json body = nlohmann::json::parse(r.body);
+    nlohmann::json body = nlohmann::json::parse(bodyString);
     int cid = body["IdentifierList"]["CID"][0];
     return std::to_string(cid);
 }
 
 PCResult PchemCommand::getInfo(const std::string& cid) {
     PCResult res;
-    res.structUrl = REST_URL + "/compound/cid/" + cid + "/PNG";
+    Poco::Net::HTTPSClientSession session(HOST, 443);
+    res.structUrl = "https://" + HOST + REST_URI + "/compound/cid/" + cid + "/PNG";
 
     nlohmann::json body;
     nlohmann::json record;
 
-    auto r = RestClient::get(VIEW_URL + "/data/compound/" + cid + "/JSON?heading=Computed+Properties");
+    Poco::Net::HTTPRequest req("GET", VIEW_URI + "/data/compound/" + cid + "/JSON?heading=Computed+Properties");
 
-    body = nlohmann::json::parse(r.body);
+    session.sendRequest(req);
+    Poco::Net::HTTPResponse response;
+    std::string bodyString(std::istreambuf_iterator<char>(session.receiveResponse(response)), {});
+
+    body = nlohmann::json::parse(bodyString);
     record = body["Record"];
     res.molMass = std::to_string((int)record["Section"][0]["Section"][0]["Section"][0]["Information"][0]["Value"]["Number"][0]);
 
     res.name = record["RecordTitle"];
     res.cid = std::to_string((int)record["RecordNumber"]);
 
-    r = RestClient::get(VIEW_URL + "/data/compound/" + cid + "/JSON?heading=GHS+Classification");
+    req.setURI(VIEW_URI + "/data/compound/" + cid + "/JSON?heading=GHS+Classification");
 
-    if(r.code != 200) {
+    session.sendRequest(req);
+    bodyString = std::string(std::istreambuf_iterator<char>(session.receiveResponse(response)), {});
+
+    if(response.getStatus() != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
         res.ghsMessages.emplace_back("None");
         res.ghsReference = "None";
         res.precautions = "None";
@@ -128,7 +143,7 @@ PCResult PchemCommand::getInfo(const std::string& cid) {
         return res;
     }
 
-    body = nlohmann::json::parse(r.body);
+    body = nlohmann::json::parse(bodyString);
     record = body["Record"];
 
     int refNumber = record["Reference"][0]["ReferenceNumber"];
@@ -153,8 +168,12 @@ PCResult PchemCommand::getInfo(const std::string& cid) {
         }
     }
 
-    r = RestClient::get(VIEW_URL + "/data/compound/" + cid + "/JSON?heading=Molecular+Formula");
-    body = nlohmann::json::parse(r.body);
+    req.setURI(VIEW_URI + "/data/compound/" + cid + "/JSON?heading=Molecular+Formula");
+
+    session.sendRequest(req);
+    bodyString = std::string(std::istreambuf_iterator<char>(session.receiveResponse(response)), {});
+
+    body = nlohmann::json::parse(bodyString);
 
     res.formula = body["Record"]["Section"][0]["Section"][0]["Information"][0]["Value"]["StringWithMarkup"][0]["String"];
 

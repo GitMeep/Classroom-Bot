@@ -86,10 +86,8 @@ ClassroomBot& ClassroomBot::get() {
 bool ClassroomBot::run() {
     if(!m_Initialized) return m_Initialized;
 
-    RestClient::init();
     m_AegisCore->run();
     m_AegisCore->yield();
-    RestClient::disable();
 
     return true;
 }
@@ -157,17 +155,31 @@ void ClassroomBot::updatePresence() {
     if(m_Config->get()["topgg"]["enable"] == "true") {
         std::string topggToken = m_Config->get()["topgg"]["token"];
         std::string topggId = m_Config->get()["topgg"]["bot_id"];
-        RestClient::Connection* conn = new RestClient::Connection("https://top.gg");
 
-        RestClient::HeaderFields headers;
-        headers["Authorization"] = topggToken;
-        headers["Content-Type"] = "application/json";
-        conn->SetHeaders(headers);
+        Poco::Net::HTTPSClientSession session("top.gg", 443);
+        Poco::Net::HTTPRequest req("POST", "/api/bots/" + topggId + "/stats");
+
+        req.setCredentials("", topggToken);
+        req.setContentType("application/json");
 
         std::string data = "{\"server_count\": " + std::to_string(guildCount) + "}";
-        auto r = conn->post("/api/bots/" + topggId + "/stats", data);
 
-        delete conn;
+        session.sendRequest(req) << data;
+    }
+
+    if(m_Config->get()["botsgg"]["enable"] == "true") {
+        std::string botsggToken = m_Config->get()["botsgg"]["token"];
+        std::string botsggId = m_Config->get()["botsgg"]["bot_id"];
+
+        Poco::Net::HTTPSClientSession session("discord.bots.gg", 443);
+        Poco::Net::HTTPRequest req("POST", "/api/v1/bots/" + botsggId + "/stats");
+
+        req.setCredentials("", botsggToken);
+        req.setContentType("application/json");
+
+        std::string data = "{\"server_count\": " + std::to_string(guildCount) + "}";
+
+        session.sendRequest(req) << data;
     }
 
     m_HandRepo->expire();

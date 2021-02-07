@@ -5,7 +5,6 @@
 mkdir vendor
 cd vendor
 git clone --recursive https://github.com/GitMeep/aegis.cpp.git
-git clone https://github.com/mrtazz/restclient-cpp.git
 git clone https://github.com/pocoproject/poco.git
 
 # aegis
@@ -19,14 +18,8 @@ make -j4
 make install
 cd ../..
 
-# restclient-cpp
-cd restclient-cpp
-./autogen.sh
-./autoconfigure
-make install
-
 # poco
-cd ../poco
+cd poco
 rm -rf cmake-build
 mkdir cmake-build
 cd cmake-build

@@ -6,7 +6,6 @@ sudo apt install -y openssl libssl-dev zlib1g libpq-dev libcurl4-openssl-dev lib
 mkdir vendor
 cd vendor
 git clone --recursive https://github.com/GitMeep/aegis.cpp.git
-git clone https://github.com/mrtazz/restclient-cpp.git
 git clone https://github.com/pocoproject/poco.git
 
 # aegis
@@ -19,16 +18,9 @@ cd build
 cmake -DCMAKE_CXX_COMPILER=g++-9 -DCMAKE_CXX_STANDARD=17 ..
 make -j4
 sudo make install
-
 cd ../..
 
-# restclient-cpp
-cd restclient-cpp
-./autogen.sh
-./autoconfigure
-sudo make install
-
-cd ../poco
+cd ./poco
 if [ ! -d "./cmake-build/" ]; then
   mkdir cmake-build
 fi

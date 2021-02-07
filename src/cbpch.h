@@ -19,8 +19,9 @@
 #include <execinfo.h>
 #include <signal.h>
 
-#include <restclient-cpp/restclient.h>
-#include <restclient-cpp/connection.h>
+#include <Poco/Net/HTTPSClientSession.h>
+#include <Poco/Net/HTTPRequest.h>
+#include <Poco/Net/HTTPResponse.h>
 
 #include <bot/utils/utils.h>
 

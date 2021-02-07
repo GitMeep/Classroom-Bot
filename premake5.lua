@@ -30,11 +30,12 @@ project "classroombot"
         "cryptopp",
         "z",
         "fmt",
-        "restclient-cpp:static",
         "curl",
         "bsoncxx",
         "mongocxx",
-        "PocoFoundation"
+        "PocoFoundation",
+        "PocoNet",
+        "PocoNetSSL"
     }
 
     filter "configurations:Debug"
