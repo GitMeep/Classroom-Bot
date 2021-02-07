@@ -12,7 +12,7 @@ project "classroombot"
     enablewarnings { "invalid-pch" }
     files { "./src/**.h", "./src/**.cpp" }
     pchheader "./src/cbpch.h"
-    defines { "BOT_VERSION=\"1.8.6\"", "AEGIS_SEPARATE_COMPILATION" }
+    defines { "BOT_VERSION=\"1.9.1\"", "AEGIS_SEPARATE_COMPILATION" }
     includedirs { 
         "/usr/local/include/",
         "/usr/local/include/mongocxx/v_noabi",

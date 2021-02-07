@@ -10,7 +10,7 @@ std::string getUsername(const aegis::snowflake& userId, const aegis::snowflake& 
     aegis::user* user = core->find_guild(guildId)->find_member(userId);
     if (user == nullptr) {
         spdlog::get("classroombot")->error("Couldn't get username of member " + userId.gets() + " in guild " + guildId.gets());
-        return "Unknown user";
+        return "Unknown user"; // TODO: get user via REST instead
     }
     std::string username = user->get_name(guildId);
     if(username.size()==0) username = user->get_username();

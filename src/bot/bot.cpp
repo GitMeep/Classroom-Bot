@@ -59,6 +59,8 @@ void ClassroomBot::init() {
     m_AegisCore->set_on_message_create(std::bind(&ClassroomBot::onMessage, this, std::placeholders::_1));
     m_AegisCore->set_on_message_create_dm(std::bind(&ClassroomBot::onMessage, this, std::placeholders::_1));
 
+    m_AegisCore->update_presence("Starting, please wait", aegis::gateway::objects::activity::activity_type::Game);
+
     m_Database = std::make_shared<DB>();
     m_SettingsRepo = std::make_shared<SettingsRepository>();
     m_QuestionRepo = std::make_shared<QuestionRepository>();
@@ -101,8 +103,17 @@ void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
     if(&message.get_user() == nullptr) return;
     if(message.msg.get_content().size() == 0) return;
 
-    std::string prefix = m_SettingsRepo->get(message.channel.get_guild_id()).prefix;
-    if(message.msg.is_dm()) prefix = "?";
+    CommandContext ctx(
+        message.msg.get_id(),
+        message.channel.get_id(),
+        message.channel.get_guild_id(),
+        message.get_user().get_id(),
+        message.msg.is_dm(),
+        m_SettingsRepo->get(message.channel.get_guild_id())
+    );
+
+    std::string prefix = ctx.getSettings().prefix;
+    if(ctx.isDM()) prefix = "?";
 
     std::string content = message.msg.get_content();
     bool isHelp = content.substr(0, 5) == "?help"; // if someone types ?help, ignore the actual prefix (1), and set the prefix to "?" (2), parsing it as a normal command. This ensures that ?help always works
@@ -110,19 +121,12 @@ void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
         return;
     }
     if(isHelp) prefix = "?";
-    content = content.substr(prefix.length());
 
-    CommandContext ctx(
-        message.msg.get_id(),
-        message.channel.get_id(),
-        message.channel.get_guild_id(),
-        message.get_user().get_id(),
-        message.msg.is_dm()
-    );
+    content = content.substr(prefix.length());
     bool success = m_CommandHandler->parseAndCall(content, &ctx);
 
     if (!success) {
-        message.channel.create_message("Unknown command");
+        ctx.respond("unknown_cmd");
         return;
     }
 }

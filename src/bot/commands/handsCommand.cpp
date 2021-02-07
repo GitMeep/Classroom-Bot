@@ -8,77 +8,33 @@
 
 const std::string actionMsg = "Please enter a valid action. Options are: ```up, down, next, pick, random, list, clear```";
 
-void HandsCommand::call(const std::vector<std::string>& parameters, CommandContext* ctx) {
-    
-    if(ctx->isDM()) {
-        ctx->respond("no_dm");
-        return;
-    }
-
-    if(parameters.size() == 0) {
-        ctx->respond("hand_usage");
-        return;
-    }
-
-    std::string verb = parameters[0];
-    if(verb == "up") {
+void HandsCommand::call(int verb, const std::vector<std::string>& parameters, CommandContext* ctx) {
+    switch(verb) {
+    case 1: // up
         up(ctx);
-    }
-
-    else if(verb == "down") {
+        break;
+    case 2: // down
         down(ctx);
-    }
-
-    else if(verb == "list") {
+        break;
+    case 3: // list
         list(ctx);
-    }
-
-    else if(verb == "next") {
-        if(!ctx->isAdmin()) {
-            ctx->respond("admin_required");
-            return;
-        } else {
-            next(ctx);
-        }
-    }
-
-    else if(verb == "random") {
-        if(!ctx->isAdmin()) {
-            ctx->respond("admin_required");
-            return;
-        } else {
-            random(ctx);
-        }
-    }
-
-    else if(verb == "clear") {
-        if(!ctx->isAdmin()) {
-            ctx->respond("admin_required");
-            return;
-        } else {
-            clear(ctx);
-        }
-    } else if(verb == "pick") {
-        if(!ctx->isAdmin()) {
-            ctx->respond("admin_required");
-            return;
-        } else {
-            if (parameters.size() < 2) {
-                ctx->respond("pick_number");
-                return;
-            }
-            int number;
-            try {
-                number = std::stoi(parameters[1]);
-            } catch(std::invalid_argument) {
-                ctx->respond("valid_number");
-            } catch(std::out_of_range) {
-                ctx->respond("reasonable_number");
-            }
-            pick(ctx, number);
-        }
-    } else {
+        break;
+    case 4: // next
+        next(ctx);
+        break;
+    case 5: // pick
+        pick(ctx, parameters);
+        break;
+    case 6: // random
+        random(ctx);
+        break;
+    case 7: // clear
+        clear(ctx);
+        break;
+    default:
+    case 0: // no option was entered
         ctx->respond("hand_usage");
+        break;
     }
 }
 
@@ -108,6 +64,11 @@ void HandsCommand::down(CommandContext* ctx) {
 }
 
 void HandsCommand::next(CommandContext* ctx) {
+    if(!ctx->isAdmin()) {
+        ctx->respond("admin_required");
+        return;
+    }
+
     auto hands = m_Bot->getHandRepo()->get(ctx->getChannelId());
 
     if(!hands.size()) {
@@ -123,6 +84,11 @@ void HandsCommand::next(CommandContext* ctx) {
 }
 
 void HandsCommand::clear(CommandContext* ctx) {
+    if(!ctx->isAdmin()) {
+        ctx->respond("admin_required");
+        return;
+    }
+
     m_Bot->getHandRepo()->clear(ctx->getChannelId());
     ctx->confirm();
 }
@@ -135,7 +101,7 @@ void HandsCommand::list(CommandContext* ctx) {
         return;
     }
     std::stringstream ss;
-    ss << ClassroomBot::get().getLocalization()->getString("eng", "hand_up_users") + ":```";
+    ss << ClassroomBot::get().getLocalization()->getString("eng", "hand_up_users") + "\n```";
 
     int number = 1;
     auto it = hands.begin();
@@ -150,6 +116,11 @@ void HandsCommand::list(CommandContext* ctx) {
 }
 
 void HandsCommand::random(CommandContext* ctx) {
+    if(!ctx->isAdmin()) {
+        ctx->respond("admin_required");
+        return;
+    }
+
     auto hands = m_Bot->getHandRepo()->get(ctx->getChannelId());
 
     if(!hands.size()) {
@@ -174,7 +145,28 @@ void HandsCommand::random(CommandContext* ctx) {
     ctx->respondUnlocalized("```" + username + "```");
 }
 
-void HandsCommand::pick(CommandContext* ctx, int number) {
+void HandsCommand::pick(CommandContext* ctx, const std::vector<std::string>& parameters) {
+    if(!ctx->isAdmin()) {
+        ctx->respond("admin_required");
+        return;
+    }
+
+    if (parameters.size() < 2) {
+        ctx->respond("pick_number");
+        return;
+    }
+    
+    int number;
+    try {
+        number = std::stoi(parameters[1]);
+    } catch(std::invalid_argument) {
+        ctx->respond("valid_number");
+        return;
+    } catch(std::out_of_range) {
+        ctx->respond("reasonable_number");
+        return;
+    }
+
     auto hands = m_Bot->getHandRepo()->get(ctx->getChannelId());
 
     if(!hands.size()) {
@@ -210,16 +202,27 @@ void HandsCommand::pick(CommandContext* ctx, int number) {
 CommandInfo HandsCommand::getCommandInfo() {
     return {
         "hand",
-        {"h"},
-        "Show of hands. Raise or lower your hand to indicate a question or an answer to one. The hands are stored per-channel.",
+        "hand_cmd",
+        {"hand_alias"},
+        "hand_desc",
         {
-            "up: raise your hand",
-            "down: lower your hand",
-            "list: list all users with their hand raised",
-            "next: (admin only) show the next user with a raised hand, and lower it",
-            "pick [number]: (admin only) pick a user from the list",
-            "random: (admin only) pick a random user with their hand raised, and lower it",
-            "clear: (admin only) lower all hands"
-        }
+            "hand_option_up_desc",
+            "hand_option_down_desc",
+            "hand_option_list_desc",
+            "hand_option_next_desc",
+            "hand_option_pick_desc",
+            "hand_option_random_desc",
+            "hand_option_clear_desc"
+        },
+        {
+            "hand_option_up",
+            "hand_option_down",
+            "hand_option_list",
+            "hand_option_next",
+            "hand_option_pick",
+            "hand_option_random",
+            "hand_option_clear"
+        },
+        true
     };
 }

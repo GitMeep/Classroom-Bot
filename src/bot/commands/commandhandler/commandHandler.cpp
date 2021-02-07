@@ -1,6 +1,8 @@
 #include <cbpch.h>
 
+#include <bot/bot.h>
 #include <bot/commands/commandhandler/commandHandler.h>
+#include <bot/localization/localization.h>
 
 /**
  * Parses a command from a string input and information about the messsage, and calls it.
@@ -41,13 +43,34 @@ bool CommandHandler::callCommand(const std::string& name, const std::vector<std:
 
     if(commandName[0] == '?') return true; // someone wrote something like "????"", don't do anything
     
+    if(commandName != "help") { // ?help should always work
+        commandName = getUnlocalizedName(ctx->getSettings().lang, commandName);
+    }
+
     if (m_Aliases.count(name)) {
         commandName = m_Aliases[name];
     }
 
-    if(!m_Commands.count(commandName)) return false;
+    LocHelper loc(ClassroomBot::get().getLocalization(), ctx->getSettings().lang);
 
-    m_Commands[commandName]->call(parameters, ctx);
+    if(!m_Commands.count(commandName)) return false;
+    if(m_CommandInfos[commandName].noDM && ctx->isDM()) {
+        ctx->respond("no_dm");
+        return true;
+    }
+
+    int verb = 0;
+    auto options = m_CommandInfos[commandName].options;
+    if(parameters.size() > 0 && options.size() > 0) {
+        for(int i = 0; i < options.size(); i++) {
+            if(parameters[0] == loc.get(options[i])) {
+                verb = i+1;
+                break;
+            }
+        }
+    }
+
+    m_Commands[commandName]->call(verb, parameters, ctx);
     return true;
 }
 
@@ -95,4 +118,25 @@ std::vector<CommandInfo> CommandHandler::getInfo(const std::string& commandName)
     }
 
     return info;
+}
+
+std::string CommandHandler::getUnlocalizedName(std::string lang, const std::string& localizedCommand) {
+    if(lang == "") lang = "eng";
+    auto loc = ClassroomBot::get().getLocalization();
+    auto info = m_CommandInfos.begin();
+    while(info != m_CommandInfos.end()) {
+        if(loc->getString(lang, info->second.localName) == localizedCommand) {
+            return info->second.name;
+        }
+        auto alias = info->second.aliases.begin();
+        while(alias != info->second.aliases.end()) {
+            if(loc->getString(lang, *alias) == localizedCommand) {
+                return info->second.name;
+            }
+            alias++;
+        }
+        info++;
+    }
+
+    return "--"; // should result in an unkown command
 }

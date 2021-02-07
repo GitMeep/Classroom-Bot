@@ -14,6 +14,7 @@ COPY --from=builder ["/lib/x86_64-linux-gnu/libcrypto++.so.6", "./libs/"]
 COPY ./docker_runtime_libs.sh .
 RUN ./docker_runtime_libs.sh
 COPY ./default_config.json ./config.json
+COPY ./lang ./lang
 COPY ./bin/classroombot .
 
 ENV LD_LIBRARY_PATH=/classroombot/libs/;/lib/x86_64-linux-gnu/

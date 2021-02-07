@@ -4,7 +4,7 @@
 
 #include <bot/utils/utils.h>
 
-void MuteCommand::call(const std::vector<std::string>& parameters, CommandContext* ctx) {
+void MuteCommand::call(int verb, const std::vector<std::string>& parameters, CommandContext* ctx) {
     if(ctx->isDM()) {
         ctx->respond("no_dm");
         return;
@@ -100,10 +100,13 @@ void MuteCommand::changeMemberMuteState(const aegis::snowflake& userId, const ae
 CommandInfo MuteCommand::getCommandInfo() {
     return {
         "mute",
-        {"m"},
-        "(Admin only) Toggles mute on the voice channel that you are in. Everyone in a muted channel, except teachers, get server muted. This way you can easily mute a class who wont stop talking.",
+        "mute_cmd",
+        {"mute_alias"},
+        "mute_desc",
         {
-            "[Channel ID]: Mute a voice channel that you aren't in. Right click on a voice channel and press `Copy ID` to get it's id."
-        }
+            "mute_option_desc"
+        },
+        {},
+        false
     };
 }

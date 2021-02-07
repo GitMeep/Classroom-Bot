@@ -4,11 +4,13 @@
 #include <bot/bot.h>
 
 #include <bot/commands/commandhandler/commandHandler.h>
+#include <bot/localization/localization.h>
 
-void HelpCommand::call(const std::vector<std::string>& parameters, CommandContext* ctx) {
+void HelpCommand::call(int verb, const std::vector<std::string>& parameters, CommandContext* ctx) {
     std::string commandName = "";
     if (parameters.size()) {
-        commandName = parameters[0];
+        std::string localizedName = parameters[0];
+        commandName = m_Bot->getCommandHandler()->getUnlocalizedName(ctx->getSettings().lang, localizedName);
     }
 
     std::vector<CommandInfo> commands = m_Bot->getCommandHandler()->getInfo(commandName);
@@ -18,53 +20,50 @@ void HelpCommand::call(const std::vector<std::string>& parameters, CommandContex
     }
 
     nlohmann::json embed;
+    LocHelper loc(ClassroomBot::get().getLocalization(), ctx->getSettings().lang);
 
     bool detail = commandName != "";
     if (detail) {
-        /*if(!isAdmin->isDm) {
-            m_AegisCore->create_message(ctx->getChannelId(), "Help about a specific command is only supported in DM's.");
-            return;
-        }*/
         CommandInfo command = commands[0];
-        embed["title"] = command.name;
-        embed["description"] = command.description;
+        embed["title"] = loc.get(command.localName);
+        embed["description"] = loc.get(command.description);
 
-        if (command.options.size()) {
+        if (command.optionDescriptions.size()) {
             std::string optionsString;
-            auto option = command.options.begin();
-            while (option != command.options.end()) {
-                optionsString += *option + "\n";
+            auto option = command.optionDescriptions.begin();
+            while (option != command.optionDescriptions.end()) {
+                optionsString += loc.get(*option) + "\n";
                 option++;
             }
-            embed["fields"].push_back({{"name", "Options"}, {"value", optionsString}});
+            embed["fields"].push_back({{"name", loc.get("help_options")}, {"value", optionsString}});
         }
 
         if (command.aliases.size()) {
             std::string aliases;
             auto alias = command.aliases.begin();
             while (alias != command.aliases.end()) {
-                aliases += *alias;
+                aliases += loc.get(*alias);
                 alias++;
                 if(alias != command.aliases.end())
                     aliases += " | ";
             }
-            embed["fields"].push_back({{"name", "Aliases"}, {"value", aliases}});
+            embed["fields"].push_back({{"name", loc.get("help_aliases")}, {"value", aliases}});
         }
 
     } else {
-        embed["title"] = "Commands";
-        embed["description"] = "To use the admin only commands, you need a role named \"Teacher\". The name of this role can be changed with the `settings` command. If you have any questions or want to report a bug, join the [support server](https://discord.gg/dqmTAZY). If you like the bot, please upvote it on [top.gg](https://top.gg/bot/691945666896855072)";
+        embed["title"] = loc.get("help_response_title");
+        embed["description"] = loc.get("help_response_description");
         auto command = commands.begin();
         
-        std::string commandName;
+        std::string alisesString;
         while (command != commands.end()) {
-            commandName = command->name;
+            alisesString = loc.get(command->localName);
             auto alias = command->aliases.begin();
             while (alias != command->aliases.end()) {
-                commandName += " | " + *alias;
+                alisesString += " | " + loc.get(*alias);
                 alias++;
             }
-            embed["fields"].push_back({{"name", "`" + commandName + "`"}, {"value", command->description}});
+            embed["fields"].push_back({{"name", "`" + alisesString + "`"}, {"value", loc.get(command->description)}});
             command++;
         }
     }
@@ -79,10 +78,13 @@ void HelpCommand::call(const std::vector<std::string>& parameters, CommandContex
 CommandInfo HelpCommand::getCommandInfo() {
     return {
         "help",
-        {"he"},
-        "Display this help page. Use `help [command]` to get more information about a specific command.",
+        "help_cmd",
+        {"help_alias"},
+        "help_desc",
         {
-            "`[command]` to get help about a specific command."
-        }
+            "help_option_desc"
+        },
+        {},
+        false
     };
 }

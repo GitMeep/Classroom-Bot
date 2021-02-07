@@ -4,11 +4,11 @@
 
 class QuestionCommand : public Command {
 public:
-    void call(const std::vector<std::string>& parameters, CommandContext* ctx);
+    void call(int verb, const std::vector<std::string>& parameters, CommandContext* ctx);
     CommandInfo getCommandInfo();
 
 private:
-    void ask(CommandContext* ctx, std::string question);
+    void ask(CommandContext* ctx, const std::vector<std::string>& parameters);
     void list(CommandContext* ctx);
     void next(CommandContext* ctx);
     void clear(CommandContext* ctx);

@@ -5,7 +5,7 @@
 class HandsCommand : public Command {
 public:
     explicit HandsCommand() : Command::Command() {}
-    void call(const std::vector<std::string>& parameters, CommandContext* ctx);
+    void call(int verb, const std::vector<std::string>& parameters, CommandContext* ctx);
     CommandInfo getCommandInfo();
 
 private:
@@ -15,5 +15,5 @@ private:
     void clear(CommandContext* ctx);
     void list(CommandContext* ctx);
     void random(CommandContext* ctx);
-    void pick(CommandContext* ctx, int number);
+    void pick(CommandContext* ctx, const std::vector<std::string>& parameters);
 };

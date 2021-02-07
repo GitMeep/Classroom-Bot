@@ -9,22 +9,23 @@ Command::Command()
 , m_AegisCore(ClassroomBot::get().getAegis())
 , m_Bot(&ClassroomBot::get()) {}
 
-CommandContext::CommandContext(const aegis::snowflake& messageId, const aegis::snowflake& channelId, const aegis::snowflake& guildId, const aegis::snowflake& userId, bool isDM) 
+CommandContext::CommandContext(const aegis::snowflake& messageId, const aegis::snowflake& channelId, const aegis::snowflake& guildId, const aegis::snowflake& userId, bool isDM, const Settings& settings)
  : m_MessageId(messageId)
  , m_ChannelId(channelId)
  , m_GuildId(guildId)
  , m_UserId(userId)
- , m_IsDM(isDM) {}
+ , m_IsDM(isDM)
+ , m_Settings(settings) {}
 
 void CommandContext::respond(const std::string& strName) {
     // get server language setting here, for now it's just english
-    std::string response = ClassroomBot::get().getLocalization()->getString("eng", strName);
+    std::string response = ClassroomBot::get().getLocalization()->getString(m_Settings.lang, strName);
     respondUnlocalized(response);
 }
 
 void CommandContext::respondEmbed(const std::string& strName, const nlohmann::json& embed) {
     // get server language setting here, for now it's just english
-    std::string message = ClassroomBot::get().getLocalization()->getString("eng", strName);
+    std::string message = ClassroomBot::get().getLocalization()->getString(m_Settings.lang, strName);
     respondEmbedUnlocalized(message, embed);
 }
 
@@ -92,4 +93,8 @@ aegis::snowflake CommandContext::getUserId() {
 
 aegis::snowflake CommandContext::getChannelId() {
     return m_ChannelId;
+}
+
+Settings CommandContext::getSettings() {
+    return m_Settings;
 }

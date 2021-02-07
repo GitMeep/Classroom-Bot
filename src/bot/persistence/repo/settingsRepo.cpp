@@ -23,7 +23,7 @@ using bsoncxx::builder::stream::finalize;
 using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::open_document;
 
-const Settings defaultSettings {"?", "Teacher"};
+const Settings defaultSettings {"?", "Teacher", "eng"};
 
 SettingsRepository::SettingsRepository() {
     m_Log = ClassroomBot::get().getLog();
@@ -44,11 +44,27 @@ Settings SettingsRepository::get(const aegis::snowflake& guildId) {
     );
 
     if(result) {
-        std::string prefix = m_Encryption->decrypt(result->view()["prefix"].get_utf8().value.to_string());
-        if(prefix == "") return defaultSettings;
+        std::string prefix, role, lang;
+
+        if(result->view()["prefix"]) {
+            prefix = m_Encryption->decrypt(result->view()["prefix"].get_utf8().value.to_string());
+        } else {
+            prefix = defaultSettings.prefix;
+        }
+        if(result->view()["role"]) {
+            role = m_Encryption->decrypt(result->view()["role"].get_utf8().value.to_string());
+        } else {
+            role = defaultSettings.roleName;
+        }
+        if(result->view()["lang"]) {
+            lang = m_Encryption->decrypt(result->view()["lang"].get_utf8().value.to_string());
+        } else {
+            lang = defaultSettings.lang;
+        }
         Settings settings = {
             prefix,
-            m_Encryption->decrypt(result->view()["roleName"].get_utf8().value.to_string()),
+            role,
+            lang
         };
         m_Cache.add(guildId, settings);
         return settings;
@@ -70,6 +86,7 @@ void SettingsRepository::save(const aegis::snowflake& guildId, const Settings& s
         << "$set" << open_document
             << "prefix" << m_Encryption->encrypt(settings.prefix)
             << "roleName" << m_Encryption->encrypt(settings.roleName)
+            << "lang" << m_Encryption->encrypt(settings.lang)
         << close_document
     << finalize,
     mongocxx::options::update().upsert(true)

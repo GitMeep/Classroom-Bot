@@ -1,14 +1,15 @@
 #include <cbpch.h>
 
+#include <bot/localization/localization.h>
 #include <bot/commands/pchemCommand.h>
 #include <bot/bot.h>
 
 const std::string REST_URL = "https://pubchem.ncbi.nlm.nih.gov/rest/pug";
 const std::string VIEW_URL = "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view";
 
-void PchemCommand::call(const std::vector<std::string>& parameters, CommandContext* ctx) {
+void PchemCommand::call(int verb, const std::vector<std::string>& parameters, CommandContext* ctx) {
     if(parameters.size() < 1) {
-        m_AegisCore->create_message(ctx->getChannelId(), "You need to enter a query.");
+        ctx->respond("pubchem_enter_query");
         return;
     }
 
@@ -34,59 +35,60 @@ void PchemCommand::call(const std::vector<std::string>& parameters, CommandConte
     }
     
     if(cid == "") {
-        ctx->respond("comp_not_found");
+        ctx->respond("pubchem_comp_not_found");
         return;
     }
 
     PCResult res = getInfo(cid);
 
+    LocHelper loc(m_Bot->getLocalization(), ctx->getSettings().lang);
+
     std::string ghsStatements;
     for(std::string message : res.ghsMessages) {
         ghsStatements += message + "\n\n";
     }
-    if(res.ghsMessages.size() < 1) ghsStatements = "None";
-    if(ghsStatements.length() > 2048) ghsStatements = "Text is too long for discord.";
+    if(res.ghsMessages.size() < 1) ghsStatements = loc.get("pubchem_none");
+    if(ghsStatements.length() > 2048) ghsStatements = loc.get("pubchem_too_long");
 
     std::string warningLabels;
     for(std::string label : res.warningLabels) {
         warningLabels += label + ", ";
     }
     warningLabels = warningLabels.substr(0, warningLabels.length()-2);
-    if(res.warningLabels.size() < 1) warningLabels = "None";
+    if(res.warningLabels.size() < 1) warningLabels = loc.get("pubchem_none");
 
-    if(res.precautions.length() < 1) res.precautions = "None";
-    if(res.molMass.length() < 1) res.molMass = "Not found";
+    if(res.precautions.length() < 1) res.precautions = loc.get("pubchem_none");
+    if(res.molMass.length() < 1) res.molMass = loc.get("pubchem_not_found");
 
     nlohmann::json embed {
-        {"title", "Information for " + res.name},
+        {"title", loc.get("pubchem_info_for") + std::string(" ") + res.name},
         {"thumbnail", {
             {"url", res.structUrl}
         }},
         {"fields", nlohmann::json::array({
             {
-                {"name", "Formula"},
+                {"name", loc.get("pubchem_formula")},
                 {"value", res.formula}
             },
             {
-                {"name", "Molecular Mass"},
+                {"name", loc.get("pubchem_mol_mass")},
                 {"value", res.molMass + " g/mol"}
             },
             {
-                {"name", "Pictograms"},
+                {"name", loc.get("pubchem_pictograms")},
                 {"value", warningLabels}
             },
             {
-                {"name", "Precautionary Statement Codes"},
+                {"name", loc.get("pubchem_pcs")},
                 {"value", res.precautions}
             }
         })},
         {"url", "https://pubchem.ncbi.nlm.nih.gov/compound/" + cid},
         {"description", ghsStatements},
-        {"footer", {{"text", "GHS reference: " + res.ghsReference}}}
+        {"footer", {{"text", loc.get("pubchem_ghs_ref") + std::string(": ") + res.ghsReference}}}
     };
 
     ctx->respondEmbedUnlocalized("", embed);
-    m_AegisCore->find_channel(ctx->getChannelId())->delete_own_reaction(ctx->getMessageId(), "⌛");
 }
 
 std::string PchemCommand::getCID(const std::string& query) {
@@ -162,10 +164,13 @@ PCResult PchemCommand::getInfo(const std::string& cid) {
 CommandInfo PchemCommand::getCommandInfo() {
     return {
         "pubchem",
-        {"pchem", "pc"},
-        "Search information about a compound on pubchem",
+        "pubchem_cmd",
+        {"pubchem_alias"},
+        "pubchem_desc",
         {
-            "`[name | cid]`: search by names or compound id"
-        }
+            "pubchem_option_desc"
+        },
+        {},
+        false
     };
 }

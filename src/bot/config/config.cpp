@@ -6,11 +6,13 @@
 
 json defaultConfig = {
     {"bot", {
-        {"token", "${BOT_TOKEN}"}
+        {"token", "${BOT_TOKEN}"},
+        {"owner", "${OWNER_ID}"}
     }},
     {"persistence", {
-        {"enable", "${ENABLE_PERSISTENCE}"},
-        {"url", "${DATABASE_URL}"},
+        {"url", "${MONGO_URL}"},
+        {"db_name", "${DATABASE_NAME}"},
+        {"encryption_key", "${ENCRYPTION_KEY}"}
     },
     {"topgg", {
         {"enable", "${ENABLE_TOPGG}"},
@@ -28,7 +30,7 @@ void Config::loadFromFile(const std::string& path) {
     file.open(path, std::ios::in);
 
     if(!file.is_open()) {
-        m_Log->error("Could not open config file, using default config.");
+        m_Log->warn("Could not open config file, using default config.");
         m_Config = defaultConfig;
     } else {
         std::string jsonString;
@@ -42,7 +44,7 @@ void Config::loadFromFile(const std::string& path) {
             json j = json::parse(jsonString);
             m_Config = j;
         } catch (json::parse_error& e) {
-            m_Log->info("Failed to parse settings: \n" + std::string(e.what()));
+            m_Log->warn("Failed to parse settings: \n" + std::string(e.what()));
             throw std::runtime_error("Couldn't load settings! To generate a clean config file, delete your existing one and run the program again.");
         }
     }

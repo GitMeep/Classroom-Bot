@@ -4,55 +4,36 @@
 #include <bot/persistence/repo/questionRepo.h>
 #include <bot/persistence/model/question.h>
 
-void QuestionCommand::call(const std::vector<std::string>& parameters, CommandContext* ctx) {
-    if(ctx->isDM()) {
-        ctx->respond("no_dm");
-        return;
-    }
-
-    if(parameters.size() == 0) {
-        ctx->respond("question_usage");
-        return;
-    }
-
-    std::string verb = parameters[0];
-    if(verb == "ask") {
-        std::string question;
-        std::stringstream ss;
-        auto i = parameters.begin();
-        i++;
-        while(i != parameters.end()) {
-            ss << *i++ << " ";
-        }
-        ask(ctx, ss.str());
-    }
-
-    else if(verb == "list") {
+void QuestionCommand::call(int verb, const std::vector<std::string>& parameters, CommandContext* ctx) {
+   switch(verb) {
+    case 1: // ask
+        ask(ctx, parameters);
+        break;
+    case 2: // list
         list(ctx);
-    }
-
-    else if(verb == "next") {
-        if(!ctx->isAdmin()) {
-            ctx->respond("admin_required");
-        } else {
-            next(ctx);
-        }
-    }
-
-    else if(verb == "clear") {
-        if(!ctx->isAdmin()) {
-            ctx->respond("admin_required");
-        } else {
-            clear(ctx);
-        }
-    }
-
-    else {
+        break;
+    case 3: // next
+        next(ctx);
+        break;
+    case 4: // clear
+        clear(ctx);
+        break;
+    default:
+    case 0:
         ctx->respond("question_usage");
-    }
+        break;
+   }
+
 }
 
-void QuestionCommand::ask(CommandContext* ctx, std::string question) {
+void QuestionCommand::ask(CommandContext* ctx, const std::vector<std::string>& parameters) {
+    std::string question = "";
+    auto i = parameters.begin();
+    i++;
+    while(i != parameters.end()) {
+        question += *i++;
+    }
+
     auto questions = m_Bot->getQuestionRepo()->get(ctx->getChannelId());
     
     if(questions.size() >= 50) {
@@ -87,6 +68,11 @@ void QuestionCommand::list(CommandContext* ctx) {
 }
 
 void QuestionCommand::next(CommandContext* ctx) {
+    if(!ctx->isAdmin()) {
+        ctx->respond("admin_required");
+        return;
+    }
+
     auto questions = m_Bot->getQuestionRepo()->get(ctx->getChannelId());
 
     if(questions.size() == 0) {
@@ -103,6 +89,11 @@ void QuestionCommand::next(CommandContext* ctx) {
 }
 
 void QuestionCommand::clear(CommandContext* ctx) {
+    if(!ctx->isAdmin()) {
+        ctx->respond("admin_required");
+        return;
+    }
+
     m_Bot->getQuestionRepo()->clear(ctx->getChannelId());
     ctx->confirm();
 }
@@ -111,14 +102,22 @@ void QuestionCommand::clear(CommandContext* ctx) {
 CommandInfo QuestionCommand::getCommandInfo() {
     return {
         "question",
-        {"q"},
-        "Ask questions that a teacher can then answer one by one.",
+        "question_cmd",
+        {"question_alias"},
+        "question_desc",
         {
-            "ask [question]: ask a question",
-            "list: list all questions",
-            "next: (admin only) show the next question, and remove it from the queue",
-            "clear: (admin only) clear the question queue"
-        }
+            "question_option_ask_desc",
+            "question_option_list_desc",
+            "question_option_next_desc",
+            "question_option_clear_desc"
+        },
+        {
+            "question_option_ask",
+            "question_option_list",
+            "question_option_next",
+            "question_option_clear"
+        },
+        true
     };
 }
 
