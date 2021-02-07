@@ -1,0 +1,13 @@
+version: "3.0"
+
+services:
+  cb:
+    image: meepdocker/classroom-bot:latest
+    container_name: cb
+    restart: "no" # see https://github.com/compose-spec/compose-spec/blob/master/spec.md#restart
+    ports:
+      - "443:443"
+    environment:
+      BOT_TOKEN: # Token here
+      DATABASE_URL: # MongoDB Url here
+      ENCRYPTION_KEY: # Ecnryption key here

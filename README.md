@@ -2,26 +2,36 @@
 
 # Classroom Bot
 
-A bot made for easier management of online classes.
+A bot made for helping with online teaching on Discord.
 [Invite the bot to your server](https://discordapp.com/api/oauth2/authorize?client_id=691945666896855072&permissions=297888850&scope=bot).
 To see a list of commands, use `?help`.
 
 ## Features
 
 ### Draw of hands
-Users can raise their hand to answer/ask questions to the teacher using a text command. That way, everyone doesn't speak over eachother in voice chat. The teacher can pick the next student in the queue, pick a random one or pick a specific student. A list of students with their hand up can also be seen.
+Students can raise their hand to indicate an answer to a question or ask one. The teacher can pick the next student in the queue, pick a random one or pick a specific student. That way, everyone doesn't speak at the same time in voice chat.
 
 ### Questions
-Students can ask questions using a text command. The teacher can then go through them one at a time.
+Students can ask questions directly using a text command. The teacher can then go through them one at a time. Useful when students are working in groups and not in the same voice channel as the teacher.
 
 ### Mute
-Students talking when they shouldn't? All students in a channel to be muted, so only the teacher can speak.
+Mute everyone in a voice channel except teachers. Useful for when students won't be quiet. Discord does also have a priority speaker feature which might be used instead.
 
 ### PubChem lookup
-Look up safety information and molar mass of a compound on PubChem.
+Look up safety information and chemical properties of a compound on PubChem.
 
+### Multilingual
+Classroom Bot supports multiple languages, currently
+ - English
+ - Dutch
+ - Danish
+
+Don't see your language? You can help translating by [contacting me](https://discord.gg/dqmTAZY).
 ### Your idea here
-Got any other ideas? Send me a tweet [@TweetMeepsi](https://twitter.com/TweetMeepsi). Check the [trello](https://trello.com/b/owJzJaVt/classroom-bot) development board to see if i am already working on it first though!
+Got any other ideas? Tell me via the [support server](https://discord.gg/dqmTAZY). Check the [trello](https://trello.com/b/owJzJaVt/classroom-bot) development board to see if i am already working on it first though.
+
+### Supporting
+If you find the bot useful, please concider supporting me on [Github Sponsors](https://github.com/sponsors/GitMeep)
 
 ## Getting started
 To get started using the bot, [invite it to your server](https://discordapp.com/api/oauth2/authorize?client_id=691945666896855072&permissions=297888850&scope=bot) and use the command `?help` to see a list of commands. Use `?help [command]` to get detailed info about a command.
@@ -56,10 +66,12 @@ The default config file looks like this:
 ```json
 {
     "bot": {
-        "token": "${BOT_TOKEN}"
+        "token": "${BOT_TOKEN}",
+        "owner": "${OWNER_ID}"
     },
     "persistence": {
-        "url": "${DATABASE_URL}",
+        "url": "${MONGO_URL}",
+        "db_name": "${DATABASE_NAME}",
         "encryption_key": "${ENCRYPTION_KEY}"
     },
     "topgg": {
@@ -69,26 +81,38 @@ The default config file looks like this:
     }
 }
 ```
-`token` is your discord bot token
-
-`url` is your MongoDB URL, in the form `mongodb+src://username:password@host:port`.
-
-`db_name` is the name of your database
-
-`encryption_key` is your encryption key
+`url` is your MongoDB URL, in the form `mongodb+src://username:password@host:port`. The rest should be pretty obvious.
 
 top.gg should stay disabled for third parties running the bot.
 As you can see, the default values are environment variables. When you specify a value in the format `${NAME}` the bot will try replacing it with the environment variable of the same name. If no variable is found, the field is left blank.
-Fields with "enable" in the name are booleans.
+Fields with `enable` or `disable` in the name are booleans.
 
 ## Encryption
 To generate the key, use this command:
-`openssl enc -aes-128-cfb -P -pbkdf2`
+```sh
+openssl enc -aes-128-cfb -P -pbkdf2
+```
 Enter some random password, you will only need to enter it twice, then you can forget it.
 Copy the key and into an environment variable or directly into the config file. There might be a better, safer way to store these values, if you know a way that works with heroku, please contact me.
 
 ## Running with docker
-I have created an image on Docker Hub to run the bot easily on linux, mac and windows. If you don't have docker, start by [downlaoding it](https://www.docker.com/). When you have it up and running, the container can be started using this command, which downloads the image and runs it:
+I have created an image on Docker Hub to run the bot easily on Linux, Mac or Windows. If you don't have Docker, start by [downlaoding it](https://www.docker.com/).
+When you have Docker installed, you can run the container via docker-compose or a manual command.
+### docker-compose
+If you are on Mac or Windows, i recommend just running the container with Docker Desktop where you can easily download the image and set environment variables. If you want to run with docker-compose, i have created a `docker-compose.yml` file in this repository. Just download that file alone, put it in a folder and fill in the required fields. Then to start it, run
+```sh
+docker-compose up -d
+```
+To see the logs, run
+```sh
+docker-compose logs -f
+```
+To stop the bot again use
+```sh
+docker-compose down
+```
+### docker
+You can also just run the container with a single Docker command:
 ```sh
 docker run --publish 443:443 --env BOT_TOKEN=YOUR_TOKEN_HERE --env DATABASE_URL=YOUR_DB_URL_HERE --env ENCRYPTION_KEY=YOUR_ENCRYPTION_KEY_HERE --detach --name cb meepdocker/classroom-bot:latest
 ```
