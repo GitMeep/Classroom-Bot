@@ -51,8 +51,8 @@ Settings SettingsRepository::get(const aegis::snowflake& guildId) {
         } else {
             prefix = defaultSettings.prefix;
         }
-        if(result->view()["role"]) {
-            role = m_Encryption->decrypt(result->view()["role"].get_utf8().value.to_string());
+        if(result->view()["roleName"]) {
+            role = m_Encryption->decrypt(result->view()["roleName"].get_utf8().value.to_string());
         } else {
             role = defaultSettings.roleName;
         }

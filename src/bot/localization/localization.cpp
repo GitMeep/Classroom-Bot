@@ -96,7 +96,7 @@ Localization::Localization() {
         {"settings_option_set", "set"},
         {"settings_option_set_desc", "`set [prefix/role] [value]`: set a setting (Admin only)."},
         {"settings_option_get_desc", "`get`: see the settings for your server."},
-        {"settings_usage", "Command usage: settings [get/set] [settings] [value].\nSettings are `prefix`, `role` and `language`."},
+        {"settings_usage", "Command usage: `settings [get/set] [settings] [value]`.\nSettings are `prefix`, `role` and `language`."},
         {"no_att", "Please enter the role name without @ in front."},
         {"unknown_language", "That language is not supported. Supported languages are:"},
         {"settings_prefix", "Prefix"},

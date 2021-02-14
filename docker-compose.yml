@@ -9,5 +9,6 @@ services:
       - "443:443"
     environment:
       BOT_TOKEN: # Token here
-      DATABASE_URL: # MongoDB Url here
+      MONGO_URL: # MongoDB Url here
+      DATABASE_NAME: # Database name here
       ENCRYPTION_KEY: # Ecnryption key here

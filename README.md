@@ -25,6 +25,7 @@ Classroom Bot supports multiple languages, currently
  - English
  - Dutch
  - Danish
+ - German
 
 Don't see your language? You can help translating by [contacting me](https://discord.gg/dqmTAZY).
 ### Your idea here
@@ -114,7 +115,7 @@ docker-compose down
 ### docker
 You can also just run the container with a single Docker command:
 ```sh
-docker run --publish 443:443 --env BOT_TOKEN=YOUR_TOKEN_HERE --env DATABASE_URL=YOUR_DB_URL_HERE --env ENCRYPTION_KEY=YOUR_ENCRYPTION_KEY_HERE --detach --name cb meepdocker/classroom-bot:latest
+docker run --publish 443:443 --env BOT_TOKEN=YOUR_TOKEN_HERE --env MONGO_URL=YOUR_DB_URL_HERE --env DATABASE_NAME=YOUR_DATABASE_NAME_HERE --env ENCRYPTION_KEY=YOUR_ENCRYPTION_KEY_HERE --detach --name cb meepdocker/classroom-bot:latest
 ```
 This command may need sudo if you are on linux. The bot can be stopped using:
 ```sh

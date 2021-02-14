@@ -77,5 +77,11 @@
         "hash_map": "cpp",
         "hash_set": "cpp",
         "cfenv": "cpp"
+    },
+
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/vendor/**": true
     }
 }

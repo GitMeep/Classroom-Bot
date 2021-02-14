@@ -26,9 +26,10 @@ void MuteCommand::call(int verb, const std::vector<std::string>& parameters, Com
         voiceChannel = voiceStates[ctx->getUserId()].channel_id;
     } else {
         try {
-            voiceChannel = aegis::snowflake(parameters[0]);
+            long long id = std::stoll(parameters[0]);
+            voiceChannel = aegis::snowflake(id);
         } catch (std::invalid_argument& e) {
-            ctx->respond("invald_id");
+            ctx->respond("invalid_id");
             return;
         }
         if(

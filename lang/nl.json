@@ -96,7 +96,7 @@
         {"help_alias": "he"},
         {"help_desc": "Geef de help pagina weer. Gebruik `help [commando]` om meer informatie te krijgen over een specifiek commando."},
         {"help_option_desc": "`[commando]`: Krijg help over een specifiek commando"},
-        {"help_response_description": "Om de commando's te gebruiken die alleen voor admins zijn, moet je een rol hebben genaamd \"Teacher\". De naam van deze rol kan veranderd worden met het commando instellingen. Als je vragen hebt of een bug wilt rapporteren, voeg de [support server](https://discord.gg/dqmTAZY) toe. Als je de bot leuk vindt, laat dan een vind-ik-leuk achter op [top.gg](https://top.gg/bot/691945666896855072) of help de ontwikkeling via [Github sponsors.](https://github.com/sponsors/GitMeep)"},
+        {"help_response_description": "Om de commando's te gebruiken die alleen voor admins zijn, moet je een rol hebben genaamd `Teacher`. De naam van deze rol kan veranderd worden met het commando instellingen. Als je vragen hebt of een bug wilt rapporteren, voeg de [support server](https://discord.gg/dqmTAZY) toe. Als je de bot leuk vindt, laat dan een vind-ik-leuk achter op [top.gg](https://top.gg/bot/691945666896855072) of help de ontwikkeling via [Github sponsors.](https://github.com/sponsors/GitMeep)"},
         {"help_response_title": "Commando's"},
         {"help_aliases": "Korte commando's "},
         {"help_options": "Opties"},
