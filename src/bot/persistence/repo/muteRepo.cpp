@@ -61,6 +61,25 @@ void MuteRepository::muteUser(const aegis::snowflake& guildId, const aegis::snow
     );
 }
 
+bool MuteRepository::isUserMuted(const aegis::snowflake& guildId, const aegis::snowflake& userId) {
+    if(m_UsersCache.has(guildId)) {
+        return m_UsersCache.get(guildId)->count(userId) == 1;
+    }
+
+    auto client = m_DB->requestClient();
+    auto result =  (*client)[m_DB->dbName()]["MutedUsers"].find_one(document{}
+        << "guildId" << guildId.gets()
+        << "userId" << userId.gets()
+        << finalize
+    );
+
+    auto guildMutes = m_UsersCache.get(guildId);
+    guildMutes->emplace(userId);
+    m_UsersCache.add(guildId, guildMutes);
+
+    return (bool)result;
+}
+
 void MuteRepository::unmuteUser(const aegis::snowflake& guildId, const aegis::snowflake& user) {
     if(m_UsersCache.has(guildId)) {
         auto list = m_UsersCache.get(guildId);
@@ -76,6 +95,46 @@ void MuteRepository::unmuteUser(const aegis::snowflake& guildId, const aegis::sn
         << "userId" << user.gets()
         << finalize
     );
+}
+
+void MuteRepository::overrideMute(const aegis::snowflake& guildId, const aegis::snowflake& user) {
+    std::set<aegis::snowflake>* overrides;
+    if(m_UserOverridesCache.has(guildId)) {
+        overrides = m_UserOverridesCache.get(guildId);
+    } else {
+        overrides = new std::set<aegis::snowflake>();
+    }
+
+    overrides->emplace(user);
+
+    m_UserOverridesCache.add(guildId, overrides);
+}
+
+void MuteRepository::removeOverride(const aegis::snowflake& guildId, const aegis::snowflake& user) {
+    std::set<aegis::snowflake>* overrides;
+    if(m_UserOverridesCache.has(guildId)) {
+        overrides = m_UserOverridesCache.get(guildId);
+    } else {
+        return;
+    }
+
+    overrides->erase(user);
+    if(overrides->size() == 0) {
+        m_UserOverridesCache.remove(guildId);
+    } else {
+        m_UserOverridesCache.add(guildId, overrides);
+    }
+}
+
+bool MuteRepository::isUserOverridden(const aegis::snowflake& guildId, const aegis::snowflake& user) {
+    std::set<aegis::snowflake>* overrides;
+    if(m_UserOverridesCache.has(guildId)) {
+        overrides = m_UserOverridesCache.get(guildId);
+    } else {
+        return false;
+    }
+
+    return overrides->count(user) == 1; 
 }
 
 bool MuteRepository::isChannelMuted(const aegis::snowflake& channelId) {

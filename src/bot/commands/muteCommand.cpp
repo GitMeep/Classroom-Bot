@@ -51,16 +51,26 @@ void MuteCommand::call(int verb, const std::vector<std::string>& parameters, Com
 }
 
 void MuteCommand::onVoiceStateUpdate(aegis::gateway::events::voice_state_update obj) {
-    bool channelMute = m_Bot->getMuteRepo()->isChannelMuted(obj.channel_id);
+    auto muteRepo = m_Bot->getMuteRepo();
+    bool hasBotMuted = m_Bot->getMuteRepo()->isUserMuted(obj.guild_id, obj.user_id);
+    bool channelMute = muteRepo->isChannelMuted(obj.channel_id);
+
     if(channelMute && !obj.mute) { // if someone joins a muted channel, and they are not mute already, mute them
-        changeMemberMuteState(obj.user_id, obj.guild_id, obj.channel_id, true);
+        if(hasBotMuted) {
+            muteRepo->overrideMute(obj.guild_id, obj.user_id);
+        } else {
+            changeMemberMuteState(obj.user_id, obj.guild_id, obj.channel_id, true);
+        }
+        if(muteRepo->isUserOverridden(obj.guild_id, obj.user_id)) {
+            changeMemberMuteState(obj.user_id, obj.guild_id, obj.channel_id, false);
+        }
         return;
     }
 
     if(!channelMute) { // user left or joined an unmuted channel
-        auto mutedUsers = m_Bot->getMuteRepo()->getMutedUsers(obj.guild_id);
+        
         // unmute user if they are muted and it was the bot that muted them
-        if(obj.mute && mutedUsers.count(obj.user_id) && (obj.channel_id.get() != 0)) // if someone we muted joins an unmuted channel, unmute them (if someone leaves a channel, the channel id will be 0, so don't do anything in that case)
+        if(obj.mute && hasBotMuted && (obj.channel_id.get() != 0)) // if someone we muted joins an unmuted channel, unmute them (if someone leaves a channel, the channel id will be 0, so don't do anything in that case)
             changeMemberMuteState(obj.user_id, obj.guild_id, obj.channel_id, false);
 
     }

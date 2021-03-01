@@ -10,8 +10,12 @@ public:
     std::set<aegis::snowflake> getMutedUsers(const aegis::snowflake& guildId);
     void muteUser(const aegis::snowflake& guildId, const aegis::snowflake& user);
     void unmuteUser(const aegis::snowflake& guildId, const aegis::snowflake& user);
+    void overrideMute(const aegis::snowflake& guildId, const aegis::snowflake& user);
+    void removeOverride(const aegis::snowflake& guildId, const aegis::snowflake& user);
 
     bool isChannelMuted(const aegis::snowflake& channelId);
+    bool isUserMuted(const aegis::snowflake& guildId, const aegis::snowflake& userId);
+    bool isUserOverridden(const aegis::snowflake& guildId, const aegis::snowflake& user);
     void muteChannel(const aegis::snowflake& channelId);
     void unmuteChannel(const aegis::snowflake& channelId);
     void cleanCache();
@@ -19,6 +23,7 @@ public:
 private:
     Poco::LRUCache<aegis::snowflake, bool> m_ChannelCache; // channel id, mute status
     Poco::LRUCache<aegis::snowflake, std::set<aegis::snowflake>> m_UsersCache; // guild, users
+    Poco::LRUCache<aegis::snowflake, std::set<aegis::snowflake>> m_UserOverridesCache; // guild, user overrides
 
     std::shared_ptr<DB> m_DB;
     std::shared_ptr<spdlog::logger> m_Log;
