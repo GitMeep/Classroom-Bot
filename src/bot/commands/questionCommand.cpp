@@ -32,6 +32,7 @@ void QuestionCommand::ask(CommandContext* ctx, const std::vector<std::string>& p
     i++;
     while(i != parameters.end()) {
         question += *i++;
+        if(i != parameters.end()) question += " ";
     }
 
     auto questions = m_Bot->getQuestionRepo()->get(ctx->getChannelId());

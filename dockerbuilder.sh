@@ -9,6 +9,7 @@ git clone https://github.com/pocoproject/poco.git
 
 # aegis
 cd aegis.cpp
+git submodule update --init
 ./install-deps.sh
 rm -rf build
 mkdir build

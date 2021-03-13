@@ -1,6 +1,6 @@
 #!/bin/sh
 sudo apt update
-sudo apt install -y openssl libssl-dev zlib1g libpq-dev libcurl4-openssl-dev libcurl4 automake libtool make g++ g++-9 libcrypto++-dev libboost-all-dev libcrypto++-dev libfmt-dev wget cmake libssl-dev libsasl2-dev gdb curl
+sudo apt install -y openssl libssl-dev zlib1g libpq-dev libcurl4-openssl-dev libcurl4 automake libtool make g++ g++-9 libcrypto++-dev libboost-all-dev libcrypto++-dev libfmt-dev wget cmake libssl-dev libsasl2-dev gdb curl git
 
 # clone dependencies (aegis.cpp, restclient-cpp poco)
 mkdir vendor
@@ -10,6 +10,7 @@ git clone https://github.com/pocoproject/poco.git
 
 # aegis
 cd aegis.cpp
+git submodule update --init
 sudo ./install-deps.sh
 if [ ! -d "./build/" ]; then
   mkdir build
