@@ -40,72 +40,82 @@ void MuteCommand::call(int verb, const std::vector<std::string>& parameters, Com
         }
     }
     
-
-    if(m_Bot->getMuteRepo()->isChannelMuted(voiceChannel)) {
-        changeChannelMuteState(ctx->getGuildId(), voiceChannel, false);
+    auto muteRepo = m_Bot->getMuteRepo();
+    auto guildId = ctx->getGuildId();
+    bool mute = true;
+    if(muteRepo->isChannelMarked(voiceChannel)) {
+        mute = false;
         ctx->unmute();
     } else {
-        changeChannelMuteState(ctx->getGuildId(), voiceChannel, true);
         ctx->mute();
     }
+    muteRepo->markChannel(voiceChannel, mute);
+    muteAllIn(voiceChannel, guildId, mute);
 }
 
-void MuteCommand::onVoiceStateUpdate(aegis::gateway::events::voice_state_update obj) {
+void MuteCommand::muteAllIn(const aegis::snowflake& channelId, const aegis::snowflake& guildId, bool mute) {
     auto muteRepo = m_Bot->getMuteRepo();
-    bool hasBotMuted = m_Bot->getMuteRepo()->isUserMuted(obj.guild_id, obj.user_id);
-    bool channelMute = muteRepo->isChannelMuted(obj.channel_id);
-
-    if(channelMute && !obj.mute) { // if someone joins a muted channel, and they are not mute already, mute them
-        if(hasBotMuted) {
-            muteRepo->overrideMute(obj.guild_id, obj.user_id);
-        } else {
-            changeMemberMuteState(obj.user_id, obj.guild_id, obj.channel_id, true);
-        }
-        if(muteRepo->isUserOverridden(obj.guild_id, obj.user_id)) {
-            changeMemberMuteState(obj.user_id, obj.guild_id, obj.channel_id, false);
-        }
-        return;
-    }
-
-    if(!channelMute) { // user left or joined an unmuted channel
-        
-        // unmute user if they are muted and it was the bot that muted them
-        if(obj.mute && hasBotMuted && (obj.channel_id.get() != 0)) // if someone we muted joins an unmuted channel, unmute them (if someone leaves a channel, the channel id will be 0, so don't do anything in that case)
-            changeMemberMuteState(obj.user_id, obj.guild_id, obj.channel_id, false);
-
-    }
-}
-
-void MuteCommand::changeChannelMuteState(const aegis::snowflake& guildId, const aegis::snowflake& channelId, bool mute) {
-    if(mute) {
-        if(m_Bot->getMuteRepo()->isChannelMuted(channelId))
-            return;
-        m_Bot->getMuteRepo()->muteChannel(channelId);
-    } else {
-        m_Bot->getMuteRepo()->unmuteChannel(channelId);
-    }
-
-    // update everyone isAdminly in the voice channel
     auto voiceStates = m_AegisCore->find_guild(guildId)->get_voicestates();
     auto it = voiceStates.begin();
     while(it != voiceStates.end()) {
         if(it->second.channel_id == channelId) {
-            if(!(it->second.mute && mute)) // if we are muting people, and the isAdmin one is already mute, skip them
-                changeMemberMuteState(it->second.user_id, guildId, channelId, mute);
+            auto memberId = it->first;
+            if(!isAdmin(guildId, memberId)) { // don't mute and mark someone if they are an admin
+                if(!(mute && it->second.mute)) {
+                    if(!(!mute && !muteRepo->isUserMarked(guildId, memberId))) {
+                        muteAndMark(memberId, channelId, guildId, mute);
+                    }
+                }
+            }
         }
         it++;
     }
 }
 
-void MuteCommand::changeMemberMuteState(const aegis::snowflake& userId, const aegis::snowflake& guildId, const aegis::snowflake& channelId, bool mute) {
-    if(!isAdmin(guildId, userId)) {// don't touch teachers
-        if(mute) {
-            m_Bot->getMuteRepo()->muteUser(guildId, userId);
-        } else {
-            m_Bot->getMuteRepo()->unmuteUser(guildId, userId);
-        }
-        m_AegisCore->find_guild(guildId)->modify_guild_member(userId, {}, mute, {}, {}, {});
+void MuteCommand::muteAndMark(const aegis::snowflake& userId, const aegis::snowflake& channelId, const aegis::snowflake& guildId, bool mute) {
+    m_AegisCore->find_guild(guildId)->modify_guild_member(userId, {}, mute, {}, {}, {});
+
+    auto muteRepo = m_Bot->getMuteRepo();
+    muteRepo->markUser(guildId, userId, mute);
+
+    if(!mute) {
+        muteRepo->markOverride(guildId, userId, mute);
     }
+}
+
+void MuteCommand::onVoiceStateUpdate(aegis::gateway::events::voice_state_update obj) {
+    auto muteRepo = m_Bot->getMuteRepo();
+    bool channelMarked = muteRepo->isChannelMarked(obj.channel_id);
+    bool userMarked = muteRepo->isUserMarked(obj.guild_id, obj.user_id);
+    bool userMute = obj.mute;
+    bool left = obj.channel_id == 0; // user left a channel
+    
+    if(channelMarked && !userMute && !userMarked) onUnmutedUserInMarkedChannel(obj.user_id, obj.channel_id, obj.guild_id);
+    if(userMarked && !channelMarked && !left) onMarkedUserInUnmarkedChannel(obj.user_id, obj.channel_id, obj.guild_id);
+
+    if(userMarked && !userMute) onMarkedUserUnmuted(obj.user_id, obj.channel_id, obj.guild_id);
+    if(userMarked && userMute) onMarkedUserMuted(obj.user_id, obj.channel_id, obj.guild_id);
+}
+
+void MuteCommand::onUnmutedUserInMarkedChannel(const aegis::snowflake& userId, const aegis::snowflake& channelId, const aegis::snowflake& guildId) {
+    auto muteRepo = m_Bot->getMuteRepo();
+    if(!(isAdmin(guildId, userId) || muteRepo->isUserOverridden(channelId, userId))) { // if the user is not an admin, and hasn't been overriden, mute them
+        muteAndMark(userId, channelId, guildId, true);
+    }
+}
+
+void MuteCommand::onMarkedUserInUnmarkedChannel(const aegis::snowflake& userId, const aegis::snowflake& channelId,  const aegis::snowflake& guildId) {
+    muteAndMark(userId, channelId, guildId, false);
+}
+
+void MuteCommand::onMarkedUserUnmuted(const aegis::snowflake& userId, const aegis::snowflake& channelId,  const aegis::snowflake& guildId) {
+    auto muteRepo = m_Bot->getMuteRepo();
+    muteRepo->markOverride(guildId, userId, true);
+}
+
+void MuteCommand::onMarkedUserMuted(const aegis::snowflake& userId, const aegis::snowflake& channelId,  const aegis::snowflake& guildId) {
+    auto muteRepo = m_Bot->getMuteRepo();
+    muteRepo->markOverride(guildId, userId, false);
 }
 
 CommandInfo MuteCommand::getCommandInfo() {

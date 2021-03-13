@@ -8,17 +8,14 @@ public:
     MuteRepository();
 
     std::set<aegis::snowflake> getMutedUsers(const aegis::snowflake& guildId);
-    void muteUser(const aegis::snowflake& guildId, const aegis::snowflake& user);
-    void unmuteUser(const aegis::snowflake& guildId, const aegis::snowflake& user);
-    void overrideMute(const aegis::snowflake& guildId, const aegis::snowflake& user);
-    void removeOverride(const aegis::snowflake& guildId, const aegis::snowflake& user);
+    void markUser(const aegis::snowflake& guildId, const aegis::snowflake& user, bool muted);
+    bool isUserMarked(const aegis::snowflake& guildId, const aegis::snowflake& userId);
 
-    bool isChannelMuted(const aegis::snowflake& channelId);
-    bool isUserMuted(const aegis::snowflake& guildId, const aegis::snowflake& userId);
+    void markOverride(const aegis::snowflake& guildId, const aegis::snowflake& user, bool overwritten);
     bool isUserOverridden(const aegis::snowflake& guildId, const aegis::snowflake& user);
-    void muteChannel(const aegis::snowflake& channelId);
-    void unmuteChannel(const aegis::snowflake& channelId);
-    void cleanCache();
+
+    void markChannel(const aegis::snowflake& channelId, bool muted);
+    bool isChannelMarked(const aegis::snowflake& channelId);
 
 private:
     Poco::LRUCache<aegis::snowflake, bool> m_ChannelCache; // channel id, mute status
