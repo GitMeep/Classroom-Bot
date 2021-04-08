@@ -15,6 +15,12 @@ public:
 private:
     void onVoiceStateUpdate(aegis::gateway::events::voice_state_update obj);
 
-    void changeChannelMuteState(const aegis::snowflake& guildId, const aegis::snowflake& channelId, bool mute);
-    void changeMemberMuteState(const aegis::snowflake& userId, const aegis::snowflake& guildId, const aegis::snowflake& channelId, bool mute);
+    void onUnmutedUserInMarkedChannel(const aegis::snowflake& userId, const aegis::snowflake& channelId, const aegis::snowflake& guildId);
+    void onMarkedUserInUnmarkedChannel(const aegis::snowflake& userId, const aegis::snowflake& channelId,  const aegis::snowflake& guildId);
+    void onMarkedUserUnmuted(const aegis::snowflake& userId, const aegis::snowflake& channelId,  const aegis::snowflake& guildId);
+    void onMarkedUserMuted(const aegis::snowflake& userId, const aegis::snowflake& channelId,  const aegis::snowflake& guildId);
+
+    void muteAllIn(const aegis::snowflake& channelId, const aegis::snowflake& guildId, bool mute);
+
+    void muteAndMark(const aegis::snowflake& userId, const aegis::snowflake& channelId, const aegis::snowflake& guildId, bool mute);
 };
