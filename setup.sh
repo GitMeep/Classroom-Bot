@@ -72,3 +72,5 @@ sudo cmake --build . --target install
 
 cd ../../../../
 ./premake.sh
+
+curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
