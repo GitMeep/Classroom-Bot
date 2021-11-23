@@ -7,15 +7,15 @@ class HandRepository {
 public:
     HandRepository();
 
-    std::list<aegis::snowflake> get(const aegis::snowflake& channelId);
-    void raise(const aegis::snowflake& channelId, const aegis::snowflake& user);
-    void lower(const aegis::snowflake& channelId, const aegis::snowflake& user);
-    void clear(const aegis::snowflake& channelId);
+    std::list<dpp::snowflake> get(const dpp::snowflake& channelId);
+    void raise(const dpp::snowflake& channelId, const dpp::snowflake& user);
+    void lower(const dpp::snowflake& channelId, const dpp::snowflake& user);
+    void clear(const dpp::snowflake& channelId);
 
     void expire();
 
 private:
-    Poco::LRUCache<aegis::snowflake, std::list<aegis::snowflake>> m_Cache;
+    Poco::LRUCache<dpp::snowflake, std::list<dpp::snowflake>> m_Cache;
 
     std::shared_ptr<DB> m_DB;
     std::shared_ptr<spdlog::logger> m_Log;

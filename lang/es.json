@@ -1,5 +1,5 @@
 ﻿{
-    "name": "Español (Work in Progress)",
+    "name": "Español",
     "code": "es",
     "translator": "",
     "strings": [
@@ -57,22 +57,6 @@
         {"not_in_vc": "No estas en un canal de voz. Para callar un cana en especifico , usa `sh [ID del canal]`"},
         {"invalid_id": "ID no valida"},
         {"vc_not_exist": "Este canal de vozo no existe."},
-
-        {"pubchem_cmd": "pubquim"},
-        {"pubchem_alias": "pq"},
-        {"pubchem_desc": "Busque informacion sobre algun compuesto con pubquim."},
-        {"pubchem_option_desc": "`[nombre | idc]`: buscar por nombre o la identificacion del compuesto."},
-        {"pubchem_comp_not_found": "No se encuentra el compuesto. Intenta con su idc o nombre."},
-        {"pubchem_enter_query": "Introduze tu consulta."},
-        {"pubchem_none": "Ninguno"},
-        {"pubchem_not_found": "No encontrado"},
-        {"pubchem_too_long": "El texto es demasiado largo para Discord."},
-        {"pubchem_info_for": "Informacion de"},
-        {"pubchem_formula": "Formula"},
-        {"pubchem_mol_mass": "Masa Molecular"},
-        {"pubchem_pictograms": "Pictogramas"},
-        {"pubchem_pcs": "Códigos de declaración de precaución"},
-        {"pubchem_ghs_ref": "Referencia GHS"},
 
         {"settings_cmd": "ajustes"},
         {"settings_alias": "a"},

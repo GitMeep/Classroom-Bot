@@ -1,5 +1,3 @@
-#include <cbpch.h>
-
 #include <bot/bot.h>
 #include <bot/persistence/repo/handRepo.h>
 
@@ -24,11 +22,11 @@ using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::open_document;
 
 HandRepository::HandRepository() {
-    m_Log = ClassroomBot::get().getLog();
-    m_DB = ClassroomBot::get().getDatabase();
+    m_Log = ClassroomBot::getBot().getLog();
+    m_DB = ClassroomBot::getBot().getDatabase();
 }
 
-std::list<aegis::snowflake> HandRepository::get(const aegis::snowflake& channelId) {
+std::list<dpp::snowflake> HandRepository::get(const dpp::snowflake& channelId) {
     if(m_Cache.has(channelId)) {
         return *(m_Cache.get(channelId));
     }
@@ -37,7 +35,7 @@ std::list<aegis::snowflake> HandRepository::get(const aegis::snowflake& channelI
     mongocxx::cursor result
         = (*client)[m_DB->dbName()]["Hands"].find(document{} << "channelId" << channelId.gets() << finalize);
 
-    std::list<aegis::snowflake> hands;
+    std::list<dpp::snowflake> hands;
     for(auto doc : result) {
         std::string value = doc["userId"].get_utf8().value.to_string();
         hands.emplace_back(value);
@@ -48,7 +46,7 @@ std::list<aegis::snowflake> HandRepository::get(const aegis::snowflake& channelI
     return hands;
 }
 
-void HandRepository::raise(const aegis::snowflake& channelId, const aegis::snowflake& user) {
+void HandRepository::raise(const dpp::snowflake& channelId, const dpp::snowflake& user) {
     if(m_Cache.has(channelId)) {
         auto list = m_Cache.get(channelId);
         list->emplace_back(user);
@@ -65,7 +63,7 @@ void HandRepository::raise(const aegis::snowflake& channelId, const aegis::snowf
     );
 }
 
-void HandRepository::lower(const aegis::snowflake& channelId, const aegis::snowflake& user) {
+void HandRepository::lower(const dpp::snowflake& channelId, const dpp::snowflake& user) {
     if(m_Cache.has(channelId)) {
         auto list = m_Cache.get(channelId);
         list->remove(user);
@@ -82,7 +80,7 @@ void HandRepository::lower(const aegis::snowflake& channelId, const aegis::snowf
     );
 }
 
-void HandRepository::clear(const aegis::snowflake& channelId) {
+void HandRepository::clear(const dpp::snowflake& channelId) {
     m_Cache.remove(channelId);
 
     auto client = m_DB->requestClient();

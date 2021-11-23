@@ -2,5 +2,5 @@
 
 #include <bot/persistence/repo/settingsRepo.h>
 
-std::string getUsername(const aegis::snowflake& userId, const aegis::snowflake& guildId);
-bool isAdmin(const aegis::snowflake& guildId, const aegis::snowflake& userId);
+std::string getUsername(const dpp::snowflake& userId, const dpp::snowflake& guildId);
+bool isAdmin(const dpp::snowflake& guildId, const dpp::snowflake& userId);

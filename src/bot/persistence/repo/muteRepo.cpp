@@ -1,5 +1,3 @@
-#include <cbpch.h>
-
 #include <bot/bot.h>
 
 #include <bot/persistence/repo/muteRepo.h>
@@ -23,11 +21,11 @@ using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::open_document;
 
 MuteRepository::MuteRepository() {
-    m_Log = ClassroomBot::get().getLog();
-    m_DB = ClassroomBot::get().getDatabase();
+    m_Log = ClassroomBot::getBot().getLog();
+    m_DB = ClassroomBot::getBot().getDatabase();
 }
 
-std::set<aegis::snowflake> MuteRepository::getMutedUsers(const aegis::snowflake& guildId) {
+std::set<dpp::snowflake> MuteRepository::getMutedUsers(const dpp::snowflake& guildId) {
     if(m_UsersCache.has(guildId)) {
         return *(m_UsersCache.get(guildId));
     }
@@ -35,7 +33,7 @@ std::set<aegis::snowflake> MuteRepository::getMutedUsers(const aegis::snowflake&
     auto client = m_DB->requestClient();
     auto result = (*client)[m_DB->dbName()]["MutedUsers"].find(document{} << "guildId" << guildId.gets() << finalize);
 
-    std::set<aegis::snowflake> users;
+    std::set<dpp::snowflake> users;
     for (auto doc : result) {
         std::string value = doc["userId"].get_utf8().value.to_string();
         std::string decryptedValue = value;
@@ -48,7 +46,7 @@ std::set<aegis::snowflake> MuteRepository::getMutedUsers(const aegis::snowflake&
 
 }
 
-void MuteRepository::markUser(const aegis::snowflake& guildId, const aegis::snowflake& user, bool muted) {
+void MuteRepository::markUser(const dpp::snowflake& guildId, const dpp::snowflake& user, bool muted) {
     if(m_UsersCache.has(guildId)) {
         auto guildMutes = m_UsersCache.get(guildId);
         if(muted) {
@@ -75,7 +73,7 @@ void MuteRepository::markUser(const aegis::snowflake& guildId, const aegis::snow
     
 }
 
-bool MuteRepository::isUserMarked(const aegis::snowflake& guildId, const aegis::snowflake& userId) {
+bool MuteRepository::isUserMarked(const dpp::snowflake& guildId, const dpp::snowflake& userId) {
     if(m_UsersCache.has(guildId)) {
         return m_UsersCache.get(guildId)->count(userId) == 1;
     }
@@ -87,11 +85,11 @@ bool MuteRepository::isUserMarked(const aegis::snowflake& guildId, const aegis::
         << finalize
     );
 
-    Poco::SharedPtr<std::set<aegis::snowflake>> guildMutes;
+    Poco::SharedPtr<std::set<dpp::snowflake>> guildMutes;
     if(m_UsersCache.has(guildId)) {
         guildMutes = m_UsersCache.get(guildId);
     } else {
-        guildMutes = new std::set<aegis::snowflake>;
+        guildMutes = new std::set<dpp::snowflake>;
     }
     guildMutes->emplace(userId);
     m_UsersCache.add(guildId, guildMutes);
@@ -99,12 +97,12 @@ bool MuteRepository::isUserMarked(const aegis::snowflake& guildId, const aegis::
     return (bool)result;
 }
 
-void MuteRepository::markOverride(const aegis::snowflake& guildId, const aegis::snowflake& user, bool overwritten) {
-    Poco::SharedPtr<std::set<aegis::snowflake>> overrides;
+void MuteRepository::markOverride(const dpp::snowflake& guildId, const dpp::snowflake& user, bool overwritten) {
+    Poco::SharedPtr<std::set<dpp::snowflake>> overrides;
     if(m_UserOverridesCache.has(guildId)) {
         overrides = m_UserOverridesCache.get(guildId);
     } else {
-        overrides = new std::set<aegis::snowflake>;
+        overrides = new std::set<dpp::snowflake>;
     }
 
     if(overwritten) {
@@ -116,8 +114,8 @@ void MuteRepository::markOverride(const aegis::snowflake& guildId, const aegis::
     m_UserOverridesCache.add(guildId, overrides);
 }
 
-bool MuteRepository::isUserOverridden(const aegis::snowflake& guildId, const aegis::snowflake& user) {
-    Poco::SharedPtr<std::set<aegis::snowflake>> overrides;
+bool MuteRepository::isUserOverridden(const dpp::snowflake& guildId, const dpp::snowflake& user) {
+    Poco::SharedPtr<std::set<dpp::snowflake>> overrides;
     if(m_UserOverridesCache.has(guildId)) {
         overrides = m_UserOverridesCache.get(guildId);
     } else {
@@ -127,7 +125,7 @@ bool MuteRepository::isUserOverridden(const aegis::snowflake& guildId, const aeg
     return overrides->count(user) == 1; 
 }
 
-bool MuteRepository::isChannelMarked(const aegis::snowflake& channelId) {
+bool MuteRepository::isChannelMarked(const dpp::snowflake& channelId) {
     if(m_ChannelCache.has(channelId)) {
         return *(m_ChannelCache.get(channelId));
     }
@@ -143,7 +141,7 @@ bool MuteRepository::isChannelMarked(const aegis::snowflake& channelId) {
     return (bool)result;
 }
 
-void MuteRepository::markChannel(const aegis::snowflake& channelId, bool muted) {
+void MuteRepository::markChannel(const dpp::snowflake& channelId, bool muted) {
     m_ChannelCache.add(channelId, muted);
 
     auto client = m_DB->requestClient();

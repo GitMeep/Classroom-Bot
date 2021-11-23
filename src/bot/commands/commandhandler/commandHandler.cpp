@@ -1,5 +1,3 @@
-#include <cbpch.h>
-
 #include <bot/bot.h>
 #include <bot/commands/commandhandler/commandHandler.h>
 #include <bot/localization/localization.h>
@@ -51,7 +49,7 @@ bool CommandHandler::callCommand(const std::string& name, const std::vector<std:
         commandName = m_Aliases[name];
     }
 
-    LocHelper loc(ClassroomBot::get().getLocalization(), ctx->getSettings().lang);
+    LocHelper loc(ClassroomBot::getLocalization(), ctx->getSettings().lang);
 
     if(!m_Commands.count(commandName)) return false;
     if(m_CommandInfos[commandName].noDM && ctx->isDM()) {
@@ -122,7 +120,7 @@ std::vector<CommandInfo> CommandHandler::getInfo(const std::string& commandName)
 
 std::string CommandHandler::getUnlocalizedName(std::string lang, const std::string& localizedCommand) {
     if(lang == "") lang = "eng";
-    auto loc = ClassroomBot::get().getLocalization();
+    auto loc = ClassroomBot::getLocalization();
     auto info = m_CommandInfos.begin();
     while(info != m_CommandInfos.end()) {
         if(loc->getString(lang, info->second.localName) == localizedCommand) {

@@ -17,15 +17,16 @@ Students can ask questions directly using a text command. The teacher can then g
 ### Mute
 Mute everyone in a voice channel except teachers. Useful for when students won't be quiet. Discord does also have a priority speaker feature which might be used instead.
 
-### PubChem lookup
-Look up safety information and chemical properties of a compound on PubChem.
-
 ### Multilingual
-Classroom Bot supports multiple languages, currently
+Classroom Bot supports multiple languages, currently:
  - English
  - Dutch
  - Danish
  - German
+ - Portuguese
+ - Spanish
+ - Thai
+ - French
 
 Don't see your language? You can help translating by [contacting me](https://discord.gg/dqmTAZY).
 ### Your idea here

@@ -13,9 +13,4 @@
         "bot_id": "${TOPGG_ID}",
         "token": "${TOPGG_TOKEN}"
     },
-    "botsgg": {
-        "enable": "${ENABLE_BOTSGG}",
-        "bot_id": "${BOTSGG_ID}",
-        "token": "${BOTSGG_TOKEN}"
-    }
 }

@@ -1,15 +1,14 @@
-#include <cbpch.h>
-
 #include <bot/commands/command.h>
 #include <bot/localization/localization.h>
+#include <bot/persistence/repo/settingsRepo.h>
 #include <bot/bot.h>
 
 Command::Command()
-: m_Log(ClassroomBot::get().getLog())
-, m_AegisCore(ClassroomBot::get().getAegis())
-, m_Bot(&ClassroomBot::get()) {}
+: m_Log(ClassroomBot::getLog())
+, m_Cluster(ClassroomBot::getCluster())
+, m_Bot(&ClassroomBot::getBot()) {}
 
-CommandContext::CommandContext(const aegis::snowflake& messageId, const aegis::snowflake& channelId, const aegis::snowflake& guildId, const aegis::snowflake& userId, bool isDM, const Settings& settings)
+CommandContext::CommandContext(const dpp::snowflake& messageId, const dpp::snowflake& channelId, const dpp::snowflake& guildId, const dpp::snowflake& userId, bool isDM, const Settings& settings)
  : m_MessageId(messageId)
  , m_ChannelId(channelId)
  , m_GuildId(guildId)
@@ -19,47 +18,51 @@ CommandContext::CommandContext(const aegis::snowflake& messageId, const aegis::s
 
 void CommandContext::respond(const std::string& strName) {
     // get server language setting here, for now it's just english
-    std::string response = ClassroomBot::get().getLocalization()->getString(m_Settings.lang, strName);
+    std::string response = ClassroomBot::getLocalization()->getString(m_Settings.lang, strName);
     respondUnlocalized(response);
 }
 
-void CommandContext::respondEmbed(const std::string& strName, const nlohmann::json& embed) {
+void CommandContext::respondEmbed(const std::string& strName, nlohmann::json& embed) {
     // get server language setting here, for now it's just english
-    std::string message = ClassroomBot::get().getLocalization()->getString(m_Settings.lang, strName);
+    std::string message = ClassroomBot::getLocalization()->getString(m_Settings.lang, strName);
     respondEmbedUnlocalized(message, embed);
 }
 
 void CommandContext::respondUnlocalized(const std::string& message) {
-    ClassroomBot::get().getAegis()->find_channel(m_ChannelId)->create_message(message);
+    ClassroomBot::getCluster()->message_create(dpp::message(m_ChannelId, message));
 }
 
-void CommandContext::respondEmbedUnlocalized(const std::string& message, const nlohmann::json& embed) {
-    ClassroomBot::get().getAegis()->find_channel(m_ChannelId)->create_message_embed(message, embed);
+void CommandContext::respondEmbedUnlocalized(const std::string& message, nlohmann::json& embed) {
+    ClassroomBot::getCluster()->message_create(dpp::message(m_ChannelId, dpp::embed(&embed)));
+}
+
+void CommandContext::react(const std::string& emote) {
+    ClassroomBot::getCluster()->message_add_reaction(m_MessageId, m_ChannelId, emote);
 }
 
 void CommandContext::confirm() {
-    ClassroomBot::get().getAegis()->find_channel(m_ChannelId)->create_reaction(m_MessageId, "✅");
+    react("✅");
 }
 
 void CommandContext::deny() {
-    ClassroomBot::get().getAegis()->find_channel(m_ChannelId)->create_reaction(m_MessageId, "🚫");
+    react("🚫");
 }
 
 void CommandContext::wait() {
-    ClassroomBot::get().getAegis()->find_channel(m_ChannelId)->create_reaction(m_MessageId, "⌛");
+    react("⌛");
 }
 
 void CommandContext::mute() {
-    ClassroomBot::get().getAegis()->find_channel(m_ChannelId)->create_reaction(m_MessageId, "🔇");
+    react("🔇");
 }
 
 void CommandContext::unmute() {
-    ClassroomBot::get().getAegis()->find_channel(m_ChannelId)->create_reaction(m_MessageId, "🔈");
+    react("🔈");
 }
 
 void CommandContext::waitTyping() {
     this->wait();
-    ClassroomBot::get().getAegis()->find_channel(m_ChannelId)->trigger_typing_indicator();
+    ClassroomBot::getCluster()->channel_typing(m_ChannelId);
 }
 
 bool CommandContext::isDM() {
@@ -67,31 +70,45 @@ bool CommandContext::isDM() {
 }
 
 bool CommandContext::isAdmin() {
-    auto guild = ClassroomBot::get().getAegis()->find_guild(m_GuildId);
-    auto settings = ClassroomBot::get().getSettingsRepo();
-    std::string adminRole = settings->get(m_GuildId).roleName;
-    auto role = guild->find_role(adminRole);
+    auto guild = dpp::find_guild(m_GuildId);
+    auto settings = ClassroomBot::getBot().getSettingsRepo();
+    std::string adminRoleName = settings->get(m_GuildId).roleName;
+    
+    // Find role
+    dpp::role* adminRole = nullptr;
+    dpp::role* tmpPointer = nullptr;
+    for(const auto& role : guild->roles) {
+        tmpPointer = dpp::find_role(role);
+        if(tmpPointer->name == adminRoleName) {
+            adminRole = tmpPointer;
+            break;
+        }
+    }
 
-    if(m_UserId == guild->get_owner()) return true;
+    if(m_UserId == guild->owner_id) return true;
 
-    if(!role) return false;
+    if(adminRole == nullptr) return false;
 
-    return guild->member_has_role(m_UserId, role->role_id);
+    for(const auto& role : guild->members[m_UserId].roles) {
+        if(role == adminRole->id) return true;
+    }
+
+    return false; 
 }
 
-aegis::snowflake CommandContext::getGuildId() {
+dpp::snowflake CommandContext::getGuildId() {
     return m_GuildId;
 }
 
-aegis::snowflake CommandContext::getMessageId() {
+dpp::snowflake CommandContext::getMessageId() {
     return m_MessageId;
 }
 
-aegis::snowflake CommandContext::getUserId() {
+dpp::snowflake CommandContext::getUserId() {
     return m_UserId;
 }
 
-aegis::snowflake CommandContext::getChannelId() {
+dpp::snowflake CommandContext::getChannelId() {
     return m_ChannelId;
 }
 

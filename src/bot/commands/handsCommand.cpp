@@ -1,5 +1,3 @@
-#include <cbpch.h>
-
 #include <bot/commands/handsCommand.h>
 #include <bot/localization/localization.h>
 #include <bot/utils/utils.h>
@@ -76,7 +74,7 @@ void HandsCommand::next(CommandContext* ctx) {
         return;
     }
 
-    aegis::snowflake user = hands.front();
+    dpp::snowflake user = hands.front();
     std::string username = getUsername(user, ctx->getGuildId());
 
     m_Bot->getHandRepo()->lower(ctx->getChannelId(), user);
@@ -101,7 +99,7 @@ void HandsCommand::list(CommandContext* ctx) {
         return;
     }
     std::stringstream ss;
-    ss << ClassroomBot::get().getLocalization()->getString("eng", "hand_up_users") + "\n```";
+    ss << ClassroomBot::getLocalization()->getString("eng", "hand_up_users") + "\n```";
 
     int number = 1;
     auto it = hands.begin();
@@ -137,7 +135,7 @@ void HandsCommand::random(CommandContext* ctx) {
         random--;
     }
 
-    aegis::snowflake user = *it;
+    dpp::snowflake user = *it;
     std::string username = getUsername(user, ctx->getGuildId());
 
     m_Bot->getHandRepo()->lower(ctx->getChannelId(), user);
@@ -191,7 +189,7 @@ void HandsCommand::pick(CommandContext* ctx, const std::vector<std::string>& par
         number--;
     }
 
-    aegis::snowflake user = *it;
+    dpp::snowflake user = *it;
     std::string username = getUsername(user, ctx->getGuildId());
     
     m_Bot->getHandRepo()->lower(ctx->getChannelId(), user);

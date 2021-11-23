@@ -1,5 +1,3 @@
-#include <cbpch.h>
-
 #include <bot/bot.h>
 
 #include <bot/persistence/db.h>
@@ -26,13 +24,13 @@ using bsoncxx::builder::stream::open_document;
 const Settings defaultSettings {"?", "Teacher", "eng"};
 
 SettingsRepository::SettingsRepository() {
-    m_Log = ClassroomBot::get().getLog();
+    m_Log = ClassroomBot::getBot().getLog();
 
-    m_DB = ClassroomBot::get().getDatabase();
+    m_DB = ClassroomBot::getBot().getDatabase();
     this->m_Encryption = m_DB->encryption;
 }
 
-Settings SettingsRepository::get(const aegis::snowflake& guildId) {
+Settings SettingsRepository::get(const dpp::snowflake& guildId) {
     if(m_Cache.has(guildId)) {
         return *(m_Cache.get(guildId));
     }
@@ -74,7 +72,7 @@ Settings SettingsRepository::get(const aegis::snowflake& guildId) {
     return defaultSettings;
 }
 
-void SettingsRepository::save(const aegis::snowflake& guildId, const Settings& settings) {
+void SettingsRepository::save(const dpp::snowflake& guildId, const Settings& settings) {
     m_Cache.add(guildId, settings);
 
     auto client = m_DB->requestClient();

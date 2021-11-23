@@ -1,13 +1,12 @@
-#include <cbpch.h>
 #include <bot/utils/utils.h>
 #include <mutex>
 #include <bot/bot.h>
 #include <fmt/format.h>
 
-std::string getUsernameREST(const aegis::snowflake& userId, const aegis::snowflake& guildId) {
+std::string getUsernameREST(const dpp::snowflake& userId, const dpp::snowflake& guildId) {
     Poco::Net::HTTPSClientSession session("discord.com", 443);
     Poco::Net::HTTPRequest req("GET", "/api/guilds/" + guildId.gets() + "/members/" + userId.gets());
-    req.setCredentials("Bot", ClassroomBot::get().getAegis()->get_token());
+    req.setCredentials("Bot", ClassroomBot::getCluster()->get_token());
 
     session.sendRequest(req);
     Poco::Net::HTTPResponse res;
@@ -19,8 +18,8 @@ std::string getUsernameREST(const aegis::snowflake& userId, const aegis::snowfla
     return member["nick"];
 }
 
-std::string getUsername(const aegis::snowflake& userId, const aegis::snowflake& guildId) {
-    auto core = ClassroomBot::get().getAegis();
+std::string getUsername(const dpp::snowflake& userId, const dpp::snowflake& guildId) {
+    auto core = ClassroomBot::getCluster();
 
     aegis::user* user = core->find_guild(guildId)->find_member(userId);
     if (user == nullptr) {
@@ -32,9 +31,9 @@ std::string getUsername(const aegis::snowflake& userId, const aegis::snowflake& 
     return username;
 }
 
-bool isAdmin(const aegis::snowflake& guildId, const aegis::snowflake& userId) {
-    auto guild = ClassroomBot::get().getAegis()->find_guild(guildId);
-    auto settings = ClassroomBot::get().getSettingsRepo();
+bool isAdmin(const dpp::snowflake& guildId, const dpp::snowflake& userId) {
+    auto guild = ClassroomBot::getCluster()->find_guild(guildId);
+    auto settings = ClassroomBot::getBot().getSettingsRepo();
     std::string adminRole = settings->get(guildId).roleName;
     auto role = guild->find_role(adminRole);
 

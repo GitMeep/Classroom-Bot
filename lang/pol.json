@@ -1,6 +1,6 @@
 {
-    "name": "template",
-    "code": "",
+    "name": "Polski",
+    "code": "pl",
     "translator": "",
     "strings": [
         {"no_dm": "This command can't be used in DM's."},

@@ -8,7 +8,7 @@
 const int TAG_SIZE = 12;
 
 Encryption::Encryption() {
-    auto conf = (*ClassroomBot::get().getConfig())["persistence"];
+    auto conf = (*ClassroomBot::getBot().getConfig())["persistence"];
 
     std::string encodedKey = conf["encryption_key"];
 

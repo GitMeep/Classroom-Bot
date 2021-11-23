@@ -1,5 +1,9 @@
 #pragma once
 
+#include <string>
+#include <vector>
+#include <spdlog/spdlog.h>
+#include <dpp/dpp.h>
 #include <bot/persistence/model/settings.h>
 
 struct CommandInfo {
@@ -14,12 +18,13 @@ struct CommandInfo {
 
 class CommandContext {
 public:
-    CommandContext(const aegis::snowflake& messageId, const aegis::snowflake& channelId, const aegis::snowflake& guildId, const aegis::snowflake& userId, bool isDM, const Settings& settings);
+    CommandContext(const dpp::snowflake& messageId, const dpp::snowflake& channelId, const dpp::snowflake& guildId, const dpp::snowflake& userId, bool isDM, const Settings& settings);
 
     void respond(const std::string& strName);
-    void respondEmbed(const std::string& strName, const nlohmann::json& embed);
+    void respondEmbed(const std::string& strName, nlohmann::json& embed);
     void respondUnlocalized(const std::string& message);
-    void respondEmbedUnlocalized(const std::string& message, const nlohmann::json& embed);
+    void respondEmbedUnlocalized(const std::string& message, nlohmann::json& embed);
+    void react(const std::string& emote);
     void confirm();
     void deny();
     void wait();
@@ -30,17 +35,17 @@ public:
     bool isDM();
     bool isAdmin();
 
-    aegis::snowflake getGuildId();
-    aegis::snowflake getMessageId();
-    aegis::snowflake getUserId();
-    aegis::snowflake getChannelId();
+    dpp::snowflake getGuildId();
+    dpp::snowflake getMessageId();
+    dpp::snowflake getUserId();
+    dpp::snowflake getChannelId();
     Settings getSettings();
 
 private:
-    aegis::snowflake m_MessageId;
-    aegis::snowflake m_ChannelId;
-    aegis::snowflake m_GuildId;
-    aegis::snowflake m_UserId;
+    dpp::snowflake m_MessageId;
+    dpp::snowflake m_ChannelId;
+    dpp::snowflake m_GuildId;
+    dpp::snowflake m_UserId;
     Settings m_Settings;
     bool m_IsDM;
 };
@@ -57,7 +62,7 @@ public:
 
 protected:
     std::shared_ptr<spdlog::logger> m_Log;
-    std::shared_ptr<aegis::core> m_AegisCore;
+    std::shared_ptr<dpp::cluster> m_Cluster;
     ClassroomBot* m_Bot;
 
 };

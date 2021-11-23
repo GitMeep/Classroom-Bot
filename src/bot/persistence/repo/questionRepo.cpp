@@ -1,5 +1,3 @@
-#include <cbpch.h>
-
 #include <bot/bot.h>
 #include <bot/persistence/repo/questionRepo.h>
 #include <bot/persistence/model/question.h>
@@ -23,13 +21,13 @@ using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::open_document;
 
 QuestionRepository::QuestionRepository() {
-    m_Log = ClassroomBot::get().getLog();
+    m_Log = ClassroomBot::getBot().getLog();
 
-    m_DB = ClassroomBot::get().getDatabase();
+    m_DB = ClassroomBot::getBot().getDatabase();
     this->m_Encryption = m_DB->encryption;
 }
 
-std::deque<Question> QuestionRepository::get(aegis::snowflake channelId) {
+std::deque<Question> QuestionRepository::get(dpp::snowflake channelId) {
     if(m_Cache.has(channelId)) {
         return *(m_Cache.get(channelId));
     }
@@ -52,7 +50,7 @@ std::deque<Question> QuestionRepository::get(aegis::snowflake channelId) {
     return questions;
 }
 
-void QuestionRepository::ask(const aegis::snowflake& channelId, const aegis::snowflake& userId, const std::string& question) {
+void QuestionRepository::ask(const dpp::snowflake& channelId, const dpp::snowflake& userId, const std::string& question) {
     if(m_Cache.has(channelId)) {
         m_Cache.get(channelId)->emplace_back(userId.gets(), question);
     }
@@ -67,7 +65,7 @@ void QuestionRepository::ask(const aegis::snowflake& channelId, const aegis::sno
     );
 }
 
-void QuestionRepository::dismiss(const aegis::snowflake& channelId, const aegis::snowflake& userId) {
+void QuestionRepository::dismiss(const dpp::snowflake& channelId, const dpp::snowflake& userId) {
     if(m_Cache.has(channelId)) {
         auto deque = m_Cache.get(channelId);
 
@@ -91,7 +89,7 @@ void QuestionRepository::dismiss(const aegis::snowflake& channelId, const aegis:
     );
 }
 
-void QuestionRepository::clear(const aegis::snowflake& channelId) {
+void QuestionRepository::clear(const dpp::snowflake& channelId) {
     m_Cache.remove(channelId);
 
     auto client = m_DB->requestClient();

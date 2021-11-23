@@ -76,7 +76,14 @@
         "typeindex": "cpp",
         "hash_map": "cpp",
         "hash_set": "cpp",
-        "cfenv": "cpp"
+        "cfenv": "cpp",
+        "any": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "coroutine": "cpp",
+        "source_location": "cpp",
+        "ranges": "cpp",
+        "stop_token": "cpp"
     },
 
     "files.watcherExclude": {

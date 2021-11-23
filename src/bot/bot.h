@@ -1,5 +1,8 @@
 #pragma once
 
+#include <dpp/dpp.h>
+#include <spdlog/spdlog.h>
+
 #include <bot/commands/commandhandler/commandHandler.h>
 
 class Command;
@@ -31,28 +34,27 @@ namespace odb {
 class ClassroomBot {
 public:
     void registerCommand(Command* command);
-    void onMessage(aegis::gateway::events::message_create message);
+    void onMessage(const dpp::message_create_t& message);
     void init();
     bool run();
 
-    static ClassroomBot& get();
-
-    std::shared_ptr<Config> getConfig();
-    std::shared_ptr<aegis::core> getAegis();
-    std::shared_ptr<SettingsRepository> getSettingsRepo();
-    std::shared_ptr<QuestionRepository> getQuestionRepo();
-    std::shared_ptr<HandRepository> getHandRepo();
-    std::shared_ptr<MuteRepository> getMuteRepo();
-    std::shared_ptr<DB> getDatabase();
-    std::shared_ptr<spdlog::logger> getLog();
-    std::shared_ptr<CommandHandler> getCommandHandler();
-    std::shared_ptr<Localization> getLocalization();
+    static ClassroomBot& getBot();
+    static std::shared_ptr<Config> getConfig();
+    static std::shared_ptr<dpp::cluster> getCluster();
+    static std::shared_ptr<SettingsRepository> getSettingsRepo();
+    static std::shared_ptr<QuestionRepository> getQuestionRepo();
+    static std::shared_ptr<HandRepository> getHandRepo();
+    static std::shared_ptr<MuteRepository> getMuteRepo();
+    static std::shared_ptr<DB> getDatabase();
+    static std::shared_ptr<spdlog::logger> getLog();
+    static std::shared_ptr<CommandHandler> getCommandHandler();
+    static std::shared_ptr<Localization> getLocalization();
 
 private:
     void updatePresence();
 
     std::shared_ptr<Config> m_Config;
-    std::shared_ptr<aegis::core> m_AegisCore;
+    std::shared_ptr<dpp::cluster> m_Cluster;
     std::shared_ptr<SettingsRepository> m_SettingsRepo;
     std::shared_ptr<QuestionRepository> m_QuestionRepo;
     std::shared_ptr<HandRepository> m_HandRepo;
@@ -62,7 +64,6 @@ private:
     std::shared_ptr<Localization> m_Localization;
 
     std::shared_ptr<spdlog::logger> m_Log;
-    std::unique_ptr<asio::steady_timer> m_PresenceTimer;
 
     std::chrono::system_clock::time_point m_StartupTime;
 

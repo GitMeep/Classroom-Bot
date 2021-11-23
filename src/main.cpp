@@ -1,5 +1,3 @@
-#include <cbpch.h>
-
 #include <bot/bot.h>
 #include <bot/config/config.h>
 
@@ -7,7 +5,6 @@
 #include <bot/commands/handsCommand.h>
 #include <bot/commands/inviteCommand.h>
 #include <bot/commands/settingsCommand.h>
-#include <bot/commands/pchemCommand.h>
 #include <bot/commands/helpCommand.h>
 #include <bot/commands/muteCommand.h>
 
@@ -45,14 +42,13 @@ int main() {
 
     try
     {
-        ClassroomBot& classroomBot = ClassroomBot::get();
+        ClassroomBot& classroomBot = ClassroomBot::getBot();
         classroomBot.init();
 
         classroomBot.registerCommand(new QuestionCommand());
         classroomBot.registerCommand(new HandsCommand());
         classroomBot.registerCommand(new InviteCommand());
         classroomBot.registerCommand(new SettingsCommand());
-        classroomBot.registerCommand(new PchemCommand());
         classroomBot.registerCommand(new HelpCommand());
         classroomBot.registerCommand(new MuteCommand());
 

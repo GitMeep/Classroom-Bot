@@ -1,4 +1,4 @@
-#include <cbpch.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 #include <bot/commands/command.h>
 #include <bot/config/config.h>
@@ -9,7 +9,12 @@
 #include <bot/persistence/repo/muteRepo.h>
 #include <bot/localization/localization.h>
 
+#include <Poco/Net/HTTPSClientSession.h>
+#include <Poco/Net/HTTPRequest.h>
+#include <Poco/Net/HTTPResponse.h>
+
 #include <bot/bot.h>
+#include <dpp/cluster.h>
 
 enum ParserException {
     NOT_A_COMMAND,
@@ -38,28 +43,17 @@ void ClassroomBot::init() {
     }
 
     std::string token = m_Config->get()["bot"]["token"];
-    m_AegisCore = std::make_shared<aegis::core>(aegis::create_bot_t()
-        .token(token)
-    #ifdef DEBUG
-        .log_level(spdlog::level::trace)
-    #else
-        .log_level(spdlog::level::warn)
-    #endif
-        .log_format("%^%Y-%m-%d %H:%M:%S.%e [%L] [Aegis] [th#%t]%$ : %v")
-        .intents(
-            aegis::intent::Guilds |
-            aegis::intent::GuildMembers |
-            aegis::intent::GuildVoiceStates |
-            aegis::intent::GuildMessages |
-            aegis::intent::GuildMessageReactions |
-            aegis::intent::DirectMessages |
-            aegis::intent::DirectMessageReactions
-        ));
+    m_Cluster = std::make_shared<dpp::cluster>(
+        token,
+        dpp::intents::i_guilds |
+        dpp::intents::i_guild_voice_states |
+        dpp::intents::i_guild_messages |
+        dpp::intents::i_guild_message_reactions |
+        dpp::intents::i_direct_messages |
+        dpp::intents::i_direct_message_reactions
+    );
 
-    m_AegisCore->set_on_message_create(std::bind(&ClassroomBot::onMessage, this, std::placeholders::_1));
-    m_AegisCore->set_on_message_create_dm(std::bind(&ClassroomBot::onMessage, this, std::placeholders::_1));
-
-    m_AegisCore->update_presence("Starting, please wait", aegis::gateway::objects::activity::activity_type::Game);
+    m_Cluster->on_message_create(std::bind(&ClassroomBot::onMessage, this, std::placeholders::_1));
 
     m_Database = std::make_shared<DB>();
     m_SettingsRepo = std::make_shared<SettingsRepository>();
@@ -67,27 +61,17 @@ void ClassroomBot::init() {
     m_HandRepo = std::make_shared<HandRepository>();
     m_MuteRepo = std::make_shared<MuteRepository>();
     m_Localization = std::make_shared<Localization>();
-
     m_CommandHandler = std::make_shared<CommandHandler>();
 
-    m_PresenceTimer = std::make_unique<asio::steady_timer>(m_AegisCore->get_io_context(), asio::chrono::minutes(1));
-    asio::post(m_AegisCore->get_io_context(), [this] {
-        updatePresence();
-    });
+    m_Cluster->start_timer(dpp::timer_callback_t(std::bind(&ClassroomBot::updatePresence, this)), 60U);
 
     m_Initialized = true;
-}
-
-ClassroomBot& ClassroomBot::get() {
-    static ClassroomBot instance;
-    return instance;
 }
 
 bool ClassroomBot::run() {
     if(!m_Initialized) return m_Initialized;
 
-    m_AegisCore->run();
-    m_AegisCore->yield();
+    m_Cluster->start(false);
 
     return true;
 }
@@ -96,24 +80,22 @@ void ClassroomBot::registerCommand(Command* command) {
     m_CommandHandler->registerCommand(command);
 }
 
-void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
-    if(!message.has_user()) return;
-    if(&message.get_user() == nullptr) return;
-    if(message.msg.get_content().size() == 0) return;
+void ClassroomBot::onMessage(const dpp::message_create_t& message) {
+    if(message.msg->content.size() == 0) return;
 
     CommandContext ctx(
-        message.msg.get_id(),
-        message.channel.get_id(),
-        message.channel.get_guild_id(),
-        message.get_user().get_id(),
-        message.msg.is_dm(),
-        m_SettingsRepo->get(message.channel.get_guild_id())
+        message.msg->id,
+        message.msg->channel_id,
+        message.msg->guild_id,
+        message.msg->member.user_id,
+        dpp::find_channel(message.msg->channel_id)->is_dm(),
+        m_SettingsRepo->get(message.msg->guild_id)
     );
 
     std::string prefix = ctx.getSettings().prefix;
     if(ctx.isDM()) prefix = "?";
 
-    std::string content = message.msg.get_content();
+    std::string content = message.msg->content;
     bool isHelp = content.substr(0, 5) == "?help"; // if someone types ?help, ignore the actual prefix (1), and set the prefix to "?" (2), parsing it as a normal command. This ensures that ?help always works
     if(content.substr(0, prefix.length()) != prefix && !isHelp) {
         return;
@@ -130,19 +112,24 @@ void ClassroomBot::onMessage(aegis::gateway::events::message_create message) {
 }
 
 void ClassroomBot::updatePresence() {
-    int guildCount = m_AegisCore->get_guild_count();
-    auto now = std::chrono::system_clock::now();
-    auto uptime = std::chrono::duration_cast<std::chrono::hours>(now - m_StartupTime);
+    m_Log->info("Uptime: " + std::to_string(m_Cluster->uptime().hours) + " hours");
 
-    m_Log->info("Uptime: " + std::to_string(uptime.count()) + " hours");
+    unsigned int guildCount = 0;
+    for(auto shard : m_Cluster->get_shards()) {
+        guildCount += shard.second->get_guild_count();
+    }
 
     switch (m_PresenceState) {
         case 0:
-            m_AegisCore->update_presence("?help", aegis::gateway::objects::activity::activity_type::Watching);
+            m_Cluster->set_presence(dpp::presence(dpp::presence_status::ps_online, dpp::activity_type::at_listening, "?help"));
             break;
         
         case 1:
-            m_AegisCore->update_presence(std::to_string(guildCount) + " servers", aegis::gateway::objects::activity::activity_type::Watching);
+            m_Cluster->set_presence(dpp::presence(dpp::presence_status::ps_online, dpp::activity_type::at_custom, std::to_string(guildCount) + " servers"));
+            break;
+
+        case 2:
+            m_Cluster->set_presence(dpp::presence(dpp::presence_status::ps_online, dpp::activity_type::at_game, "V" + std::string(BOT_VERSION)));
             break;
 
         default:
@@ -150,7 +137,12 @@ void ClassroomBot::updatePresence() {
     }
 
     m_PresenceState++;
-    m_PresenceState = m_PresenceState % 2;
+    m_PresenceState = m_PresenceState % 3;
+
+    m_HandRepo->expire();
+    m_QuestionRepo->expire();
+
+    if(guildCount == 0) return;
 
     if(m_Config->get()["topgg"]["enable"] == "true") {
         std::string topggToken = m_Config->get()["topgg"]["token"];
@@ -162,71 +154,58 @@ void ClassroomBot::updatePresence() {
         req.setCredentials("", topggToken);
         req.setContentType("application/json");
 
-        std::string data = "{\"server_count\": " + std::to_string(guildCount) + "}";
+        std::string body = "{\"server_count\": " + std::to_string(guildCount) + "}";
+        req.setContentLength(body.length());
 
-        session.sendRequest(req) << data;
+        session.sendRequest(req) << body;
+
+        Poco::Net::HTTPResponse response;
+        session.receiveResponse(response);
     }
-
-    if(m_Config->get()["botsgg"]["enable"] == "true") {
-        std::string botsggToken = m_Config->get()["botsgg"]["token"];
-        std::string botsggId = m_Config->get()["botsgg"]["bot_id"];
-
-        Poco::Net::HTTPSClientSession session("discord.bots.gg", 443);
-        Poco::Net::HTTPRequest req("POST", "/api/v1/bots/" + botsggId + "/stats");
-
-        req.setCredentials("", botsggToken);
-        req.setContentType("application/json");
-
-        std::string data = "{\"server_count\": " + std::to_string(guildCount) + "}";
-
-        session.sendRequest(req) << data;
-    }
-
-    m_HandRepo->expire();
-    m_QuestionRepo->expire();
-
-    m_PresenceTimer->expires_after(asio::chrono::minutes(1));
-    m_PresenceTimer->async_wait(std::bind(&ClassroomBot::updatePresence, this));
 
 }
 
+ClassroomBot& ClassroomBot::getBot() {
+    static ClassroomBot instance;
+    return instance;
+}
 
 std::shared_ptr<Config> ClassroomBot::getConfig() {
-    return this->m_Config;
+    return getBot().m_Config;
 }
 
-std::shared_ptr<aegis::core> ClassroomBot::getAegis() {
-    return this->m_AegisCore;
+std::shared_ptr<dpp::cluster> ClassroomBot::getCluster() {
+    return getBot().m_Cluster;
 }
 
 std::shared_ptr<SettingsRepository> ClassroomBot::getSettingsRepo() {
-    return this->m_SettingsRepo;
+    return getBot().m_SettingsRepo;
 }
 
 std::shared_ptr<QuestionRepository> ClassroomBot::getQuestionRepo() {
-    return this->m_QuestionRepo;
+    return getBot().m_QuestionRepo;
 }
 
 std::shared_ptr<HandRepository> ClassroomBot::getHandRepo() {
-    return this->m_HandRepo;
+    return getBot().m_HandRepo;
 }
 
 std::shared_ptr<MuteRepository> ClassroomBot::getMuteRepo() {
-    return this->m_MuteRepo;
+    return getBot().m_MuteRepo;
 }
 
 std::shared_ptr<DB> ClassroomBot::getDatabase() {
-    return this->m_Database;
+    return getBot().m_Database;
 }
 
 std::shared_ptr<spdlog::logger> ClassroomBot::getLog() {
-    return this->m_Log;
+    return getBot().m_Log;
 }
 
 std::shared_ptr<CommandHandler> ClassroomBot::getCommandHandler() {
-    return this->m_CommandHandler;
+    return getBot().m_CommandHandler;
 }
 
 std::shared_ptr<Localization> ClassroomBot::getLocalization() {
-    return this->m_Localization;
+    return getBot().m_Localization;
 }

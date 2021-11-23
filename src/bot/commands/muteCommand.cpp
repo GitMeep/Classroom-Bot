@@ -15,26 +15,26 @@ void MuteCommand::call(int verb, const std::vector<std::string>& parameters, Com
         return;
     }
     
-    auto voiceStates = m_AegisCore->find_guild(ctx->getGuildId())->get_voicestates();
+    auto voiceStates = m_Cluster->find_guild(ctx->getGuildId())->get_voicestates();
     if(!voiceStates.count(ctx->getUserId()) && parameters.size() < 1) {
         ctx->respond("not_in_vc");
         return;
     }
 
-    aegis::snowflake voiceChannel;
+    dpp::snowflake voiceChannel;
     if(parameters.size() < 1) {
         voiceChannel = voiceStates[ctx->getUserId()].channel_id;
     } else {
         try {
             long long id = std::stoll(parameters[0]);
-            voiceChannel = aegis::snowflake(id);
+            voiceChannel = dpp::snowflake(id);
         } catch (std::invalid_argument& e) {
             ctx->respond("invalid_id");
             return;
         }
         if(
-        m_AegisCore->find_guild(ctx->getGuildId())->find_channel(voiceChannel) == nullptr ||
-        m_AegisCore->find_guild(ctx->getGuildId())->find_channel(voiceChannel)->get_type() != aegis::gateway::objects::channel::channel_type::Voice) {
+        m_Cluster->find_guild(ctx->getGuildId())->find_channel(voiceChannel) == nullptr ||
+        m_Cluster->find_guild(ctx->getGuildId())->find_channel(voiceChannel)->get_type() != aegis::gateway::objects::channel::channel_type::Voice) {
             ctx->respond("vc_not_exist");
             return;
         }
@@ -53,9 +53,9 @@ void MuteCommand::call(int verb, const std::vector<std::string>& parameters, Com
     muteAllIn(voiceChannel, guildId, mute);
 }
 
-void MuteCommand::muteAllIn(const aegis::snowflake& channelId, const aegis::snowflake& guildId, bool mute) {
+void MuteCommand::muteAllIn(const dpp::snowflake& channelId, const dpp::snowflake& guildId, bool mute) {
     auto muteRepo = m_Bot->getMuteRepo();
-    auto voiceStates = m_AegisCore->find_guild(guildId)->get_voicestates();
+    auto voiceStates = m_Cluster->find_guild(guildId)->get_voicestates();
     auto it = voiceStates.begin();
     while(it != voiceStates.end()) {
         if(it->second.channel_id == channelId) {
@@ -72,8 +72,8 @@ void MuteCommand::muteAllIn(const aegis::snowflake& channelId, const aegis::snow
     }
 }
 
-void MuteCommand::muteAndMark(const aegis::snowflake& userId, const aegis::snowflake& channelId, const aegis::snowflake& guildId, bool mute) {
-    m_AegisCore->find_guild(guildId)->modify_guild_member(userId, {}, mute, {}, {}, {});
+void MuteCommand::muteAndMark(const dpp::snowflake& userId, const dpp::snowflake& channelId, const dpp::snowflake& guildId, bool mute) {
+    m_Cluster->find_guild(guildId)->modify_guild_member(userId, {}, mute, {}, {}, {});
 
     auto muteRepo = m_Bot->getMuteRepo();
     muteRepo->markUser(guildId, userId, mute);
@@ -97,23 +97,23 @@ void MuteCommand::onVoiceStateUpdate(aegis::gateway::events::voice_state_update 
     if(userMarked && userMute) onMarkedUserMuted(obj.user_id, obj.channel_id, obj.guild_id);
 }
 
-void MuteCommand::onUnmutedUserInMarkedChannel(const aegis::snowflake& userId, const aegis::snowflake& channelId, const aegis::snowflake& guildId) {
+void MuteCommand::onUnmutedUserInMarkedChannel(const dpp::snowflake& userId, const dpp::snowflake& channelId, const dpp::snowflake& guildId) {
     auto muteRepo = m_Bot->getMuteRepo();
     if(!(isAdmin(guildId, userId) || muteRepo->isUserOverridden(channelId, userId))) { // if the user is not an admin, and hasn't been overriden, mute them
         muteAndMark(userId, channelId, guildId, true);
     }
 }
 
-void MuteCommand::onMarkedUserInUnmarkedChannel(const aegis::snowflake& userId, const aegis::snowflake& channelId,  const aegis::snowflake& guildId) {
+void MuteCommand::onMarkedUserInUnmarkedChannel(const dpp::snowflake& userId, const dpp::snowflake& channelId,  const dpp::snowflake& guildId) {
     muteAndMark(userId, channelId, guildId, false);
 }
 
-void MuteCommand::onMarkedUserUnmuted(const aegis::snowflake& userId, const aegis::snowflake& channelId,  const aegis::snowflake& guildId) {
+void MuteCommand::onMarkedUserUnmuted(const dpp::snowflake& userId, const dpp::snowflake& channelId,  const dpp::snowflake& guildId) {
     auto muteRepo = m_Bot->getMuteRepo();
     muteRepo->markOverride(guildId, userId, true);
 }
 
-void MuteCommand::onMarkedUserMuted(const aegis::snowflake& userId, const aegis::snowflake& channelId,  const aegis::snowflake& guildId) {
+void MuteCommand::onMarkedUserMuted(const dpp::snowflake& userId, const dpp::snowflake& channelId,  const dpp::snowflake& guildId) {
     auto muteRepo = m_Bot->getMuteRepo();
     muteRepo->markOverride(guildId, userId, false);
 }

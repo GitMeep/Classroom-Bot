@@ -9,10 +9,8 @@ project "classroombot"
     toolset "gcc"
 
     linkoptions { '-static-libstdc++', '-static-libgcc' }
-    enablewarnings { "invalid-pch" }
     files { "./src/**.h", "./src/**.cpp" }
-    pchheader "./src/cbpch.h"
-    defines { "BOT_VERSION=\"1.9.2\"", "AEGIS_SEPARATE_COMPILATION" }
+    defines { "BOT_VERSION=\"2.0.1\"" }
     includedirs { 
         "/usr/local/include/",
         "/usr/local/include/mongocxx/v_noabi",
@@ -35,7 +33,8 @@ project "classroombot"
         "mongocxx",
         "PocoFoundation",
         "PocoNet",
-        "PocoNetSSL"
+        "PocoNetSSL",
+        "dpp"
     }
 
     filter "configurations:Debug"

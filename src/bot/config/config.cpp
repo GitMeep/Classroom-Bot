@@ -22,7 +22,7 @@ json defaultConfig = {
     }
 };
 
-Config::Config() : m_Log(ClassroomBot::get().getLog()) {}
+Config::Config() : m_Log(ClassroomBot::getBot().getLog()) {}
 
 void Config::loadFromFile(const std::string& path) {
     m_Log->info("Loading config from file: " + path);

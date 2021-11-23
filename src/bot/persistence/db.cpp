@@ -1,10 +1,9 @@
-#include <cbpch.h>
 #include <bot/persistence/db.h>
 #include <bot/bot.h>
 #include <bot/config/config.h>
 
 DB::DB() {
-    auto conf = (*ClassroomBot::get().getConfig())["persistence"];
+    auto conf = (*ClassroomBot::getBot().getConfig())["persistence"];
 
     std::string url =    conf["url"];
     m_DBName = conf["db_name"];

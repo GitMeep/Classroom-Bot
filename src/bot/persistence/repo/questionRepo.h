@@ -7,15 +7,15 @@ class QuestionRepository {
 public:
     QuestionRepository();
 
-    std::deque<Question> get(aegis::snowflake channelId);
-    void ask(const aegis::snowflake& channelId, const aegis::snowflake& userId, const std::string& question);
-    void dismiss(const aegis::snowflake& channelId, const aegis::snowflake& userId);
-    void clear(const aegis::snowflake& channelId);
+    std::deque<Question> get(dpp::snowflake channelId);
+    void ask(const dpp::snowflake& channelId, const dpp::snowflake& userId, const std::string& question);
+    void dismiss(const dpp::snowflake& channelId, const dpp::snowflake& userId);
+    void clear(const dpp::snowflake& channelId);
 
     void expire();
 
 private:
-    Poco::LRUCache<aegis::snowflake, std::deque<Question>> m_Cache;
+    Poco::LRUCache<dpp::snowflake, std::deque<Question>> m_Cache;
 
     std::shared_ptr<DB> m_DB;
     std::shared_ptr<Encryption> m_Encryption;

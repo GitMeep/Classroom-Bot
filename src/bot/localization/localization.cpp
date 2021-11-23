@@ -1,4 +1,3 @@
-#include <cbpch.h>
 #include <nlohmann/json.hpp>
 
 #include <bot/bot.h>
@@ -33,6 +32,7 @@ Localization::Localization() {
         {"question_usage", "Command usage: `question [ask/list/next/clear]`"},
         {"question_limit", "Queue limit reached (max 50 questions)."},
         {"no_questions", "No questions left."},
+        {"empty_question", "You can't ask an empty question."},
 
         // hand command
         {"hand_cmd", "hand"},
@@ -70,23 +70,6 @@ Localization::Localization() {
         {"not_in_vc", "You are not in a voice channel. To mute a specifc channel, use `mute [channel id]`"},
         {"invalid_id", "Invalid ID"},
         {"vc_not_exist", "That voice channel doesn't exist."},
-
-        // pubchem command
-        {"pubchem_cmd", "pubchem"},
-        {"pubchem_alias", "pc"},
-        {"pubchem_desc", "Search information about a compound on pubchem."},
-        {"pubchem_option_desc", "`[name | cid]`: search by names or compound id."},
-        {"pubchem_comp_not_found", "Couldn't find that compound. Try entering a CID or name."},
-        {"pubchem_enter_query", "You need to enter a query."},
-        {"pubchem_none", "None"},
-        {"pubchem_not_found", "Not found"},
-        {"pubchem_too_long", "Text is too long for discord."},
-        {"pubchem_info_for", "Information for"},
-        {"pubchem_formula", "Formula"},
-        {"pubchem_mol_mass", "Molecular Mass"},
-        {"pubchem_pictograms", "Pictograms"},
-        {"pubchem_pcs", "Precautionary Statement Codes"},
-        {"pubchem_ghs_ref", "GHS reference"},
 
         // settings command
         {"settings_cmd", "settings"},
@@ -126,7 +109,7 @@ Localization::Localization() {
 
     // load other languages from ./lang
     if(!fs::exists("./lang")) {
-        ClassroomBot::get().getLog()->warn("Couldn't find languages directory at ./lang, not loading extra languages.");
+        ClassroomBot::getBot().getLog()->warn("Couldn't find languages directory at ./lang, not loading extra languages.");
         return;
     }
     for(auto& p : fs::directory_iterator("./lang")) {
@@ -147,13 +130,13 @@ void Localization::addLanguage(const std::unordered_map<std::string, std::string
     }
 
     if(missingStrings != "") {
-        ClassroomBot::get().getLog()->warn("Language " + code + " is missing strings: " + missingStrings + "\nLoading anyawys.");
+        ClassroomBot::getBot().getLog()->warn("Language " + code + " is missing strings: " + missingStrings + "\nLoading anyawys.");
     }
 
     m_Strings[code] = strings;
     m_Languages.emplace_back(code, name);
     m_Translators[code] = translator;
-    ClassroomBot::get().getLog()->info("Loaded language " + name + " with code " + code + ".");
+    ClassroomBot::getBot().getLog()->info("Loaded language " + name + " with code " + code + ".");
 }
 
 
@@ -163,7 +146,7 @@ void Localization::loadFromFile(const std::string& path) {
     file.open(path, std::ios::in);
 
     if(!file.is_open()) {
-        ClassroomBot::get().getLog()->warn("Could not open language file " + path + " even though it should exist.");
+        ClassroomBot::getBot().getLog()->warn("Could not open language file " + path + " even though it should exist.");
         return;
     } else {
         std::string jsonString;
@@ -180,13 +163,13 @@ void Localization::loadFromFile(const std::string& path) {
                 name = j["name"].get<std::string>();
                 if(name == "template") return; // do not bother parsing the template file
             } else {
-                ClassroomBot::get().getLog()->warn("File " + path + " did not include a name, ignoring it.");
+                ClassroomBot::getBot().getLog()->warn("File " + path + " did not include a name, ignoring it.");
                 return;
             }
             if(j.count("code") == 1) {
                 code = j["code"].get<std::string>();
             } else {
-                ClassroomBot::get().getLog()->warn("File " + path + " did not include a code, ignoring it.");
+                ClassroomBot::getBot().getLog()->warn("File " + path + " did not include a code, ignoring it.");
                 return;
             }
             if(j.count("translator") == 1) {
@@ -201,11 +184,11 @@ void Localization::loadFromFile(const std::string& path) {
                 }
                 addLanguage(strings, code, name, translator);
             } else {
-                ClassroomBot::get().getLog()->warn("File " + path + " did not include and array of strings, ignoring it.");
+                ClassroomBot::getBot().getLog()->warn("File " + path + " did not include and array of strings, ignoring it.");
                 return;
             }
         } catch (nlohmann::json::parse_error& e) {
-            ClassroomBot::get().getLog()->warn("Failed to parse language file: " + path + "\n" + std::string(e.what()));
+            ClassroomBot::getBot().getLog()->warn("Failed to parse language file: " + path + "\n" + std::string(e.what()));
             return;
         }
     }

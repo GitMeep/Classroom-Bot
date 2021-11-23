@@ -1,5 +1,3 @@
-#include <cbpch.h>
-
 #include <bot/config/config.h>
 #include <bot/commands/settingsCommand.h>
 #include <bot/bot.h>
@@ -30,9 +28,17 @@ void SettingsCommand::set(CommandContext* ctx, const std::vector<std::string>& p
         ctx->respond("settings_usage");
         return;
     }
+
     std::string
         name = parameters[1],
-        value = parameters[2];
+        value = "";
+
+    for(int i = 2; i < parameters.size(); i++) {
+        value += parameters[i];
+        if(i != parameters.size()-1) {
+            value += " ";
+        }
+    }
 
     LocHelper loc(m_Bot->getLocalization(), ctx->getSettings().lang);
     std::string
@@ -52,6 +58,9 @@ void SettingsCommand::set(CommandContext* ctx, const std::vector<std::string>& p
 
     if(name == localizedPrefix) {
         settings.prefix = value;
+        if(settings.prefix.find(" ")) {
+            settings.prefix = settings.prefix.substr(0, settings.prefix.find_first_of(" "));
+        }
     } else if(name == localizedRole) {
         settings.roleName = value;
     } else if(name == localizedLang) {
@@ -88,7 +97,7 @@ void SettingsCommand::get(CommandContext* ctx) {
     LocHelper loc(m_Bot->getLocalization(), ctx->getSettings().lang);
 
     nlohmann::json embed {
-        {"title", loc.get("settings_for") + " " + m_AegisCore->find_guild(ctx->getGuildId())->get_name()},
+        {"title", loc.get("settings_for") + " " + m_Cluster->find_guild(ctx->getGuildId())->get_name()},
         {"fields", nlohmann::json::array({
             {
                 {"name", loc.get("settings_prefix")},
@@ -105,7 +114,7 @@ void SettingsCommand::get(CommandContext* ctx) {
         })}
     };
 
-    m_AegisCore->create_message_embed(ctx->getChannelId(), "", embed);
+    m_Cluster->create_message_embed(ctx->getChannelId(), "", embed);
 }
 
 CommandInfo SettingsCommand::getCommandInfo() {

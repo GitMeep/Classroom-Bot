@@ -1,5 +1,3 @@
-#include <cbpch.h>
-
 #include <bot/commands/helpCommand.h>
 #include <bot/bot.h>
 
@@ -20,7 +18,7 @@ void HelpCommand::call(int verb, const std::vector<std::string>& parameters, Com
     }
 
     nlohmann::json embed;
-    LocHelper loc(ClassroomBot::get().getLocalization(), ctx->getSettings().lang);
+    LocHelper loc(ClassroomBot::getLocalization(), ctx->getSettings().lang);
 
     bool detail = commandName != "";
     if (detail) {
@@ -72,7 +70,7 @@ void HelpCommand::call(int verb, const std::vector<std::string>& parameters, Com
     msg.content("");
     msg.embed(embed);
     msg.user_id(ctx->getUserId());
-    m_AegisCore->create_dm_message(msg);
+    m_Cluster->create_dm_message(msg);
 }
 
 CommandInfo HelpCommand::getCommandInfo() {

@@ -41,6 +41,11 @@ void QuestionCommand::ask(CommandContext* ctx, const std::vector<std::string>& p
         ctx->respond("question_limit");
         return;
     }
+
+    if(question == "") {
+        ctx->respond("empty_question");
+        return;
+    }
     
     m_Bot->getQuestionRepo()->ask(ctx->getChannelId(), ctx->getUserId(), question);
     ctx->confirm();
