@@ -22,15 +22,17 @@ json defaultConfig = {
     }
 };
 
-Config::Config() : m_Log(ClassroomBot::getBot().getLog()) {}
+// static members
+bool Config::m_Loaded = false;
+json Config::m_Config;
 
 void Config::loadFromFile(const std::string& path) {
-    m_Log->info("Loading config from file: " + path);
+    LOG_INFO("Loading config from file: " + path);
     std::fstream file;
     file.open(path, std::ios::in);
 
     if(!file.is_open()) {
-        m_Log->warn("Could not open config file, using default config.");
+        LOG_WARN("Could not open config file, using default config.");
         m_Config = defaultConfig;
     } else {
         std::string jsonString;
@@ -44,7 +46,7 @@ void Config::loadFromFile(const std::string& path) {
             json j = json::parse(jsonString);
             m_Config = j;
         } catch (json::parse_error& e) {
-            m_Log->warn("Failed to parse settings: \n" + std::string(e.what()));
+            LOG_WARN("Failed to parse settings: \n" + std::string(e.what()));
             throw std::runtime_error("Couldn't load settings! To generate a clean config file, delete your existing one and run the program again.");
         }
     }
@@ -86,10 +88,6 @@ json replaceEnvVars(json& js) {
 // searches config for values contained within ${} and replaces it with the environmen variable
 void Config::fillEnvVars() {
     replaceEnvVars(m_Config);
-}
-
-json Config::operator[](const std::string& key) {
-    return m_Config[key];
 }
 
 json Config::get() {

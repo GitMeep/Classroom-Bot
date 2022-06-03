@@ -35,7 +35,7 @@ void QuestionCommand::ask(CommandContext* ctx, const std::vector<std::string>& p
         if(i != parameters.end()) question += " ";
     }
 
-    auto questions = m_Bot->getQuestionRepo()->get(ctx->getChannelId());
+    auto questions = ClassroomBot::questionRepo()->get(ctx->getChannelId());
     
     if(questions.size() >= 50) {
         ctx->respond("question_limit");
@@ -47,12 +47,12 @@ void QuestionCommand::ask(CommandContext* ctx, const std::vector<std::string>& p
         return;
     }
     
-    m_Bot->getQuestionRepo()->ask(ctx->getChannelId(), ctx->getUserId(), question);
+    ClassroomBot::questionRepo()->ask(ctx->getChannelId(), ctx->getUserId(), question);
     ctx->confirm();
 }
 
 void QuestionCommand::list(CommandContext* ctx) {
-    auto questions = m_Bot->getQuestionRepo()->get(ctx->getChannelId());
+    auto questions = ClassroomBot::questionRepo()->get(ctx->getChannelId());
 
     if(!questions.size()) {
         ctx->respond("no_questions");
@@ -79,7 +79,7 @@ void QuestionCommand::next(CommandContext* ctx) {
         return;
     }
 
-    auto questions = m_Bot->getQuestionRepo()->get(ctx->getChannelId());
+    auto questions = ClassroomBot::questionRepo()->get(ctx->getChannelId());
 
     if(questions.size() == 0) {
         ctx->respond("no_questions");
@@ -88,7 +88,7 @@ void QuestionCommand::next(CommandContext* ctx) {
 
     Question question = questions.front();
     
-    m_Bot->getQuestionRepo()->dismiss(ctx->getChannelId(), question.userId);
+    ClassroomBot::questionRepo()->dismiss(ctx->getChannelId(), question.userId);
 
     std::string username = getUsername(question.userId, ctx->getGuildId());
     ctx->respondUnlocalized(fmt::format("```{0}: {1}```", username, question.question));
@@ -100,7 +100,7 @@ void QuestionCommand::clear(CommandContext* ctx) {
         return;
     }
 
-    m_Bot->getQuestionRepo()->clear(ctx->getChannelId());
+    ClassroomBot::questionRepo()->clear(ctx->getChannelId());
     ctx->confirm();
 }
 

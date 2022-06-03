@@ -20,29 +20,24 @@ using bsoncxx::builder::stream::finalize;
 using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::open_document;
 
-QuestionRepository::QuestionRepository() {
-    m_Log = ClassroomBot::getBot().getLog();
+Poco::LRUCache<dpp::snowflake, std::deque<Question>> QuestionRepo::m_Cache;
 
-    m_DB = ClassroomBot::getBot().getDatabase();
-    this->m_Encryption = m_DB->encryption;
-}
-
-std::deque<Question> QuestionRepository::get(dpp::snowflake channelId) {
+std::deque<Question> QuestionRepo::get(dpp::snowflake channelId) {
     if(m_Cache.has(channelId)) {
         return *(m_Cache.get(channelId));
     }
 
-    auto client = m_DB->requestClient();
+    auto client = DB::requestClient();
     mongocxx::cursor result
-        = (*client)[m_DB->dbName()]["Questions"].find(document{} << "channelId" << channelId.gets() << finalize);
+        = (*client)[DB::name()]["Questions"].find(document{} << "channelId" << std::to_string(channelId) << finalize);
 
     std::deque<Question> questions;
     for(auto doc : result) {
-        std::string userId = doc["userId"].get_utf8().value.to_string();
-        std::string question = doc["question"].get_utf8().value.to_string();
-        std::string decryptedQuestion = m_Encryption->decrypt(question);
+        std::string userId = std::string(doc["userId"].get_utf8().value);
+        std::string question = std::string(doc["question"].get_utf8().value);
+        std::string decryptedQuestion = Encryption::decrypt(question);
 
-        questions.emplace_back(userId, decryptedQuestion);
+        questions.emplace_back(std::stoull(userId), decryptedQuestion);
     }
 
     m_Cache.add(channelId, questions);
@@ -50,22 +45,22 @@ std::deque<Question> QuestionRepository::get(dpp::snowflake channelId) {
     return questions;
 }
 
-void QuestionRepository::ask(const dpp::snowflake& channelId, const dpp::snowflake& userId, const std::string& question) {
+void QuestionRepo::ask(const dpp::snowflake& channelId, const dpp::snowflake& userId, const std::string& question) {
     if(m_Cache.has(channelId)) {
-        m_Cache.get(channelId)->emplace_back(userId.gets(), question);
+        m_Cache.get(channelId)->emplace_back(userId, question);
     }
     
-    auto client = m_DB->requestClient();
-    (*client)[m_DB->dbName()]["Questions"].insert_one(document{}
-        << "channelId" << channelId.gets()
-        << "userId" << userId.gets()
-        << "question" <<  m_Encryption->encrypt(question)
+    auto client = DB::requestClient();
+    (*client)[DB::name()]["Questions"].insert_one(document{}
+        << "channelId" << std::to_string(channelId)
+        << "userId" << std::to_string(userId)
+        << "question" <<  Encryption::encrypt(question)
         << "updated" << bsoncxx::types::b_date(std::chrono::system_clock::now())
         << finalize
     );
 }
 
-void QuestionRepository::dismiss(const dpp::snowflake& channelId, const dpp::snowflake& userId) {
+void QuestionRepo::dismiss(const dpp::snowflake& channelId, const dpp::snowflake& userId) {
     if(m_Cache.has(channelId)) {
         auto deque = m_Cache.get(channelId);
 
@@ -81,28 +76,28 @@ void QuestionRepository::dismiss(const dpp::snowflake& channelId, const dpp::sno
         }
     }
 
-    auto client = m_DB->requestClient();
-    (*client)[m_DB->dbName()]["Questions"].delete_one(document{}
-        << "channelId" << channelId.gets()
-        << "userId" << userId.gets()
+    auto client = DB::requestClient();
+    (*client)[DB::name()]["Questions"].delete_one(document{}
+        << "channelId" << std::to_string(channelId)
+        << "userId" << std::to_string(userId)
         << finalize
     );
 }
 
-void QuestionRepository::clear(const dpp::snowflake& channelId) {
+void QuestionRepo::clear(const dpp::snowflake& channelId) {
     m_Cache.remove(channelId);
 
-    auto client = m_DB->requestClient();
-    (*client)[m_DB->dbName()]["Questions"].delete_many(document{}
-        << "channelId" << channelId.gets()
+    auto client = DB::requestClient();
+    (*client)[DB::name()]["Questions"].delete_many(document{}
+        << "channelId" << std::to_string(channelId)
         << finalize
     );
 }
 
-void QuestionRepository::expire() {
+void QuestionRepo::expire() {
     auto expiryCliff = std::chrono::system_clock::now() - std::chrono::hours(29 * 24); //29 days * 24 hrs/day
-    auto client = m_DB->requestClient();
-    (*client)[m_DB->dbName()]["Questions"].delete_many(document{}
+    auto client = DB::requestClient();
+    (*client)[DB::name()]["Questions"].delete_many(document{}
         << "updated" << open_document
             << "$lt" << bsoncxx::types::b_date(expiryCliff)
         << close_document

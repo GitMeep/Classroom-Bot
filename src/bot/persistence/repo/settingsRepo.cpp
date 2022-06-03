@@ -21,23 +21,19 @@ using bsoncxx::builder::stream::finalize;
 using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::open_document;
 
-const Settings defaultSettings {"?", "Teacher", "eng"};
+const Settings SettingsRepo::defaultSettings {"?", "Teacher", "eng"};
 
-SettingsRepository::SettingsRepository() {
-    m_Log = ClassroomBot::getBot().getLog();
+// static members
+Poco::LRUCache<dpp::snowflake, Settings> SettingsRepo::m_Cache;
 
-    m_DB = ClassroomBot::getBot().getDatabase();
-    this->m_Encryption = m_DB->encryption;
-}
-
-Settings SettingsRepository::get(const dpp::snowflake& guildId) {
+Settings SettingsRepo::get(const dpp::snowflake& guildId) {
     if(m_Cache.has(guildId)) {
         return *(m_Cache.get(guildId));
     }
 
-    auto client = m_DB->requestClient();
-    auto result = (*client)[m_DB->dbName()]["Settings"].find_one(document{}
-        << "guildId" << guildId.gets()
+    auto client = DB::requestClient();
+    auto result = (*client)[DB::name()]["Settings"].find_one(document{}
+        << "guildId" << std::to_string(guildId)
         << finalize
     );
 
@@ -45,17 +41,17 @@ Settings SettingsRepository::get(const dpp::snowflake& guildId) {
         std::string prefix, role, lang;
 
         if(result->view()["prefix"]) {
-            prefix = m_Encryption->decrypt(result->view()["prefix"].get_utf8().value.to_string());
+            prefix = Encryption::decrypt(std::string(result->view()["prefix"].get_utf8().value));
         } else {
             prefix = defaultSettings.prefix;
         }
         if(result->view()["roleName"]) {
-            role = m_Encryption->decrypt(result->view()["roleName"].get_utf8().value.to_string());
+            role = Encryption::decrypt(std::string(result->view()["roleName"].get_utf8().value));
         } else {
             role = defaultSettings.roleName;
         }
         if(result->view()["lang"]) {
-            lang = m_Encryption->decrypt(result->view()["lang"].get_utf8().value.to_string());
+            lang = Encryption::decrypt(std::string(result->view()["lang"].get_utf8().value));
         } else {
             lang = defaultSettings.lang;
         }
@@ -72,19 +68,19 @@ Settings SettingsRepository::get(const dpp::snowflake& guildId) {
     return defaultSettings;
 }
 
-void SettingsRepository::save(const dpp::snowflake& guildId, const Settings& settings) {
+void SettingsRepo::save(const dpp::snowflake& guildId, const Settings& settings) {
     m_Cache.add(guildId, settings);
 
-    auto client = m_DB->requestClient();
-    (*client)[m_DB->dbName()]["Settings"].update_one(
+    auto client = DB::requestClient();
+    (*client)[DB::name()]["Settings"].update_one(
     document{}
-        << "guildId" << guildId.gets()
+        << "guildId" << std::to_string(guildId)
     << finalize,
     document{}
         << "$set" << open_document
-            << "prefix" << m_Encryption->encrypt(settings.prefix)
-            << "roleName" << m_Encryption->encrypt(settings.roleName)
-            << "lang" << m_Encryption->encrypt(settings.lang)
+            << "prefix" << Encryption::encrypt(settings.prefix)
+            << "roleName" << Encryption::encrypt(settings.roleName)
+            << "lang" << Encryption::encrypt(settings.lang)
         << close_document
     << finalize,
     mongocxx::options::update().upsert(true)

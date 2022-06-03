@@ -3,27 +3,14 @@
 #include <dpp/dpp.h>
 #include <spdlog/spdlog.h>
 
-#include <bot/commands/commandhandler/commandHandler.h>
-
 class Command;
 class Config;
-class SettingsRepository;
-class QuestionRepository;
-class HandRepository;
-class MuteRepository;
+class SettingsRepo;
+class QuestionRepo;
+class HandRepo;
+class MuteRepo;
 class DB;
 class Localization;
-
-namespace aegis {
-    class core;
-    class snowflake;
-    namespace gateway {
-        namespace events {
-            struct message_create;
-            struct guild_create;
-        };
-    };
-};
 
 namespace odb {
     namespace core {
@@ -31,42 +18,32 @@ namespace odb {
     };
 };
 
+// convenience macros for logging
+#define LOG_TRACE(message) ClassroomBot::log(dpp::ll_trace, message)
+#define LOG_DEBUG(message) ClassroomBot::log(dpp::ll_debug, message)
+#define LOG_INFO(message) ClassroomBot::log(dpp::ll_info, message)
+#define LOG_WARN(message) ClassroomBot::log(dpp::ll_warning, message)
+#define LOG_ERROR(message) ClassroomBot::log(dpp::ll_error, message)
+#define LOG_CRITICAL(message) ClassroomBot::log(dpp::ll_critical, message)
+
 class ClassroomBot {
 public:
-    void registerCommand(Command* command);
-    void onMessage(const dpp::message_create_t& message);
-    void init();
-    bool run();
+    static void registerCommand(Command* command);
+    static void onCommand(const dpp::slashcommand_t& event);
+    static void init();
+    static bool run();
 
-    static ClassroomBot& getBot();
-    static std::shared_ptr<Config> getConfig();
-    static std::shared_ptr<dpp::cluster> getCluster();
-    static std::shared_ptr<SettingsRepository> getSettingsRepo();
-    static std::shared_ptr<QuestionRepository> getQuestionRepo();
-    static std::shared_ptr<HandRepository> getHandRepo();
-    static std::shared_ptr<MuteRepository> getMuteRepo();
-    static std::shared_ptr<DB> getDatabase();
-    static std::shared_ptr<spdlog::logger> getLog();
-    static std::shared_ptr<CommandHandler> getCommandHandler();
-    static std::shared_ptr<Localization> getLocalization();
+    static void log(const dpp::loglevel& ll, const std::string& message);
+
+    static dpp::cluster&        cluster();
 
 private:
-    void updatePresence();
+    static void updatePresence(dpp::timer timer);
 
-    std::shared_ptr<Config> m_Config;
-    std::shared_ptr<dpp::cluster> m_Cluster;
-    std::shared_ptr<SettingsRepository> m_SettingsRepo;
-    std::shared_ptr<QuestionRepository> m_QuestionRepo;
-    std::shared_ptr<HandRepository> m_HandRepo;
-    std::shared_ptr<MuteRepository> m_MuteRepo;
-    std::shared_ptr<DB> m_Database;
-    std::shared_ptr<CommandHandler> m_CommandHandler;
-    std::shared_ptr<Localization> m_Localization;
+    static dpp::cluster* m_Cluster;
 
-    std::shared_ptr<spdlog::logger> m_Log;
+    static std::chrono::system_clock::time_point m_StartupTime;
 
-    std::chrono::system_clock::time_point m_StartupTime;
-
-    unsigned char m_PresenceState = 0;
-    bool m_Initialized = false;
+    static unsigned char m_PresenceState;
+    static bool m_Initialized;
 };

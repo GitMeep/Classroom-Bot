@@ -4,8 +4,8 @@ struct Question {
     dpp::snowflake userId;
     std::string question;
 
-    Question(std::string userId_, std::string question_) {
-        userId = dpp::snowflake(userId_);
-        question = question_;
+    Question(dpp::snowflake _userId, std::string _question) {
+        userId = _userId;
+        question = _question;
     }
 };

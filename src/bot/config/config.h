@@ -1,7 +1,6 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
-#include <spdlog/spdlog.h>
+#include <dpp/nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
@@ -9,17 +8,15 @@ class ClassroomBot;
 
 class Config {
 public:
-    Config();
-    void loadFromFile(const std::string& path);
-    json get();
-    bool isLoaded();
-    json operator[](const std::string& key);
+    Config(const Config&) = delete; // delete any constructor, purely static class
+
+    static void loadFromFile(const std::string& path);
+    static json get();
+    static bool isLoaded();
     
 private:
-    void writeDefaultConfig(const std::string& path);
-    void fillEnvVars();
-    bool m_Loaded = false;
-    json m_Config;
-    std::shared_ptr<spdlog::logger> m_Log;
-
+    static void writeDefaultConfig(const std::string& path);
+    static void fillEnvVars();
+    static bool m_Loaded;
+    static json m_Config;
 };

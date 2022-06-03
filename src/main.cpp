@@ -6,7 +6,7 @@
 #include <bot/commands/inviteCommand.h>
 #include <bot/commands/settingsCommand.h>
 #include <bot/commands/helpCommand.h>
-#include <bot/commands/muteCommand.h>
+// #include <bot/commands/muteCommand.h>
 
 #include <execinfo.h>
 #include <stdio.h>
@@ -40,24 +40,22 @@ int main() {
     signal(SIGSEGV, print_backtrace);
     signal(SIGBUS, print_backtrace);
 
-    try
-    {
-        ClassroomBot& classroomBot = ClassroomBot::getBot();
-        classroomBot.init();
+    try {
+        ClassroomBot::init();
 
-        classroomBot.registerCommand(new QuestionCommand());
-        classroomBot.registerCommand(new HandsCommand());
-        classroomBot.registerCommand(new InviteCommand());
-        classroomBot.registerCommand(new SettingsCommand());
-        classroomBot.registerCommand(new HelpCommand());
-        classroomBot.registerCommand(new MuteCommand());
+        /*
+        ClassroomBot::registerCommand(new QuestionCommand());
+        ClassroomBot::registerCommand(new HandsCommand());
+        ClassroomBot::registerCommand(new InviteCommand());
+        ClassroomBot::registerCommand(new SettingsCommand());
+        ClassroomBot::registerCommand(new HelpCommand());
+        ClassroomBot::registerCommand(new MuteCommand());
+        */
 
-        classroomBot.run();
+        ClassroomBot::run();
 
         return 0;
-    }
-    catch (std::system_error &e)
-    {
+    } catch (std::system_error &e) {
         std::cout << "Bot failed with error message: \n" << std::string(e.what()) << std::endl;
         print_backtrace(0);
         return 1;

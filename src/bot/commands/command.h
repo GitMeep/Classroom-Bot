@@ -54,15 +54,7 @@ class ClassroomBot;
 
 class Command {
 public:
-    Command();
-
     virtual void call(int verb, const std::vector<std::string>& parameters, CommandContext* ctx) = 0;
 
     virtual CommandInfo getCommandInfo() = 0;
-
-protected:
-    std::shared_ptr<spdlog::logger> m_Log;
-    std::shared_ptr<dpp::cluster> m_Cluster;
-    ClassroomBot* m_Bot;
-
 };

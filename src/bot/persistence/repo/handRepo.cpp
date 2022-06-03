@@ -21,24 +21,21 @@ using bsoncxx::builder::stream::finalize;
 using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::open_document;
 
-HandRepository::HandRepository() {
-    m_Log = ClassroomBot::getBot().getLog();
-    m_DB = ClassroomBot::getBot().getDatabase();
-}
+Poco::LRUCache<dpp::snowflake, std::list<dpp::snowflake>> HandRepo::m_Cache;
 
-std::list<dpp::snowflake> HandRepository::get(const dpp::snowflake& channelId) {
+std::list<dpp::snowflake> HandRepo::get(const dpp::snowflake& channelId) {
     if(m_Cache.has(channelId)) {
         return *(m_Cache.get(channelId));
     }
 
-    auto client = m_DB->requestClient();
+    auto client = DB::requestClient();
     mongocxx::cursor result
-        = (*client)[m_DB->dbName()]["Hands"].find(document{} << "channelId" << channelId.gets() << finalize);
+        = (*client)[DB::name()]["Hands"].find(document{} << "channelId" << std::to_string(channelId) << finalize);
 
     std::list<dpp::snowflake> hands;
     for(auto doc : result) {
-        std::string value = doc["userId"].get_utf8().value.to_string();
-        hands.emplace_back(value);
+        std::string value = std::string(doc["userId"].get_utf8().value);
+        hands.emplace_back(std::stoull(value));
     }
 
     m_Cache.add(channelId, hands);
@@ -46,7 +43,7 @@ std::list<dpp::snowflake> HandRepository::get(const dpp::snowflake& channelId) {
     return hands;
 }
 
-void HandRepository::raise(const dpp::snowflake& channelId, const dpp::snowflake& user) {
+void HandRepo::raise(const dpp::snowflake& channelId, const dpp::snowflake& user) {
     if(m_Cache.has(channelId)) {
         auto list = m_Cache.get(channelId);
         list->emplace_back(user);
@@ -54,16 +51,16 @@ void HandRepository::raise(const dpp::snowflake& channelId, const dpp::snowflake
         m_Cache.add(channelId, {user});
     }
 
-    auto client = m_DB->requestClient();
-    (*client)[m_DB->dbName()]["Hands"].insert_one(document{}
-        << "channelId" << channelId.gets()
-        << "userId" << user.gets()
+    auto client = DB::requestClient();
+    (*client)[DB::name()]["Hands"].insert_one(document{}
+        << "channelId" << std::to_string(channelId)
+        << "userId" << std::to_string(user)
         << "updated" << bsoncxx::types::b_date(std::chrono::system_clock::now())
         << finalize
     );
 }
 
-void HandRepository::lower(const dpp::snowflake& channelId, const dpp::snowflake& user) {
+void HandRepo::lower(const dpp::snowflake& channelId, const dpp::snowflake& user) {
     if(m_Cache.has(channelId)) {
         auto list = m_Cache.get(channelId);
         list->remove(user);
@@ -72,28 +69,28 @@ void HandRepository::lower(const dpp::snowflake& channelId, const dpp::snowflake
         }
     }
 
-    auto client = m_DB->requestClient();
-    (*client)[m_DB->dbName()]["Hands"].delete_one(document{}
-        << "channelId" <<channelId.gets()
-        << "userId" << user.gets()
+    auto client = DB::requestClient();
+    (*client)[DB::name()]["Hands"].delete_one(document{}
+        << "channelId" << std::to_string(channelId)
+        << "userId" << std::to_string(user)
         << finalize
     );
 }
 
-void HandRepository::clear(const dpp::snowflake& channelId) {
+void HandRepo::clear(const dpp::snowflake& channelId) {
     m_Cache.remove(channelId);
 
-    auto client = m_DB->requestClient();
-    (*client)[m_DB->dbName()]["Hands"].delete_many(document{}
-        << "channelId" << channelId.gets()
+    auto client = DB::requestClient();
+    (*client)[DB::name()]["Hands"].delete_many(document{}
+        << "channelId" << std::to_string(channelId)
         << finalize
     );
 }
 
-void HandRepository::expire() {
+void HandRepo::expire() {
     auto expiryCliff = std::chrono::system_clock::now() - std::chrono::hours(29 * 24); //29 days * 24 hrs/day
-    auto client = m_DB->requestClient();
-    (*client)[m_DB->dbName()]["Hands"].delete_many(document{}
+    auto client = DB::requestClient();
+    (*client)[DB::name()]["Hands"].delete_many(document{}
         << "updated" << open_document
             << "$lt" << bsoncxx::types::b_date(expiryCliff)
         << close_document

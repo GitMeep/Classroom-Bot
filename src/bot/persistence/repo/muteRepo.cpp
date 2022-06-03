@@ -20,24 +20,24 @@ using bsoncxx::builder::stream::finalize;
 using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::open_document;
 
-MuteRepository::MuteRepository() {
-    m_Log = ClassroomBot::getBot().getLog();
-    m_DB = ClassroomBot::getBot().getDatabase();
-}
+// static members
+Poco::LRUCache<dpp::snowflake, bool> MuteRepo::m_ChannelCache;
+Poco::LRUCache<dpp::snowflake, std::set<dpp::snowflake>> MuteRepo::m_UsersCache;
+Poco::LRUCache<dpp::snowflake, std::set<dpp::snowflake>> MuteRepo::m_UserOverridesCache;
 
-std::set<dpp::snowflake> MuteRepository::getMutedUsers(const dpp::snowflake& guildId) {
+std::set<dpp::snowflake> MuteRepo::getMutedUsers(const dpp::snowflake& guildId) {
     if(m_UsersCache.has(guildId)) {
         return *(m_UsersCache.get(guildId));
     }
     
-    auto client = m_DB->requestClient();
-    auto result = (*client)[m_DB->dbName()]["MutedUsers"].find(document{} << "guildId" << guildId.gets() << finalize);
+    auto client = DB::requestClient();
+    auto result = (*client)[DB::name()]["MutedUsers"].find(document{} << "guildId" << std::to_string(guildId) << finalize);
 
     std::set<dpp::snowflake> users;
     for (auto doc : result) {
-        std::string value = doc["userId"].get_utf8().value.to_string();
+        std::string value = std::string(doc["userId"].get_utf8().value);
         std::string decryptedValue = value;
-        users.emplace(decryptedValue);
+        users.emplace(std::stoull(decryptedValue));
     }
 
     m_UsersCache.add(guildId, users);
@@ -46,7 +46,7 @@ std::set<dpp::snowflake> MuteRepository::getMutedUsers(const dpp::snowflake& gui
 
 }
 
-void MuteRepository::markUser(const dpp::snowflake& guildId, const dpp::snowflake& user, bool muted) {
+void MuteRepo::markUser(const dpp::snowflake& guildId, const dpp::snowflake& user, bool muted) {
     if(m_UsersCache.has(guildId)) {
         auto guildMutes = m_UsersCache.get(guildId);
         if(muted) {
@@ -56,32 +56,32 @@ void MuteRepository::markUser(const dpp::snowflake& guildId, const dpp::snowflak
         }
     }
 
-    auto client = m_DB->requestClient();
+    auto client = DB::requestClient();
     if(muted) {
-        (*client)[m_DB->dbName()]["MutedUsers"].insert_one(document{}
-            << "guildId" << guildId.gets()
-            << "userId" << user.gets()
+        (*client)[DB::name()]["MutedUsers"].insert_one(document{}
+            << "guildId" << std::to_string(guildId)
+            << "userId" << std::to_string(user)
             << finalize
         );
     } else {
-        (*client)[m_DB->dbName()]["MutedUsers"].delete_one(document{}
-            << "guildId" << guildId.gets()
-            << "userId" << user.gets()
+        (*client)[DB::name()]["MutedUsers"].delete_one(document{}
+            << "guildId" << std::to_string(guildId)
+            << "userId" << std::to_string(user)
             << finalize
         );
     }
     
 }
 
-bool MuteRepository::isUserMarked(const dpp::snowflake& guildId, const dpp::snowflake& userId) {
+bool MuteRepo::isUserMarked(const dpp::snowflake& guildId, const dpp::snowflake& userId) {
     if(m_UsersCache.has(guildId)) {
         return m_UsersCache.get(guildId)->count(userId) == 1;
     }
 
-    auto client = m_DB->requestClient();
-    auto result =  (*client)[m_DB->dbName()]["MutedUsers"].find_one(document{}
-        << "guildId" << guildId.gets()
-        << "userId" << userId.gets()
+    auto client = DB::requestClient();
+    auto result =  (*client)[DB::name()]["MutedUsers"].find_one(document{}
+        << "guildId" << std::to_string(guildId)
+        << "userId" << std::to_string(userId)
         << finalize
     );
 
@@ -97,7 +97,7 @@ bool MuteRepository::isUserMarked(const dpp::snowflake& guildId, const dpp::snow
     return (bool)result;
 }
 
-void MuteRepository::markOverride(const dpp::snowflake& guildId, const dpp::snowflake& user, bool overwritten) {
+void MuteRepo::markOverride(const dpp::snowflake& guildId, const dpp::snowflake& user, bool overwritten) {
     Poco::SharedPtr<std::set<dpp::snowflake>> overrides;
     if(m_UserOverridesCache.has(guildId)) {
         overrides = m_UserOverridesCache.get(guildId);
@@ -114,7 +114,7 @@ void MuteRepository::markOverride(const dpp::snowflake& guildId, const dpp::snow
     m_UserOverridesCache.add(guildId, overrides);
 }
 
-bool MuteRepository::isUserOverridden(const dpp::snowflake& guildId, const dpp::snowflake& user) {
+bool MuteRepo::isUserOverridden(const dpp::snowflake& guildId, const dpp::snowflake& user) {
     Poco::SharedPtr<std::set<dpp::snowflake>> overrides;
     if(m_UserOverridesCache.has(guildId)) {
         overrides = m_UserOverridesCache.get(guildId);
@@ -125,14 +125,14 @@ bool MuteRepository::isUserOverridden(const dpp::snowflake& guildId, const dpp::
     return overrides->count(user) == 1; 
 }
 
-bool MuteRepository::isChannelMarked(const dpp::snowflake& channelId) {
+bool MuteRepo::isChannelMarked(const dpp::snowflake& channelId) {
     if(m_ChannelCache.has(channelId)) {
         return *(m_ChannelCache.get(channelId));
     }
 
-    auto client = m_DB->requestClient();
-    auto result =  (*client)[m_DB->dbName()]["MutedChannels"].find_one(document{}
-        << "channelId" << channelId.gets()
+    auto client = DB::requestClient();
+    auto result =  (*client)[DB::name()]["MutedChannels"].find_one(document{}
+        << "channelId" << std::to_string(channelId)
         << finalize
     );
 
@@ -141,19 +141,19 @@ bool MuteRepository::isChannelMarked(const dpp::snowflake& channelId) {
     return (bool)result;
 }
 
-void MuteRepository::markChannel(const dpp::snowflake& channelId, bool muted) {
+void MuteRepo::markChannel(const dpp::snowflake& channelId, bool muted) {
     m_ChannelCache.add(channelId, muted);
 
-    auto client = m_DB->requestClient();
+    auto client = DB::requestClient();
     if(muted) {
-        (*client)[m_DB->dbName()]["MutedChannels"].insert_one(document{}
-            << "channelId" << channelId.gets()
+        (*client)[DB::name()]["MutedChannels"].insert_one(document{}
+            << "channelId" << std::to_string(channelId)
             << finalize
         );
     } else {
         m_UserOverridesCache.remove(channelId);
-        (*client)[m_DB->dbName()]["MutedChannels"].delete_one(document{}
-            << "channelId" << channelId.gets()
+        (*client)[DB::name()]["MutedChannels"].delete_one(document{}
+            << "channelId" << std::to_string(channelId)
             << finalize
         );
     }

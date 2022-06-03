@@ -11,21 +11,23 @@ using namespace CryptoPP;
 
 class Encryption {
 public:
-    Encryption();
+    Encryption(const Encryption&) = delete;
 
-    std::string encryptOLD(const std::string& plainText);
-    std::string decryptOLD(const std::string& cipherText);
+    static void init();
 
-    std::string encrypt(const std::string& plainText);
-    std::string decrypt(const std::string& cipherText);
+    static std::string encryptOLD(const std::string& plainText);
+    static std::string decryptOLD(const std::string& cipherText);
 
-    void generateIV(byte* iv, int size = AES::BLOCKSIZE);
+    static std::string encrypt(const std::string& plainText);
+    static std::string decrypt(const std::string& cipherText);
+
+    static void generateIV(byte* iv, int size = AES::BLOCKSIZE);
 
 private:
-    AutoSeededRandomPool m_prng;
+    static AutoSeededRandomPool m_prng;
 
-    GCM<AES>::Encryption m_Encryption;
-    GCM<AES>::Decryption m_Decryption;
+    static GCM<AES>::Encryption m_Encryption;
+    static GCM<AES>::Decryption m_Decryption;
 
-    SecByteBlock m_Key;
+    static SecByteBlock m_Key;
 };

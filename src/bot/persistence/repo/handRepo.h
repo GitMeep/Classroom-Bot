@@ -1,22 +1,21 @@
 #pragma once
 
+#include <dpp/snowflake.h>
+
 #include <bot/persistence/db.h>
 #include <Poco/LRUCache.h>
 
-class HandRepository {
+class HandRepo {
 public:
-    HandRepository();
+    HandRepo(const HandRepo&) = delete;
 
-    std::list<dpp::snowflake> get(const dpp::snowflake& channelId);
-    void raise(const dpp::snowflake& channelId, const dpp::snowflake& user);
-    void lower(const dpp::snowflake& channelId, const dpp::snowflake& user);
-    void clear(const dpp::snowflake& channelId);
+    static std::list<dpp::snowflake> get(const dpp::snowflake& channelId);
+    static void raise(const dpp::snowflake& channelId, const dpp::snowflake& user);
+    static void lower(const dpp::snowflake& channelId, const dpp::snowflake& user);
+    static void clear(const dpp::snowflake& channelId);
 
-    void expire();
+    static void expire();
 
 private:
-    Poco::LRUCache<dpp::snowflake, std::list<dpp::snowflake>> m_Cache;
-
-    std::shared_ptr<DB> m_DB;
-    std::shared_ptr<spdlog::logger> m_Log;
+    static Poco::LRUCache<dpp::snowflake, std::list<dpp::snowflake>> m_Cache;
 };

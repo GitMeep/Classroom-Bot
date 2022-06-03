@@ -83,7 +83,10 @@
         "coroutine": "cpp",
         "source_location": "cpp",
         "ranges": "cpp",
-        "stop_token": "cpp"
+        "stop_token": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp",
+        "__nullptr": "cpp"
     },
 
     "files.watcherExclude": {

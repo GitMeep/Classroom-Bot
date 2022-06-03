@@ -1,19 +1,18 @@
 #pragma once
 
-#include <aegis.hpp>
 #include <set>
 #include <bot/commands/command.h>
 
 class MuteCommand : public Command {
 public:
     MuteCommand() : Command::Command() {
-        m_Cluster->set_on_voice_state_update(std::bind(&MuteCommand::onVoiceStateUpdate, this, std::placeholders::_1));
+        // m_Cluster->set_on_voice_state_update(std::bind(&MuteCommand::onVoiceStateUpdate, this, std::placeholders::_1));
     }
     void call(int verb, const std::vector<std::string>& parameters, CommandContext* ctx);
     CommandInfo getCommandInfo();
 
 private:
-    void onVoiceStateUpdate(aegis::gateway::events::voice_state_update obj);
+    void onVoiceStateUpdate();
 
     void onUnmutedUserInMarkedChannel(const dpp::snowflake& userId, const dpp::snowflake& channelId, const dpp::snowflake& guildId);
     void onMarkedUserInUnmarkedChannel(const dpp::snowflake& userId, const dpp::snowflake& channelId,  const dpp::snowflake& guildId);

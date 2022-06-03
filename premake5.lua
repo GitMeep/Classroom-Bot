@@ -22,13 +22,11 @@ project "classroombot"
     }
     links {
         "pthread",
-        "icuuc:static",
         "ssl",
         "crypto",
         "cryptopp",
         "z",
         "fmt",
-        "curl",
         "bsoncxx",
         "mongocxx",
         "PocoFoundation",

@@ -1,74 +1,71 @@
 #!/bin/sh
 sudo apt update
-sudo apt install -y openssl libssl-dev zlib1g make g++ wget cmake libspdlog-dev libcrypto++8 libcurl4 libicu67 libssl1.1 libspdlog1
+sudo apt install -y openssl libssl-dev zlib1g make g++ wget cmake libspdlog-dev libcrypto++8 libcrypto++-dev libcurl4 libicu70 libssl3 libspdlog1
 
-# clone dependencies (poco)
 mkdir deps
-cd deps
+cd deps # ./deps
 
 # dpp
-git clone --recursive https://github.com/brainboxdotcc/DPP.git
-cd DPPcd 
-if [ ! -d "./build/" ]; then
-  mkdir build
+if [ ! -d "./DPP/" ]; then
+  git clone --recursive https://github.com/brainboxdotcc/DPP.git
+  cd DPP # ./deps/DPP
+  cmake -B ./build
+  cmake --build ./build -j4
+  cd build # ./deps/DPP/build
+  sudo make install
+  cd ../.. # ./deps
 fi
-cd build
-cmake ..
-make -j
-sudo make install
-cd ../..
 
 # poco
 git clone https://github.com/pocoproject/poco.git
-cd ./poco
+cd ./poco # ./deps/poco
 if [ ! -d "./cmake-build/" ]; then
   mkdir cmake-build
 fi
-cd cmake-build
+cd cmake-build # ./deps/poco/cmake-build
 cmake ..
-sudo cmake --build . --target install -j
-cd ../..
+sudo cmake --build . --target install -j4
+cd ../.. # ./deps
 
 
 # libmongoc
 if [ ! -d "./mongo/" ]; then
   mkdir mongo
 fi
-cd mongo
+cd mongo # ./deps/mongo
 if [ ! -d "./mongo-c-driver-1.20.0/" ]; then
   wget https://github.com/mongodb/mongo-c-driver/releases/download/1.20.0/mongo-c-driver-1.20.0.tar.gz
   tar -xzf mongo-c-driver-1.20.0.tar.gz
-  rm mongo-c-driver-1.20.0
+  rm mongo-c-driver-1.20.0.tar.gz
 else
   echo "\e[92mlibmongoc directory already exists, not downloading\e[39m"
 fi
-cd mongo-c-driver-1.20.0
+cd mongo-c-driver-1.20.0 # ./deps/mongo/mongo-c-driver-1.20.0
 
 if [ ! -d "./cmake-build/" ]; then
   mkdir cmake-build
 fi
-cd cmake-build
+cd cmake-build # ./deps/mongo/mongo-c-driver-1.20.0/cmake-build
 cmake -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DENABLE_TESTS=OFF -DENABLE_EXAMPLES=OFF ..
-make -j
+make -j4
 sudo cmake --build . --target install
-cd ../..
+cd ../.. # ./deps/mongo
 
 # mongocxx
-if [ ! -d "./mongo-cxx-driver-r3.6.6/" ]; then 
-  wget https://github.com/mongodb/mongo-cxx-driver/releases/download/r3.6.6/mongo-cxx-driver-r3.6.6.tar.gz
-  tar -xzf mongo-cxx-driver-r3.6.6.tar.gz
-  rm mongo-cxx-driver-r3.6.6.tar.gz
+if [ ! -d "./mongo-cxx-driver-r3.6.7/" ]; then 
+  wget https://github.com/mongodb/mongo-cxx-driver/releases/download/r3.6.7/mongo-cxx-driver-r3.6.7.tar.gz
+  tar -xzf mongo-cxx-driver-r3.6.7.tar.gz
+  rm mongo-cxx-driver-r3.6.7.tar.gz
 else
   echo "\e[92mmongocxx directory already exists, not downloading\e[39m"
 fi
-cd mongo-cxx-driver-r3.6.6/build
+cd mongo-cxx-driver-r3.6.7/build # ./deps/mongo/mongo-cxx-driver-r3.6.7/build
 
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DBSONCXX_POLY_USE_MNMLSTC=1
-sudo cmake --build . --target EP_mnmlstc_core
-make -j
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_CXX_STANDARD=17 ..
+cmake --build . -j4
 sudo cmake --build . --target install
 
-cd ../../../../
+cd ../../../.. # ./
 curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
 
 ./premake.sh

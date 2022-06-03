@@ -7,8 +7,15 @@
 
 const int TAG_SIZE = 12;
 
-Encryption::Encryption() {
-    auto conf = (*ClassroomBot::getBot().getConfig())["persistence"];
+AutoSeededRandomPool Encryption::m_prng;
+
+GCM<AES>::Encryption Encryption::m_Encryption;
+GCM<AES>::Decryption Encryption::m_Decryption;
+
+SecByteBlock Encryption::m_Key;
+
+void Encryption::init() {
+    auto conf = Config::get()["persistence"];
 
     std::string encodedKey = conf["encryption_key"];
 

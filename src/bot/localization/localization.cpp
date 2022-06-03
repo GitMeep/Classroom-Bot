@@ -1,4 +1,4 @@
-#include <nlohmann/json.hpp>
+#include <dpp/nlohmann/json.hpp>
 
 #include <bot/bot.h>
 
@@ -8,8 +8,12 @@ namespace fs = std::filesystem;
 
 #include "localization.h"
 
+std::unordered_map<std::string, std::unordered_map<std::string, std::string>> Localization::m_Strings;
+std::vector<std::pair<std::string, std::string>> Localization::m_Languages;
+std::unordered_map<std::string, std::string> Localization::m_Translators;
+
 // load default english string set
-Localization::Localization() {
+void Localization::init() {
     addLanguage({
         // general
         {"no_dm", "This command can't be used in DM's."},
@@ -109,7 +113,7 @@ Localization::Localization() {
 
     // load other languages from ./lang
     if(!fs::exists("./lang")) {
-        ClassroomBot::getBot().getLog()->warn("Couldn't find languages directory at ./lang, not loading extra languages.");
+        LOG_WARN("Couldn't find languages directory at ./lang, not loading extra languages.");
         return;
     }
     for(auto& p : fs::directory_iterator("./lang")) {
@@ -130,13 +134,13 @@ void Localization::addLanguage(const std::unordered_map<std::string, std::string
     }
 
     if(missingStrings != "") {
-        ClassroomBot::getBot().getLog()->warn("Language " + code + " is missing strings: " + missingStrings + "\nLoading anyawys.");
+        LOG_WARN("Language " + code + " is missing strings: " + missingStrings + "\nLoading anyawys.");
     }
 
     m_Strings[code] = strings;
     m_Languages.emplace_back(code, name);
     m_Translators[code] = translator;
-    ClassroomBot::getBot().getLog()->info("Loaded language " + name + " with code " + code + ".");
+    LOG_INFO("Loaded language " + name + " with code " + code + ".");
 }
 
 
@@ -146,7 +150,7 @@ void Localization::loadFromFile(const std::string& path) {
     file.open(path, std::ios::in);
 
     if(!file.is_open()) {
-        ClassroomBot::getBot().getLog()->warn("Could not open language file " + path + " even though it should exist.");
+        LOG_WARN("Could not open language file " + path + " even though it should exist.");
         return;
     } else {
         std::string jsonString;
@@ -163,13 +167,13 @@ void Localization::loadFromFile(const std::string& path) {
                 name = j["name"].get<std::string>();
                 if(name == "template") return; // do not bother parsing the template file
             } else {
-                ClassroomBot::getBot().getLog()->warn("File " + path + " did not include a name, ignoring it.");
+                LOG_WARN("File " + path + " did not include a name, ignoring it.");
                 return;
             }
             if(j.count("code") == 1) {
                 code = j["code"].get<std::string>();
             } else {
-                ClassroomBot::getBot().getLog()->warn("File " + path + " did not include a code, ignoring it.");
+                LOG_WARN("File " + path + " did not include a code, ignoring it.");
                 return;
             }
             if(j.count("translator") == 1) {
@@ -184,11 +188,11 @@ void Localization::loadFromFile(const std::string& path) {
                 }
                 addLanguage(strings, code, name, translator);
             } else {
-                ClassroomBot::getBot().getLog()->warn("File " + path + " did not include and array of strings, ignoring it.");
+                LOG_WARN("File " + path + " did not include and array of strings, ignoring it.");
                 return;
             }
         } catch (nlohmann::json::parse_error& e) {
-            ClassroomBot::getBot().getLog()->warn("Failed to parse language file: " + path + "\n" + std::string(e.what()));
+            LOG_WARN("Failed to parse language file: " + path + "\n" + std::string(e.what()));
             return;
         }
     }
@@ -196,11 +200,11 @@ void Localization::loadFromFile(const std::string& path) {
 
 std::string Localization::getString(const std::string& lang, const std::string& name) {
     if(m_Strings.count(lang) == 0) {
-        spdlog::get("classroombot")->warn("Language " + lang + " requested, but not loaded, falling back to english.");
+        LOG_WARN("Language " + lang + " requested, but not loaded, falling back to english.");
         return getString("eng", name);
     }
     if(m_Strings[lang].count(name) == 0) {
-        spdlog::get("classroombot")->warn("String " + name + " requested, but not loaded in language " + lang);
+        LOG_WARN("String " + name + " requested, but not loaded in language " + lang);
         return "Could not find string " + name;
     }
     
@@ -230,8 +234,7 @@ std::string Localization::getTranslator(const std::string& code) {
     return "";
 }
 
-LocHelper::LocHelper(const std::shared_ptr<Localization>& loc, const std::string& language)
- : m_Loc(loc) {
+LocHelper::LocHelper(const std::string& language) {
      if(language == "") {
          m_Language = "eng";
      } else {
@@ -240,5 +243,5 @@ LocHelper::LocHelper(const std::shared_ptr<Localization>& loc, const std::string
  }
 
 std::string LocHelper::get(const std::string& stringName) {
-    return m_Loc->getString(m_Language, stringName);
+    return Localization::getString(m_Language, stringName);
 }

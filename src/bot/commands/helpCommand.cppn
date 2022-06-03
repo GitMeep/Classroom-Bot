@@ -8,10 +8,10 @@ void HelpCommand::call(int verb, const std::vector<std::string>& parameters, Com
     std::string commandName = "";
     if (parameters.size()) {
         std::string localizedName = parameters[0];
-        commandName = m_Bot->getCommandHandler()->getUnlocalizedName(ctx->getSettings().lang, localizedName);
+        commandName = ClassroomBot::commandHandler()->getUnlocalizedName(ctx->getSettings().lang, localizedName);
     }
 
-    std::vector<CommandInfo> commands = m_Bot->getCommandHandler()->getInfo(commandName);
+    std::vector<CommandInfo> commands = ClassroomBot::commandHandler()->getInfo(commandName);
     if (!commands.size()) {
         ctx->respond("unknown_cmd");
         return;

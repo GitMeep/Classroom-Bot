@@ -2,19 +2,23 @@
 #include <bot/bot.h>
 #include <bot/config/config.h>
 
-DB::DB() {
-    auto conf = (*ClassroomBot::getBot().getConfig())["persistence"];
+// static members
+mongocxx::instance DB::m_MongoInstance;
+std::unique_ptr<mongocxx::pool> DB::m_Pool;
+std::string DB::m_DBName;
+std::mutex DB::m_MTX;
 
-    std::string url =    conf["url"];
+void DB::init() {
+    auto conf = Config::get()["persistence"];
+
+    std::string url = conf["url"];
     m_DBName = conf["db_name"];
-
-    this->encryption = std::make_unique<Encryption>();
 
     mongocxx::uri uri(url);
     m_Pool = std::make_unique<mongocxx::pool>(uri);
 }
 
-std::string DB::dbName() {
+std::string DB::name() {
     return m_DBName;
 }
 

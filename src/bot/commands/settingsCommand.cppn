@@ -40,7 +40,7 @@ void SettingsCommand::set(CommandContext* ctx, const std::vector<std::string>& p
         }
     }
 
-    LocHelper loc(m_Bot->getLocalization(), ctx->getSettings().lang);
+    LocHelper loc(ClassroomBot::localization(), ctx->getSettings().lang);
     std::string
         localizedPrefix = loc.get("settings_setting_prefix"),
         localizedRole = loc.get("settings_setting_role"),
@@ -54,7 +54,7 @@ void SettingsCommand::set(CommandContext* ctx, const std::vector<std::string>& p
         }
     }
 
-    Settings settings = m_Bot->getSettingsRepo()->get(ctx->getGuildId());
+    Settings settings = ClassroomBot::settingsRepo()->get(ctx->getGuildId());
 
     if(name == localizedPrefix) {
         settings.prefix = value;
@@ -64,16 +64,16 @@ void SettingsCommand::set(CommandContext* ctx, const std::vector<std::string>& p
     } else if(name == localizedRole) {
         settings.roleName = value;
     } else if(name == localizedLang) {
-        if(m_Bot->getLocalization()->hasLanguage(value)) {
+        if(ClassroomBot::localization()->hasLanguage(value)) {
             settings.lang = value;
         } else {
-            std::string langsString = m_Bot->getLocalization()->getString(ctx->getSettings().lang, "unknown_language") + "\nDisclaimer: Translation are made by the community, and may not be accurate.\n";
+            std::string langsString = ClassroomBot::localization()->getString(ctx->getSettings().lang, "unknown_language") + "\nDisclaimer: Translation are made by the community, and may not be accurate.\n";
             std::string translator;
-            auto langs = m_Bot->getLocalization()->getLanguages();
+            auto langs = ClassroomBot::localization()->getLanguages();
             auto lang = langs.begin();
             while(lang != langs.end()) {
                 langsString += "`" + lang->first + "`: " + lang->second;
-                translator = m_Bot->getLocalization()->getTranslator(lang->first);
+                translator = ClassroomBot::localization()->getTranslator(lang->first);
                 if(translator != "") langsString += " - " + translator;
                 langsString += "\n";
                 lang++;
@@ -86,15 +86,15 @@ void SettingsCommand::set(CommandContext* ctx, const std::vector<std::string>& p
         return;
     }
 
-    m_Bot->getSettingsRepo()->save(ctx->getGuildId(), settings);
+    ClassroomBot::settingsRepo()->save(ctx->getGuildId(), settings);
     ctx->confirm();
 }
 
 void SettingsCommand::get(CommandContext* ctx) {
-    Settings settings = m_Bot->getSettingsRepo()->get(ctx->getGuildId());
+    Settings settings = ClassroomBot::settingsRepo()->get(ctx->getGuildId());
     if(settings.lang == "") settings.lang = "eng";
 
-    LocHelper loc(m_Bot->getLocalization(), ctx->getSettings().lang);
+    LocHelper loc(ClassroomBot::localization(), ctx->getSettings().lang);
 
     nlohmann::json embed {
         {"title", loc.get("settings_for") + " " + m_Cluster->find_guild(ctx->getGuildId())->get_name()},
@@ -109,7 +109,7 @@ void SettingsCommand::get(CommandContext* ctx) {
             },
             {
                 {"name", loc.get("settings_language")},
-                {"value", m_Bot->getLocalization()->getLanguageName(settings.lang)}
+                {"value", ClassroomBot::localization()->getLanguageName(settings.lang)}
             }
         })}
     };

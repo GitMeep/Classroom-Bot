@@ -3,7 +3,7 @@
 #include <bot/localization/localization.h>
 
 void InviteCommand::call(int verb, const std::vector<std::string>& parameters, CommandContext* ctx) {
-    std::string response = m_Bot->getLocalization()->getString(ctx->getSettings().lang, "invite_response");
+    std::string response = ClassroomBot::localization()->getString(ctx->getSettings().lang, "invite_response");
     m_Cluster->create_dm_message(ctx->getUserId(), response);
 }
 

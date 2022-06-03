@@ -9,20 +9,18 @@
 
 class DB {
 public:
-    DB();
+    DB(const DB&) = delete;
 
-    mongocxx::v_noabi::pool::entry requestClient();
-    std::string dbName();
+    static void init();
 
-    std::shared_ptr<Encryption> encryption;
+    static mongocxx::v_noabi::pool::entry requestClient();
+    static std::string name();
 
 private:
-    mongocxx::instance m_MongoInstance;
-    std::unique_ptr<mongocxx::pool> m_Pool;
+    static mongocxx::instance m_MongoInstance;
+    static std::unique_ptr<mongocxx::pool> m_Pool;
 
-    std::string m_DBName;
+    static std::string m_DBName;
 
-    std::shared_ptr<spdlog::logger> m_Log;
-    std::mutex m_MTX;
-
+    static std::mutex m_MTX;
 };

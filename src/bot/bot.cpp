@@ -1,6 +1,6 @@
-#include <spdlog/sinks/stdout_color_sinks.h>
+#include <iostream>
 
-#include <bot/commands/command.h>
+//#include <bot/commands/command.h>
 #include <bot/config/config.h>
 #include <bot/persistence/db.h>
 #include <bot/persistence/repo/settingsRepo.h>
@@ -14,56 +14,68 @@
 #include <Poco/Net/HTTPResponse.h>
 
 #include <bot/bot.h>
-#include <dpp/cluster.h>
+#include <dpp/dpp.h>
 
 enum ParserException {
     NOT_A_COMMAND,
     EMPTY_COMMAND
 };
 
+// initialize static members
+dpp::cluster*                           ClassroomBot::m_Cluster;
+std::chrono::system_clock::time_point   ClassroomBot::m_StartupTime;
+unsigned char                           ClassroomBot::m_PresenceState = 0;
+bool                                    ClassroomBot::m_Initialized = false;
+
 void ClassroomBot::init() {
     m_StartupTime = std::chrono::system_clock::now();
 
+    /*
     m_Log = spdlog::stdout_color_mt("classroombot");
     m_Log->set_pattern("%^%Y-%m-%d %H:%M:%S.%e [%L] [ClassroomBot] [th#%t]%$ : %v");
     m_Log->set_level(spdlog::level::trace);
+    */
 
-    m_Log->info("Starting ClassroomBot version " + std::string(BOT_VERSION));
-
-    m_Config = std::make_shared<Config>();
     try {
-        m_Config->loadFromFile("config.json");
+        Config::loadFromFile("config.json");
     } catch (std::runtime_error& e) {
-        m_Log->error(std::string(e.what()));
+        LOG_ERROR(std::string(e.what()));
         return;
     }
 
-    if(!m_Config->isLoaded()) {
+    if(!Config::isLoaded()) {
         throw std::runtime_error("Invalid config supplied to ClassroomBot!");
     }
 
-    std::string token = m_Config->get()["bot"]["token"];
-    m_Cluster = std::make_shared<dpp::cluster>(
-        token,
-        dpp::intents::i_guilds |
-        dpp::intents::i_guild_voice_states |
-        dpp::intents::i_guild_messages |
-        dpp::intents::i_guild_message_reactions |
-        dpp::intents::i_direct_messages |
-        dpp::intents::i_direct_message_reactions
-    );
+    Localization::init();
+    Encryption::init();
+    DB::init();
 
-    m_Cluster->on_message_create(std::bind(&ClassroomBot::onMessage, this, std::placeholders::_1));
+    std::string token = Config::get()["bot"]["token"];
+    m_Cluster = new dpp::cluster(token);
 
-    m_Database = std::make_shared<DB>();
-    m_SettingsRepo = std::make_shared<SettingsRepository>();
-    m_QuestionRepo = std::make_shared<QuestionRepository>();
-    m_HandRepo = std::make_shared<HandRepository>();
-    m_MuteRepo = std::make_shared<MuteRepository>();
-    m_Localization = std::make_shared<Localization>();
-    m_CommandHandler = std::make_shared<CommandHandler>();
+    m_Cluster->on_log(dpp::utility::cout_logger());
+    std::cout << "Starting ClassroomBot version " << std::string(BOT_VERSION) << std::endl;
 
-    m_Cluster->start_timer(dpp::timer_callback_t(std::bind(&ClassroomBot::updatePresence, this)), 60U);
+    m_Cluster->on_slashcommand(ClassroomBot::onCommand);
+
+    m_Cluster->on_ready([](const dpp::ready_t& event) {
+        if (dpp::run_once<struct register_bot_commands>()) {
+            #ifdef DEBUG
+            ClassroomBot::cluster().guild_command_create(
+                dpp::slashcommand("ping", "Ping pong!", ClassroomBot::cluster().me.id),
+                705355899400880212
+            );
+            #else
+            ClassroomBot::cluster()->global_command_create(
+                dpp::slashcommand("ping", "Ping pong!", ClassroomBot::cluster().me.id)
+            );
+            #endif
+            LOG_INFO("Registered slash commands");
+        }
+    });
+
+    cluster().start_timer(ClassroomBot::updatePresence, 60U);
 
     m_Initialized = true;
 }
@@ -76,11 +88,19 @@ bool ClassroomBot::run() {
     return true;
 }
 
-void ClassroomBot::registerCommand(Command* command) {
-    m_CommandHandler->registerCommand(command);
+void ClassroomBot::log(const dpp::loglevel& ll, const std::string& message) {
+    if(m_Initialized) m_Cluster->log(ll, message);
 }
 
-void ClassroomBot::onMessage(const dpp::message_create_t& message) {
+void ClassroomBot::registerCommand(Command* command) {
+    // todo
+}
+
+void ClassroomBot::onCommand(const dpp::slashcommand_t& event) {
+    if (event.command.get_command_name() == "ping") {
+        event.reply("Pong!");
+    }
+    /*
     if(message.msg->content.size() == 0) return;
 
     CommandContext ctx(
@@ -109,10 +129,11 @@ void ClassroomBot::onMessage(const dpp::message_create_t& message) {
         ctx.respond("unknown_cmd");
         return;
     }
+    */
 }
 
-void ClassroomBot::updatePresence() {
-    m_Log->info("Uptime: " + std::to_string(m_Cluster->uptime().hours) + " hours");
+void ClassroomBot::updatePresence(dpp::timer timer) {
+    LOG_INFO("Uptime: " + std::to_string(m_Cluster->uptime().hours) + " hours");
 
     unsigned int guildCount = 0;
     for(auto shard : m_Cluster->get_shards()) {
@@ -139,14 +160,14 @@ void ClassroomBot::updatePresence() {
     m_PresenceState++;
     m_PresenceState = m_PresenceState % 3;
 
-    m_HandRepo->expire();
-    m_QuestionRepo->expire();
+    HandRepo::expire();
+    QuestionRepo::expire();
 
     if(guildCount == 0) return;
 
-    if(m_Config->get()["topgg"]["enable"] == "true") {
-        std::string topggToken = m_Config->get()["topgg"]["token"];
-        std::string topggId = m_Config->get()["topgg"]["bot_id"];
+    if(Config::get()["topgg"]["enable"] == "true") {
+        std::string topggToken = Config::get()["topgg"]["token"];
+        std::string topggId = Config::get()["topgg"]["bot_id"];
 
         Poco::Net::HTTPSClientSession session("top.gg", 443);
         Poco::Net::HTTPRequest req("POST", "/api/bots/" + topggId + "/stats");
@@ -165,47 +186,6 @@ void ClassroomBot::updatePresence() {
 
 }
 
-ClassroomBot& ClassroomBot::getBot() {
-    static ClassroomBot instance;
-    return instance;
-}
-
-std::shared_ptr<Config> ClassroomBot::getConfig() {
-    return getBot().m_Config;
-}
-
-std::shared_ptr<dpp::cluster> ClassroomBot::getCluster() {
-    return getBot().m_Cluster;
-}
-
-std::shared_ptr<SettingsRepository> ClassroomBot::getSettingsRepo() {
-    return getBot().m_SettingsRepo;
-}
-
-std::shared_ptr<QuestionRepository> ClassroomBot::getQuestionRepo() {
-    return getBot().m_QuestionRepo;
-}
-
-std::shared_ptr<HandRepository> ClassroomBot::getHandRepo() {
-    return getBot().m_HandRepo;
-}
-
-std::shared_ptr<MuteRepository> ClassroomBot::getMuteRepo() {
-    return getBot().m_MuteRepo;
-}
-
-std::shared_ptr<DB> ClassroomBot::getDatabase() {
-    return getBot().m_Database;
-}
-
-std::shared_ptr<spdlog::logger> ClassroomBot::getLog() {
-    return getBot().m_Log;
-}
-
-std::shared_ptr<CommandHandler> ClassroomBot::getCommandHandler() {
-    return getBot().m_CommandHandler;
-}
-
-std::shared_ptr<Localization> ClassroomBot::getLocalization() {
-    return getBot().m_Localization;
+dpp::cluster& ClassroomBot::cluster() {
+    return *m_Cluster;
 }
