@@ -41,7 +41,7 @@ void Localization::init() {
         // hand command
         {"hand_cmd", "hand"},
         {"hand_alias", "h"},
-        {"hand_desc", "Show of hands. Raise or lower your hand to indicate a question or an answer to one. The hands are stored per-channel."},
+        {"hand_desc", "Show of hands."},
         {"hand_option_up", "up"},
         {"hand_option_down", "down"},
         {"hand_option_list", "list"},
@@ -49,13 +49,13 @@ void Localization::init() {
         {"hand_option_pick", "pick"},
         {"hand_option_random", "random"},
         {"hand_option_clear", "clear"},
-        {"hand_option_up_desc", "`up`: raise your hand."},
-        {"hand_option_down_desc", "`down`: lower your hand."},
-        {"hand_option_list_desc", "`list`: list all users with their hand raised."},
-        {"hand_option_next_desc", "`next`: (admin only) show the next user with a raised hand, and lower it."},
-        {"hand_option_pick_desc", "`pick [number]`: (admin only) pick a hand from the list."},
-        {"hand_option_random_desc", "`random`: (admin only) pick a random user with their hand raised, and lower it."},
-        {"hand_option_clear_desc", "`clear`: (admin only) lower all hands."},
+        {"hand_option_up_desc", "Raise your hand."},
+        {"hand_option_down_desc", "Lower your hand."},
+        {"hand_option_list_desc", "List all users with their hand raised."},
+        {"hand_option_next_desc", "Show the next user with a raised hand, and lower it."},
+        {"hand_option_pick_desc", "Pick a hand from the list."},
+        {"hand_option_random_desc", "Pick a random user with their hand raised, and lower it."},
+        {"hand_option_clear_desc", "Lower all hands."},
         {"hand_usage", "Command usage: `hand [up/down/next/pick/random/list/clear]`"},
         {"pick_number", "Please enter the number to pick."},
         {"valid_number", "Please enter a valid number."},
@@ -109,7 +109,7 @@ void Localization::init() {
         {"invite_desc", "Like the bot and want it on your own server? Use this command to get an invite link in your DM's."},
         {"invite_response", "Invite me to your server using this link: \nhttps://discordapp.com/api/oauth2/authorize?client_id=691945666896855072&permissions=297888850&scope=bot"}
 
-    }, "eng", "English", "");
+    }, "en-US", "English", "");
 
     // load other languages from ./lang
     if(!fs::exists("./lang")) {
@@ -125,8 +125,8 @@ void Localization::init() {
 
 void Localization::addLanguage(const std::unordered_map<std::string, std::string>& strings, const std::string& code, const std::string& name, const std::string& translator) {
     std::string missingStrings = "";
-    auto s = m_Strings["eng"].begin();
-    while(s != m_Strings["eng"].end()) {
+    auto s = m_Strings["en-US"].begin();
+    while(s != m_Strings["en-US"].end()) {
         if(strings.count(s->first) == 0) {
             missingStrings += s->first + " ";
         }
@@ -198,14 +198,18 @@ void Localization::loadFromFile(const std::string& path) {
     }
 }
 
-std::string Localization::getString(const std::string& lang, const std::string& name) {
+static const std::string couldntFindString = "Could not find string";
+const std::string& Localization::getString(const std::string& name, const std::string& lang) {
+    if(lang == "") return getString(name, "en-US");
+
     if(m_Strings.count(lang) == 0) {
         LOG_WARN("Language " + lang + " requested, but not loaded, falling back to english.");
-        return getString("eng", name);
+        return getString(name, "en-US");
     }
+
     if(m_Strings[lang].count(name) == 0) {
         LOG_WARN("String " + name + " requested, but not loaded in language " + lang);
-        return "Could not find string " + name;
+        return couldntFindString;
     }
     
     return m_Strings[lang][name];
@@ -216,32 +220,22 @@ bool Localization::hasLanguage(const std::string& lang) {
     return m_Strings.count(lang) == 1;
 }
 
-std::vector<std::pair<std::string, std::string>> Localization::getLanguages() {
+const std::vector<std::pair<std::string, std::string>>& Localization::getLanguages() {
     return m_Languages;
 }
 
-std::string Localization::getLanguageName(const std::string& code) {
+static const std::string unknownLanguage = "Unknown language";
+const std::string& Localization::getLanguageName(const std::string& code) {
     auto lang = m_Languages.begin();
     while(lang != m_Languages.end()) {
         if(lang->first == code) return lang->second;
         lang++;
     }
-    return "Unknown language";
+    return unknownLanguage;
 }
 
-std::string Localization::getTranslator(const std::string& code) {
+static const std::string emptyString = "";
+const std::string& Localization::getTranslator(const std::string& code) {
     if(m_Translators.count(code) == 1) return m_Translators[code];
-    return "";
-}
-
-LocHelper::LocHelper(const std::string& language) {
-     if(language == "") {
-         m_Language = "eng";
-     } else {
-         m_Language = language;
-     }
- }
-
-std::string LocHelper::get(const std::string& stringName) {
-    return Localization::getString(m_Language, stringName);
+    return emptyString;
 }

@@ -1,7 +1,9 @@
 #pragma once
 
 #include <dpp/dpp.h>
-#include <spdlog/spdlog.h>
+#include <string>
+#include <vector>
+#include <chrono>
 
 class Command;
 class Config;
@@ -28,19 +30,27 @@ namespace odb {
 
 class ClassroomBot {
 public:
-    static void registerCommand(Command* command);
-    static void onCommand(const dpp::slashcommand_t& event);
     static void init();
+    static void registerCommand(Command* command);
     static bool run();
 
     static void log(const dpp::loglevel& ll, const std::string& message);
 
-    static dpp::cluster&        cluster();
+    static dpp::cluster& cluster();
 
 private:
+    static void onSlashCommand(const dpp::slashcommand_t& event);
+    static void onSelectClick(const dpp::select_click_t& event);
+    static void onButtonClick(const dpp::button_click_t& event);
+    static void onFormSubmit(const dpp::form_submit_t& event);
+    static void onUserContext(const dpp::user_context_menu_t& event);
+    static void onMessageContext(const dpp::message_context_menu_t& event);
+
+
     static void updatePresence(dpp::timer timer);
 
     static dpp::cluster* m_Cluster;
+    static std::vector<Command*> m_Commands;
 
     static std::chrono::system_clock::time_point m_StartupTime;
 

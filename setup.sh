@@ -1,6 +1,6 @@
 #!/bin/sh
 sudo apt update
-sudo apt install -y openssl libssl-dev zlib1g make g++ wget cmake libspdlog-dev libcrypto++8 libcrypto++-dev libcurl4 libicu70 libssl3 libspdlog1
+sudo apt install -y openssl libssl-dev zlib1g make g++ wget cmake libcrypto++8 libcrypto++-dev libcurl4 libicu70 libssl3
 
 mkdir deps
 cd deps # ./deps

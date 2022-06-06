@@ -1,6 +1,7 @@
 #include <iostream>
+#include <vector>
 
-//#include <bot/commands/command.h>
+#include <bot/commands/command.h>
 #include <bot/config/config.h>
 #include <bot/persistence/db.h>
 #include <bot/persistence/repo/settingsRepo.h>
@@ -26,6 +27,7 @@ dpp::cluster*                           ClassroomBot::m_Cluster;
 std::chrono::system_clock::time_point   ClassroomBot::m_StartupTime;
 unsigned char                           ClassroomBot::m_PresenceState = 0;
 bool                                    ClassroomBot::m_Initialized = false;
+std::vector<Command*>                   ClassroomBot::m_Commands;
 
 void ClassroomBot::init() {
     m_StartupTime = std::chrono::system_clock::now();
@@ -53,29 +55,35 @@ void ClassroomBot::init() {
 
     std::string token = Config::get()["bot"]["token"];
     m_Cluster = new dpp::cluster(token);
-
     m_Cluster->on_log(dpp::utility::cout_logger());
-    std::cout << "Starting ClassroomBot version " << std::string(BOT_VERSION) << std::endl;
+    m_Cluster->log(dpp::ll_info, "Starting ClassroomBot version " + std::string(BOT_VERSION));
 
-    m_Cluster->on_slashcommand(ClassroomBot::onCommand);
+    m_Cluster->on_slashcommand(ClassroomBot::onSlashCommand);
+    m_Cluster->on_select_click(ClassroomBot::onSelectClick);
+    m_Cluster->on_button_click(ClassroomBot::onButtonClick);
+    m_Cluster->on_form_submit(ClassroomBot::onFormSubmit);
+    m_Cluster->on_user_context_menu(ClassroomBot::onUserContext);
+    m_Cluster->on_message_context_menu(ClassroomBot::onMessageContext);
 
     m_Cluster->on_ready([](const dpp::ready_t& event) {
-        if (dpp::run_once<struct register_bot_commands>()) {
-            #ifdef DEBUG
-            ClassroomBot::cluster().guild_command_create(
-                dpp::slashcommand("ping", "Ping pong!", ClassroomBot::cluster().me.id),
-                705355899400880212
-            );
-            #else
-            ClassroomBot::cluster()->global_command_create(
-                dpp::slashcommand("ping", "Ping pong!", ClassroomBot::cluster().me.id)
-            );
-            #endif
-            LOG_INFO("Registered slash commands");
-        }
-    });
+        if (!dpp::run_once<struct register_bot_commands>()) return;
+        if(m_Commands.size() == 0) return;
 
-    cluster().start_timer(ClassroomBot::updatePresence, 60U);
+        std::vector<dpp::slashcommand> slashCommands;
+        for(unsigned int i = 0; i < m_Commands.size(); i++) {
+            for(dpp::slashcommand command : m_Commands[i]->spec().commands)
+                slashCommands.push_back(command.set_application_id(m_Cluster->me.id));
+        }
+
+        #ifdef DEBUG
+        m_Cluster->guild_bulk_command_create(slashCommands, 705355899400880212);
+        #else
+        m_Cluster->global_bulk_command_create(slashCommands);
+        #endif
+
+        updatePresence(0);
+        cluster().start_timer(ClassroomBot::updatePresence, 60U);
+    });
 
     m_Initialized = true;
 }
@@ -93,43 +101,45 @@ void ClassroomBot::log(const dpp::loglevel& ll, const std::string& message) {
 }
 
 void ClassroomBot::registerCommand(Command* command) {
-    // todo
+   m_Commands.emplace_back(command);
 }
 
-void ClassroomBot::onCommand(const dpp::slashcommand_t& event) {
-    if (event.command.get_command_name() == "ping") {
-        event.reply("Pong!");
+void ClassroomBot::onSlashCommand(const dpp::slashcommand_t& event) {
+    // LOG_DEBUG(event.raw_event);
+    
+    for(Command* command : m_Commands) {
+        const Command::CommandSpec& spec = command->spec();
+
+        for(const dpp::slashcommand& slashCommand : spec.commands) {
+            if(slashCommand.type != dpp::ctxm_chat_input) continue;
+
+            if(slashCommand.name == event.command.get_command_name()) {
+                command->command(CommandContext(event, CommandContext::SlashCommand));
+                return;
+            }
+        }
     }
-    /*
-    if(message.msg->content.size() == 0) return;
+    LOG_WARN("Unknown command: \"" + event.command.get_command_name() + "\" issued by " + event.command.usr.username + " in " + std::to_string(event.command.guild_id));
+}
 
-    CommandContext ctx(
-        message.msg->id,
-        message.msg->channel_id,
-        message.msg->guild_id,
-        message.msg->member.user_id,
-        dpp::find_channel(message.msg->channel_id)->is_dm(),
-        m_SettingsRepo->get(message.msg->guild_id)
-    );
+void ClassroomBot::onSelectClick(const dpp::select_click_t& event) {
+    // TODO
+}
 
-    std::string prefix = ctx.getSettings().prefix;
-    if(ctx.isDM()) prefix = "?";
+void ClassroomBot::onButtonClick(const dpp::button_click_t& event) {
+    // TODO
+}
 
-    std::string content = message.msg->content;
-    bool isHelp = content.substr(0, 5) == "?help"; // if someone types ?help, ignore the actual prefix (1), and set the prefix to "?" (2), parsing it as a normal command. This ensures that ?help always works
-    if(content.substr(0, prefix.length()) != prefix && !isHelp) {
-        return;
-    }
-    if(isHelp) prefix = "?";
+void ClassroomBot::onFormSubmit(const dpp::form_submit_t& event) {
+    // TODO
+}
 
-    content = content.substr(prefix.length());
-    bool success = m_CommandHandler->parseAndCall(content, &ctx);
+void ClassroomBot::onUserContext(const dpp::user_context_menu_t& event) {
+    // TODO
+}
 
-    if (!success) {
-        ctx.respond("unknown_cmd");
-        return;
-    }
-    */
+void ClassroomBot::onMessageContext(const dpp::message_context_menu_t& event) {
+    // TODO
 }
 
 void ClassroomBot::updatePresence(dpp::timer timer) {

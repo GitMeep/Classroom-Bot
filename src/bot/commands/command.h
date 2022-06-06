@@ -1,60 +1,69 @@
 #pragma once
 
+#include <dpp/dpp.h>
 #include <string>
 #include <vector>
-#include <spdlog/spdlog.h>
-#include <dpp/dpp.h>
 #include <bot/persistence/model/settings.h>
-
-struct CommandInfo {
-    std::string name;
-    std::string localName; // localized string name
-    std::vector<std::string> aliases;
-    std::string description;
-    std::vector<std::string> optionDescriptions;
-    std::vector<std::string> options;
-    bool noDM;
-};
 
 class CommandContext {
 public:
-    CommandContext(const dpp::snowflake& messageId, const dpp::snowflake& channelId, const dpp::snowflake& guildId, const dpp::snowflake& userId, bool isDM, const Settings& settings);
+    enum InteractionType : uint8_t {
+        SlashCommand,
+        SelectClick,
+        FormSubmit,
+        ContextMessage,
+        ContextUser,
+        ButtonClick,
+        Autocomplete
+    };
 
-    void respond(const std::string& strName);
-    void respondEmbed(const std::string& strName, nlohmann::json& embed);
-    void respondUnlocalized(const std::string& message);
-    void respondEmbedUnlocalized(const std::string& message, nlohmann::json& embed);
-    void react(const std::string& emote);
-    void confirm();
-    void deny();
-    void wait();
-    void mute();
-    void unmute();
-    void waitTyping();
+    CommandContext(const dpp::interaction_create_t& event, InteractionType type);
 
-    bool isDM();
-    bool isAdmin();
+    const dpp::snowflake& userId() const;
+    const dpp::snowflake& channelId() const;
+    const dpp::snowflake& guildId() const;
 
-    dpp::snowflake getGuildId();
-    dpp::snowflake getMessageId();
-    dpp::snowflake getUserId();
-    dpp::snowflake getChannelId();
-    Settings getSettings();
+    const dpp::snowflake contextUser() const; // user that was clicked on
 
+    // emote replies
+    void confirm() const;
+    void deny() const;
+    void wait() const;
+    void mute() const;
+    void unmute() const;
+
+    // string replies
+    void replyUnlocalized(const std::string& message, bool ephemeral = false) const;
+    void replyUnlocalized(const dpp::message& message) const;
+    void replyLocalized(const std::string& name, bool ephemeral = false) const;
+    const std::string& localize(const std::string& name) const;
+
+    const dpp::interaction_create_t& event;
+    const InteractionType type;
 private:
-    dpp::snowflake m_MessageId;
-    dpp::snowflake m_ChannelId;
-    dpp::snowflake m_GuildId;
-    dpp::snowflake m_UserId;
-    Settings m_Settings;
-    bool m_IsDM;
+    const std::string& m_LangCode;
 };
-
-class ClassroomBot;
 
 class Command {
 public:
-    virtual void call(int verb, const std::vector<std::string>& parameters, CommandContext* ctx) = 0;
+    struct CommandSpec {
+        std::vector<dpp::slashcommand> commands; // slash commands from this command (a command may have multiple). This includes context menu interactions.
+        std::vector<std::string> buttonIds; // custom button id's handeled by this command
+        std::vector<std::string> selectMenuIds; // select menu id's handeled by this command
+        std::vector<std::string> modalIds; // modal id's handeled by this command
+    };
 
-    virtual CommandInfo getCommandInfo() = 0;
+    // handlers for different interactions
+    virtual void command(const CommandContext& ctx) = 0;        // called when a slash command is issued
+    virtual void userContext(const CommandContext& ctx) = 0;    // called when a user context command is issued
+    virtual void messageContext(const CommandContext& ctx) = 0; // called when a message context command is issued
+    virtual void buttonClick(const CommandContext& ctx) = 0;         // called when a button is pressed
+    virtual void selectClick(const CommandContext& ctx) = 0;    // called when a select menu item is clicked
+    virtual void formSubmit(const CommandContext& ctx) = 0;     // called when a form is submitted
+
+    // return the command spec
+    const CommandSpec& spec();
+
+protected:
+    CommandSpec m_Spec; // specification for this command, should be filled out in the constructor. spec() returns a reference to this when command is registered
 };

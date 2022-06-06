@@ -4,16 +4,21 @@
 
 class HandsCommand : public Command {
 public:
-    explicit HandsCommand() : Command::Command() {}
-    void call(int verb, const std::vector<std::string>& parameters, CommandContext* ctx);
-    CommandInfo getCommandInfo();
+    HandsCommand();
+
+    void command(const CommandContext& ctx);
+    void userContext(const CommandContext& ctx);
+    void messageContext(const CommandContext& ctx);
+    void buttonClick(const CommandContext& ctx);
+    void selectClick(const CommandContext& ctx);
+    void formSubmit(const CommandContext& ctx);
 
 private:
-    void up(CommandContext* ctx);
-    void down(CommandContext* ctx);
-    void next(CommandContext* ctx);
-    void clear(CommandContext* ctx);
-    void list(CommandContext* ctx);
-    void random(CommandContext* ctx);
-    void pick(CommandContext* ctx, const std::vector<std::string>& parameters);
+    void up(const CommandContext& ctx);
+    void down(const CommandContext& ctx);
+    void next(const CommandContext& ctx);
+    void clear(const CommandContext& ctx);
+    void random(const CommandContext& ctx);
+    void pickList(const CommandContext& ctx);
+    void pick(const CommandContext& ctx);
 };

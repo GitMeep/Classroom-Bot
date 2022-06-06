@@ -86,7 +86,8 @@
         "stop_token": "cpp",
         "numbers": "cpp",
         "semaphore": "cpp",
-        "__nullptr": "cpp"
+        "__nullptr": "cpp",
+        "ios": "cpp"
     },
 
     "files.watcherExclude": {
