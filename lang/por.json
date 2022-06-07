@@ -45,9 +45,9 @@
         {"pick_number": "Por favor insira o número a ser escolhido."},
         {"valid_number": "Por favor insira um número válido."},
         {"reasonable_number": "Por favor insira um número racional."},
-        {"already_raised": "A mão já está levantada."},
+        {"hand_already_raised": "A mão já está levantada."},
         {"hand_limit": "Limite da fila atingido (max 50 mãos)."},
-        {"no_hands": "Nenhuma mão está levantada."},
+        {"hand_no_hands": "Nenhuma mão está levantada."},
         {"hand_oor": "Não há mão levantadas suficientes."},
         {"hand_up_users": "Utilizadores com a mão levantada."},
 

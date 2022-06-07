@@ -44,9 +44,9 @@
         {"pick_number": "Vul een getal in van de hand die je wilt kiezen."},
         {"valid_number": "Vul een geldig getal in."},
         {"reasonable_number": "Vul een geldig getal in."},
-        {"already_raised": "Je hebt je hand al omhoog."},
+        {"hand_already_raised": "Je hebt je hand al omhoog."},
         {"hand_limit": "Handenlimiet bereikt (maximaal 50 handen)."},
-        {"no_hands": "Geen handen omhoog."},
+        {"hand_no_hands": "Geen handen omhoog."},
         {"hand_oor": "Er zijn niet zoveel gebruikers met een hand omhoog."},
         {"hand_up_users": "Gebruikers met een hand omhoog:"},
 

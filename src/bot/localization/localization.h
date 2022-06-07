@@ -14,6 +14,7 @@ public:
     static bool hasLanguage(const std::string& lang);
     static const std::vector<std::pair<std::string, std::string>>& getLanguages();
 
+    static const bool hasString(const std::string& name, const std::string& lang = "");
     static const std::string& getString(const std::string& name, const std::string& lang = "");
     static const std::string& getLanguageName(const std::string& code);
     static const std::string& getTranslator(const std::string& code);

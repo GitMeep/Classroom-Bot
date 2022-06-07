@@ -14,11 +14,18 @@ public:
     void formSubmit(const CommandContext& ctx);
 
 private:
+    // slash command
     void up(const CommandContext& ctx);
     void down(const CommandContext& ctx);
     void next(const CommandContext& ctx);
     void clear(const CommandContext& ctx);
     void random(const CommandContext& ctx);
-    void pickList(const CommandContext& ctx);
-    void pick(const CommandContext& ctx);
+    void list(const CommandContext& ctx);
+    void pickCommand(const CommandContext& ctx);
+
+    // select menu
+    void pickFromList(const CommandContext& ctx);
+
+    // user context
+    void pickUserContext(const CommandContext& ctx);
 };

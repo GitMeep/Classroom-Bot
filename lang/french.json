@@ -44,9 +44,9 @@
         {"pick_number": "Veuillez entrer le numéro à choisir."},
         {"valid_number": "Veuillez entrer un numéro valide."},
         {"reasonable_number": "Veuillez entrer un nombre raisonnable."},
-        {"already_raised": "Vous avez déjà levé la main."},
+        {"hand_already_raised": "Vous avez déjà levé la main."},
         {"hand_limit": "Limite de la file d'attente atteinte (max. 50 messages)."},
-        {"no_hands": "Aucune mains levées."},
+        {"hand_no_hands": "Aucune mains levées."},
         {"hand_oor": "Pas beaucoup de mains levées."},
         {"hand_up_users": "Personne n'as levé la main"},
 

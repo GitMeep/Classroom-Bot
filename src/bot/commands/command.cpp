@@ -1,5 +1,6 @@
 #include "command.h"
 
+#include <bot/bot.h>
 #include <dpp/fmt/format.h>
 #include <bot/localization/localization.h>
 
@@ -8,7 +9,8 @@
 CommandContext::CommandContext(const dpp::interaction_create_t& event, InteractionType type) :
 type(type),
 event(event),
-m_LangCode(event.command.locale) {}
+m_UserLangCode(event.command.locale),
+m_GuildLangCode(event.command.guild_locale) {}
 
 const dpp::snowflake& CommandContext::userId() const {
   return event.command.usr.id;
@@ -46,6 +48,10 @@ void CommandContext::unmute() const {
   event.reply(dpp::message("🔈").set_flags(dpp::m_ephemeral));
 }
 
+void CommandContext::reply() const {
+  event.reply();
+}
+
 void CommandContext::replyUnlocalized(const std::string& message, bool ephemeral) const {
   event.reply(dpp::message(message).set_flags(ephemeral ? dpp::m_ephemeral : 0));
 }
@@ -59,7 +65,15 @@ void CommandContext::replyLocalized(const std::string& name, bool ephemeral) con
 }
 
 const std::string& CommandContext::localize(const std::string& name) const {
-  return Localization::getString(name, m_LangCode);
+  return Localization::getString(name, m_UserLangCode);
+}
+
+const std::string& CommandContext::localizeGuild(const std::string& name) const {
+  return Localization::getString(name, m_GuildLangCode);
+}
+
+void CommandContext::replyUnlocalizedChannel(dpp::message message) const {
+  ClassroomBot::cluster().message_create(message.set_channel_id(channelId()));
 }
 
 // Command

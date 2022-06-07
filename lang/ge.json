@@ -44,9 +44,9 @@
         {"pick_number": "Bitte geben Sie die Nummer zum wählen ein."},
         {"valid_number": "Bitte geben Sie eine gültige Nummer ein."},
         {"reasonable_number": "Bitte geben Sie eine angemessene Nummer ein."},
-        {"already_raised": "Sie melden sich bereits."},
+        {"hand_already_raised": "Sie melden sich bereits."},
         {"hand_limit": "Warteschlangenlimit erreicht (max. 50 Meldungen)."},
-        {"no_hands": "Es meldet sich niemand."},
+        {"hand_no_hands": "Es meldet sich niemand."},
         {"hand_oor": "Es haben sich nicht so viele gemeldet."},
         {"hand_up_users": "Es haben sich gemeldet: "},
 

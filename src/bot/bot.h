@@ -14,6 +14,10 @@ class MuteRepo;
 class DB;
 class Localization;
 
+namespace spdlog {
+    class logger;
+};
+
 namespace odb {
     namespace core {
         class database;
@@ -46,6 +50,8 @@ private:
     static void onUserContext(const dpp::user_context_menu_t& event);
     static void onMessageContext(const dpp::message_context_menu_t& event);
 
+    static void onLog(const dpp::log_t& event);
+    static void logMessage(const dpp::loglevel& ll, const std::string& message);
 
     static void updatePresence(dpp::timer timer);
 
@@ -56,4 +62,7 @@ private:
 
     static unsigned char m_PresenceState;
     static bool m_Initialized;
+    static bool m_LogInitialized;
+
+    static std::shared_ptr<spdlog::logger> m_Logger;
 };

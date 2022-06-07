@@ -1,6 +1,11 @@
 #include <iostream>
 #include <vector>
 
+#include <spdlog/spdlog.h>
+#include <spdlog/async.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+
 #include <bot/commands/command.h>
 #include <bot/config/config.h>
 #include <bot/persistence/db.h>
@@ -27,16 +32,32 @@ dpp::cluster*                           ClassroomBot::m_Cluster;
 std::chrono::system_clock::time_point   ClassroomBot::m_StartupTime;
 unsigned char                           ClassroomBot::m_PresenceState = 0;
 bool                                    ClassroomBot::m_Initialized = false;
+bool                                    ClassroomBot::m_LogInitialized = false;
 std::vector<Command*>                   ClassroomBot::m_Commands;
+std::shared_ptr<spdlog::logger>         ClassroomBot::m_Logger;
 
 void ClassroomBot::init() {
     m_StartupTime = std::chrono::system_clock::now();
 
-    /*
-    m_Log = spdlog::stdout_color_mt("classroombot");
-    m_Log->set_pattern("%^%Y-%m-%d %H:%M:%S.%e [%L] [ClassroomBot] [th#%t]%$ : %v");
-    m_Log->set_level(spdlog::level::trace);
-    */
+    spdlog::init_thread_pool(8192, 2);
+    std::vector<spdlog::sink_ptr> sinks;
+    auto stdout_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt >();
+    auto rotating = std::make_shared<spdlog::sinks::rotating_file_sink_mt>("classroombot.log", 1024 * 1024 * 5, 10);
+    sinks.push_back(stdout_sink);
+    sinks.push_back(rotating);
+    m_Logger = std::make_shared<spdlog::async_logger>("logs", sinks.begin(), sinks.end(), spdlog::thread_pool(), spdlog::async_overflow_policy::block);
+    spdlog::register_logger(m_Logger);
+    m_Logger->set_pattern("%^%Y-%m-%d %H:%M:%S.%e [%L] [ClassroomBot] [th#%t]%$ : %v");
+
+    #ifdef DEBUG
+    m_Logger->set_level(spdlog::level::level_enum::trace);
+    #else
+    m_Logger->set_level(spdlog::level::level_enum::info);
+    #endif
+
+    m_LogInitialized = true;
+
+    log(dpp::ll_info, "Starting ClassroomBot version " + std::string(BOT_VERSION));
 
     try {
         Config::loadFromFile("config.json");
@@ -49,14 +70,13 @@ void ClassroomBot::init() {
         throw std::runtime_error("Invalid config supplied to ClassroomBot!");
     }
 
+    std::string token = Config::get()["bot"]["token"];
+    m_Cluster = new dpp::cluster(token);
+    m_Cluster->on_log(ClassroomBot::onLog);
+
     Localization::init();
     Encryption::init();
     DB::init();
-
-    std::string token = Config::get()["bot"]["token"];
-    m_Cluster = new dpp::cluster(token);
-    m_Cluster->on_log(dpp::utility::cout_logger());
-    m_Cluster->log(dpp::ll_info, "Starting ClassroomBot version " + std::string(BOT_VERSION));
 
     m_Cluster->on_slashcommand(ClassroomBot::onSlashCommand);
     m_Cluster->on_select_click(ClassroomBot::onSelectClick);
@@ -76,7 +96,8 @@ void ClassroomBot::init() {
         }
 
         #ifdef DEBUG
-        m_Cluster->guild_bulk_command_create(slashCommands, 705355899400880212);
+        m_Cluster->guild_bulk_command_create(slashCommands, 705355899400880212); // feel free to join the support server :)
+        m_Cluster->global_bulk_command_create(std::vector<dpp::slashcommand>()); // delete global commands in debug mode
         #else
         m_Cluster->global_bulk_command_create(slashCommands);
         #endif
@@ -96,8 +117,36 @@ bool ClassroomBot::run() {
     return true;
 }
 
+void ClassroomBot::logMessage(const dpp::loglevel& ll, const std::string& message) {
+    switch (ll) {
+        case dpp::ll_trace:
+            m_Logger->trace("{}", message);
+        break;
+        case dpp::ll_debug:
+            m_Logger->debug("{}", message);
+        break;
+        case dpp::ll_info:
+            m_Logger->info("{}", message);
+        break;
+        case dpp::ll_warning:
+            m_Logger->warn("{}", message);
+        break;
+        case dpp::ll_error:
+            m_Logger->error("{}", message);
+        break;
+        case dpp::ll_critical:
+        default:
+            m_Logger->critical("{}", message);
+        break;
+    }
+}
+
 void ClassroomBot::log(const dpp::loglevel& ll, const std::string& message) {
-    if(m_Initialized) m_Cluster->log(ll, message);
+    if(m_LogInitialized) logMessage(ll, message);
+}
+
+void ClassroomBot::onLog(const dpp::log_t& event) {
+    if(m_LogInitialized) logMessage(event.severity, event.message);
 }
 
 void ClassroomBot::registerCommand(Command* command) {
@@ -123,7 +172,17 @@ void ClassroomBot::onSlashCommand(const dpp::slashcommand_t& event) {
 }
 
 void ClassroomBot::onSelectClick(const dpp::select_click_t& event) {
-    // TODO
+    for(Command* command : m_Commands) {
+        const Command::CommandSpec& spec = command->spec();
+
+        for(const std::string& menuId : spec.selectMenuIds) {
+            if(menuId == event.custom_id) {
+                command->selectClick(CommandContext(event, CommandContext::SelectClick));
+                return;
+            }
+        }
+        LOG_WARN("Couldn't find handler for select click id: \"" + event.custom_id + "\" issued by " + event.command.usr.username + " in " + std::to_string(event.command.guild_id));
+    }
 }
 
 void ClassroomBot::onButtonClick(const dpp::button_click_t& event) {
@@ -135,7 +194,19 @@ void ClassroomBot::onFormSubmit(const dpp::form_submit_t& event) {
 }
 
 void ClassroomBot::onUserContext(const dpp::user_context_menu_t& event) {
-    // TODO
+    for(Command* command : m_Commands) {
+        const Command::CommandSpec& spec = command->spec();
+
+        for(const dpp::slashcommand& slashCommand : spec.commands) {
+            if(slashCommand.type != dpp::ctxm_user) continue;
+
+            if(slashCommand.name == event.command.get_command_name()) {
+                command->userContext(CommandContext(event, CommandContext::ContextUser));
+                return;
+            }
+        }
+    }
+    LOG_WARN("Unknown user context command: \"" + event.command.get_command_name() + "\" issued by " + event.command.usr.username + " in " + std::to_string(event.command.guild_id));
 }
 
 void ClassroomBot::onMessageContext(const dpp::message_context_menu_t& event) {

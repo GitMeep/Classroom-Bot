@@ -32,16 +32,22 @@ public:
     void mute() const;
     void unmute() const;
 
+    // acknowledge command
+    void reply() const;
+
     // string replies
     void replyUnlocalized(const std::string& message, bool ephemeral = false) const;
     void replyUnlocalized(const dpp::message& message) const;
     void replyLocalized(const std::string& name, bool ephemeral = false) const;
+    void replyUnlocalizedChannel(dpp::message message) const;
     const std::string& localize(const std::string& name) const;
+    const std::string& localizeGuild(const std::string& name) const;
 
     const dpp::interaction_create_t& event;
     const InteractionType type;
 private:
-    const std::string& m_LangCode;
+    const std::string& m_UserLangCode;
+    const std::string& m_GuildLangCode;
 };
 
 class Command {

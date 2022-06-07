@@ -40,31 +40,28 @@ void Localization::init() {
 
         // hand command
         {"hand_cmd", "hand"},
-        {"hand_alias", "h"},
         {"hand_desc", "Show of hands."},
         {"hand_option_up", "up"},
         {"hand_option_down", "down"},
-        {"hand_option_list", "list"},
         {"hand_option_next", "next"},
         {"hand_option_pick", "pick"},
         {"hand_option_random", "random"},
+        {"hand_option_list", "list"},
         {"hand_option_clear", "clear"},
         {"hand_option_up_desc", "Raise your hand."},
         {"hand_option_down_desc", "Lower your hand."},
-        {"hand_option_list_desc", "List all users with their hand raised."},
         {"hand_option_next_desc", "Show the next user with a raised hand, and lower it."},
         {"hand_option_pick_desc", "Pick a hand from the list."},
         {"hand_option_random_desc", "Pick a random user with their hand raised, and lower it."},
+        {"hand_option_list_desc", "List all users with their hand raised."},
         {"hand_option_clear_desc", "Lower all hands."},
-        {"hand_usage", "Command usage: `hand [up/down/next/pick/random/list/clear]`"},
-        {"pick_number", "Please enter the number to pick."},
-        {"valid_number", "Please enter a valid number."},
-        {"reasonable_number", "Please enter a reasonable number."},
-        {"already_raised", "You already have your hand raised."},
+        {"hand_already_raised", "You already have your hand raised."},
         {"hand_limit", "Queue limit reached (max 50 hands)."},
-        {"no_hands", "No hands are raised."},
-        {"hand_oor", "Not that many people have their hand raised."},
+        {"hand_no_hands", "No hands are raised."},
         {"hand_up_users", "Users with their hand up:"},
+        {"hand_picked_message", "{picker} picked {picked}'s hand"},
+        {"hand_picked_user_without_hand", "{picked}'s hand wasn't raised, but picked them anyways"},
+        {"hand_user_raised_hand", "{raiser} raised their hand"},
 
         // mute command
         {"mute_cmd", "mute"},
@@ -213,7 +210,6 @@ const std::string& Localization::getString(const std::string& name, const std::s
     }
     
     return m_Strings[lang][name];
-
 }
 
 bool Localization::hasLanguage(const std::string& lang) {
