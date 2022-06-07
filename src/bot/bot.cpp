@@ -274,7 +274,6 @@ void ClassroomBot::updatePresence(dpp::timer timer) {
         Poco::Net::HTTPResponse response;
         session.receiveResponse(response);
     }
-
 }
 
 dpp::cluster& ClassroomBot::cluster() {

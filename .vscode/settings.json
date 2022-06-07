@@ -89,7 +89,8 @@
         "__nullptr": "cpp",
         "ios": "cpp",
         "queue": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "filesystem": "cpp"
     },
 
     "files.watcherExclude": {

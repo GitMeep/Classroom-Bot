@@ -23,7 +23,6 @@ void Localization::init() {
 
         // question command
         {"question_cmd", "question"},
-        {"question_alias", "q"},
         {"question_desc", "Ask questions that a teacher can then answer one by one."},
         {"question_option_ask", "ask"},
         {"question_option_list", "list"},
@@ -38,23 +37,29 @@ void Localization::init() {
         {"no_questions", "No questions left."},
         {"empty_question", "You can't ask an empty question."},
 
-        // hand command
-        {"hand_cmd", "hand"},
-        {"hand_desc", "Show of hands."},
-        {"hand_option_up", "up"},
-        {"hand_option_down", "down"},
-        {"hand_option_next", "next"},
-        {"hand_option_pick", "pick"},
-        {"hand_option_random", "random"},
-        {"hand_option_list", "list"},
-        {"hand_option_clear", "clear"},
-        {"hand_option_up_desc", "Raise your hand."},
-        {"hand_option_down_desc", "Lower your hand."},
-        {"hand_option_next_desc", "Show the next user with a raised hand, and lower it."},
-        {"hand_option_pick_desc", "Pick a hand from the list."},
-        {"hand_option_random_desc", "Pick a random user with their hand raised, and lower it."},
-        {"hand_option_list_desc", "List all users with their hand raised."},
-        {"hand_option_clear_desc", "Lower all hands."},
+        // hand
+        {"hand_hand_cmd", "hand"},
+        {"hand_hand_cmd_desc", "Show of hands."},
+        {"hand_hand_cmd_option_next", "next"},
+        {"hand_hand_cmd_option_list", "list"},
+        {"hand_hand_cmd_option_random", "random"},
+        {"hand_hand_cmd_option_clear", "clear"},
+        {"hand_hand_cmd_option_next_desc", "Show the next user with a raised hand, and lower it."},
+        {"hand_hand_cmd_option_list_desc", "List all users with their hand raised."},
+        {"hand_hand_cmd_option_random_desc", "Pick a random user with their hand raised, and lower it."},
+        {"hand_hand_cmd_option_clear_desc", "Lower all hands."},
+        
+        {"hand_raise_cmd", "raise"},
+        {"hand_raise_cmd_desc", "Raise your hand."},
+
+        {"hand_lower_cmd", "lower"},
+        {"hand_lower_cmd_desc", "Lower your hand."},
+
+        {"hand_pick_cmd", "pick"},
+        {"hand_pick_cmd_desc", "Pick a hand from the list."},
+        {"hand_pick_cmd_option_user", "user"},
+        {"hand_pick_cmd_option_desc", "Pick a user."},
+
         {"hand_already_raised", "You already have your hand raised."},
         {"hand_limit", "Queue limit reached (max 50 hands)."},
         {"hand_no_hands", "No hands are raised."},
@@ -63,18 +68,24 @@ void Localization::init() {
         {"hand_picked_user_without_hand", "{picked}'s hand wasn't raised, but picked them anyways"},
         {"hand_user_raised_hand", "{raiser} raised their hand"},
 
-        // mute command
+        // attendance
+        {"attendance_cmd", "attendance"},
+        {"attendance_cmd_desc", "Take attendance."},
+        {"attendance_taking_attendance", "{teacher} is taking attendance."},
+        {"attendance_people_present", "People present"},
+        {"attendance_already_indicated", "You have already indicated attendance"},
+        {"attendance_present_button", "I'm present"},
+
+        // mute
         {"mute_cmd", "mute"},
-        {"mute_alias", "m"},
         {"mute_desc", "(Admin only) Toggles mute on the voice channel that you are in. Everyone in a muted channel, except teachers, get server muted. This way you can easily mute a class who wont stop talking."},
         {"mute_option_desc", "`[Channel ID]`: Mute a voice channel that you aren't in. Right click on a voice channel and press `Copy ID` to get it's id."},
         {"not_in_vc", "You are not in a voice channel. To mute a specifc channel, use `mute [channel id]`"},
         {"invalid_id", "Invalid ID"},
         {"vc_not_exist", "That voice channel doesn't exist."},
 
-        // settings command
+        // settings
         {"settings_cmd", "settings"},
-        {"settings_alias", "s"},
         {"settings_desc", "Configure the server's settings."},
         {"settings_option_get", "get"},
         {"settings_option_set", "set"},
@@ -91,9 +102,8 @@ void Localization::init() {
         {"settings_setting_lang", "language"},
         {"settings_for", "Settings for:"},
 
-        // help command
+        // help
         {"help_cmd", "help"},
-        {"help_alias", "he"},
         {"help_desc", "Display this help page. Use `help [command]` to get more information about a specific command."},
         {"help_option_desc", "`[command]`: get help about a specific command."},
         {"help_response_description", "To use the admin only commands, you need a role named \"Teacher\". The name of this role can be changed with the `settings` command. If you have any questions or want to report a bug, join the [support server](https://discord.gg/dqmTAZY). If you like the bot, please upvote it on [top.gg](https://top.gg/bot/691945666896855072) or support development via [Github sponsors.](https://github.com/sponsors/GitMeep)"},
@@ -101,10 +111,10 @@ void Localization::init() {
         {"help_aliases", "Aliases"},
         {"help_options", "Options"},
 
-        // invite command
+        // invite
         {"invite_cmd", "invite"},
-        {"invite_desc", "Like the bot and want it on your own server? Use this command to get an invite link in your DM's."},
-        {"invite_response", "Invite me to your server using this link: \nhttps://discordapp.com/api/oauth2/authorize?client_id=691945666896855072&permissions=297888850&scope=bot"}
+        {"invite_cmd_desc", "Like the bot and want it on your own server? Use this command to get an invite link in your DM's."},
+        {"invite_label", "Invite me"}
 
     }, "en-US", "English", "");
 
@@ -195,7 +205,11 @@ void Localization::loadFromFile(const std::string& path) {
     }
 }
 
-static const std::string couldntFindString = "Could not find string";
+const bool Localization::hasString(const std::string& name, const std::string& lang) {
+    return m_Strings[lang].count(name) == 1;
+}
+
+static const std::string emptyString = "";
 const std::string& Localization::getString(const std::string& name, const std::string& lang) {
     if(lang == "") return getString(name, "en-US");
 
@@ -206,7 +220,7 @@ const std::string& Localization::getString(const std::string& name, const std::s
 
     if(m_Strings[lang].count(name) == 0) {
         LOG_WARN("String " + name + " requested, but not loaded in language " + lang);
-        return couldntFindString;
+        return emptyString;
     }
     
     return m_Strings[lang][name];
@@ -220,6 +234,10 @@ const std::vector<std::pair<std::string, std::string>>& Localization::getLanguag
     return m_Languages;
 }
 
+void Localization::doIfHasString(const std::string& name, const std::string& lang, Localization::StringAcceptor handler) {
+    if(hasString(name, lang)) handler(getString(name, lang));
+}
+
 static const std::string unknownLanguage = "Unknown language";
 const std::string& Localization::getLanguageName(const std::string& code) {
     auto lang = m_Languages.begin();
@@ -230,7 +248,6 @@ const std::string& Localization::getLanguageName(const std::string& code) {
     return unknownLanguage;
 }
 
-static const std::string emptyString = "";
 const std::string& Localization::getTranslator(const std::string& code) {
     if(m_Translators.count(code) == 1) return m_Translators[code];
     return emptyString;

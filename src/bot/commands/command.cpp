@@ -80,3 +80,24 @@ void CommandContext::replyUnlocalizedChannel(dpp::message message) const {
 const Command::CommandSpec& Command::spec() {
   return m_Spec;
 }
+
+// global
+void addLocalizationIfExists(dpp::slashcommand& command, const std::string& language, const std::string& name, const std::string& description) {
+  if(Localization::hasString(name, language) && Localization::hasString(description, language)) {
+    command.add_localization(language, Localization::getString(name, language), Localization::getString(description, language));
+  }
+}
+
+void addLocalizationIfExists(dpp::command_option& option, const std::string& language, const std::string& name, const std::string& description) {
+  if(Localization::hasString(name, language) && Localization::hasString(description, language)) {
+    option.add_localization(language, Localization::getString(name, language), Localization::getString(description, language));
+  }
+}
+
+// provide defauly implementations that do nothing so derived classes don't have to overwrite every one
+void Command::command(const CommandContext& ctx) {}
+void Command::userContext(const CommandContext& ctx) {}
+void Command::messageContext(const CommandContext& ctx) {}
+void Command::buttonClick(const CommandContext& ctx) {}
+void Command::selectClick(const CommandContext& ctx) {}
+void Command::formSubmit(const CommandContext& ctx) {}

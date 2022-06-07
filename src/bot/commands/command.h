@@ -60,12 +60,12 @@ public:
     };
 
     // handlers for different interactions
-    virtual void command(const CommandContext& ctx) = 0;        // called when a slash command is issued
-    virtual void userContext(const CommandContext& ctx) = 0;    // called when a user context command is issued
-    virtual void messageContext(const CommandContext& ctx) = 0; // called when a message context command is issued
-    virtual void buttonClick(const CommandContext& ctx) = 0;    // called when a button is pressed
-    virtual void selectClick(const CommandContext& ctx) = 0;    // called when a select menu item is clicked
-    virtual void formSubmit(const CommandContext& ctx) = 0;     // called when a form is submitted
+    virtual void command(const CommandContext& ctx);        // called when a slash command is issued
+    virtual void userContext(const CommandContext& ctx);    // called when a user context command is issued
+    virtual void messageContext(const CommandContext& ctx); // called when a message context command is issued
+    virtual void buttonClick(const CommandContext& ctx);    // called when a button is pressed
+    virtual void selectClick(const CommandContext& ctx);    // called when a select menu item is clicked
+    virtual void formSubmit(const CommandContext& ctx);     // called when a form is submitted
 
     // return the command spec
     const CommandSpec& spec();
@@ -73,3 +73,8 @@ public:
 protected:
     CommandSpec m_Spec; // specification for this command, should be filled out in the constructor. spec() returns a reference to this when command is registered
 };
+
+// we do a little function overloading :)
+// add localization to a slash command or command option if the language has defined the name and description strings, useful when registering commands
+void addLocalizationIfExists(dpp::slashcommand& command, const std::string& language, const std::string& name, const std::string& description);
+void addLocalizationIfExists(dpp::command_option& command, const std::string& language, const std::string& name, const std::string& description);
