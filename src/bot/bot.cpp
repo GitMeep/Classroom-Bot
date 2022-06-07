@@ -181,12 +181,22 @@ void ClassroomBot::onSelectClick(const dpp::select_click_t& event) {
                 return;
             }
         }
-        LOG_WARN("Couldn't find handler for select click id: \"" + event.custom_id + "\" issued by " + event.command.usr.username + " in " + std::to_string(event.command.guild_id));
     }
+    LOG_WARN("Couldn't find handler for select click id: \"" + event.custom_id + "\" issued by " + event.command.usr.username + " in " + std::to_string(event.command.guild_id));
 }
 
 void ClassroomBot::onButtonClick(const dpp::button_click_t& event) {
-    // TODO
+    for(Command* command : m_Commands) {
+        const Command::CommandSpec& spec = command->spec();
+
+        for(const std::string& buttonId : spec.buttonIds) {
+            if(buttonId == event.custom_id) {
+                command->buttonClick(CommandContext(event, CommandContext::ButtonClick));
+                return;
+            }
+        }
+    }
+    LOG_WARN("Couldn't find handler for button id: \"" + event.custom_id + "\" issued by " + event.command.usr.username + " in " + std::to_string(event.command.guild_id));
 }
 
 void ClassroomBot::onFormSubmit(const dpp::form_submit_t& event) {

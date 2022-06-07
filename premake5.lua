@@ -9,7 +9,7 @@ project "classroombot"
     toolset "gcc"
 
     linkoptions { '-static-libstdc++', '-static-libgcc' }
-    files { "./src/**.h", "./src/**.cpp" }
+    files { "./src/**.cpp" }
     defines { "BOT_VERSION=\"2.0.1\"" }
     includedirs { 
         "/usr/local/include/",

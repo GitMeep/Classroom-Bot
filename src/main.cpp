@@ -3,6 +3,7 @@
 
 //#include <bot/commands/questionCommand.h>
 #include <bot/commands/handsCommand.h>
+#include <bot/commands/attendanceCommand.h>
 //#include <bot/commands/inviteCommand.h>
 //#include <bot/commands/settingsCommand.h>
 //#include <bot/commands/helpCommand.h>
@@ -17,6 +18,7 @@ int main() {
     ClassroomBot::init();
     
     ClassroomBot::registerCommand(new HandsCommand());
+    ClassroomBot::registerCommand(new AttendanceCommand());
     /*
     ClassroomBot::registerCommand(new QuestionCommand());
     ClassroomBot::registerCommand(new InviteCommand());

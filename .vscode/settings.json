@@ -87,7 +87,9 @@
         "numbers": "cpp",
         "semaphore": "cpp",
         "__nullptr": "cpp",
-        "ios": "cpp"
+        "ios": "cpp",
+        "queue": "cpp",
+        "stack": "cpp"
     },
 
     "files.watcherExclude": {

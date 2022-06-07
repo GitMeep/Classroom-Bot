@@ -63,7 +63,7 @@ public:
     virtual void command(const CommandContext& ctx) = 0;        // called when a slash command is issued
     virtual void userContext(const CommandContext& ctx) = 0;    // called when a user context command is issued
     virtual void messageContext(const CommandContext& ctx) = 0; // called when a message context command is issued
-    virtual void buttonClick(const CommandContext& ctx) = 0;         // called when a button is pressed
+    virtual void buttonClick(const CommandContext& ctx) = 0;    // called when a button is pressed
     virtual void selectClick(const CommandContext& ctx) = 0;    // called when a select menu item is clicked
     virtual void formSubmit(const CommandContext& ctx) = 0;     // called when a form is submitted
 
