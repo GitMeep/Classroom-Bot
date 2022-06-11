@@ -6,7 +6,7 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "make -j4",
+            "command": "make -j4 && rm -rf ./bin/lang && cp -R ./lang ./bin/lang && rm ./bin/lang/template.json",
             "problemMatcher": [
                 "$gcc"
             ],
