@@ -21,7 +21,7 @@ void Localization::init() {
         {"above_zero", "Please enter a number above 0."},
         {"unknown_cmd", "Unknown command."},
 
-        // question command
+        // question
         {"question_cmd", "question"},
         {"question_desc", "Ask questions that a teacher can then answer one by one."},
         {"question_option_ask", "ask"},
@@ -38,39 +38,41 @@ void Localization::init() {
         {"empty_question", "You can't ask an empty question."},
 
         // hand
-        {"hand_hand_cmd", "hand"},
-        {"hand_hand_cmd_desc", "Show of hands."},
-        {"hand_hand_cmd_option_next", "next"},
-        {"hand_hand_cmd_option_list", "list"},
-        {"hand_hand_cmd_option_random", "random"},
-        {"hand_hand_cmd_option_clear", "clear"},
-        {"hand_hand_cmd_option_next_desc", "Show the next user with a raised hand, and lower it."},
-        {"hand_hand_cmd_option_list_desc", "List all users with their hand raised."},
-        {"hand_hand_cmd_option_random_desc", "Pick a random user with their hand raised, and lower it."},
-        {"hand_hand_cmd_option_clear_desc", "Lower all hands."},
+        {"hand_cmd_raise", "raise"},
+            {"hand_cmd_raise_desc", "Raise your hand."},
+
+        {"hand_cmd_lower", "lower"},
+            {"hand_cmd_lower_desc", "Lower your hand."},
         
-        {"hand_raise_cmd", "raise"},
-        {"hand_raise_cmd_desc", "Raise your hand."},
+        {"hand_cmd_hands", "hands"},
+            {"hand_cmd_hands_desc", "List everyone with their hand raised."},
 
-        {"hand_lower_cmd", "lower"},
-        {"hand_lower_cmd_desc", "Lower your hand."},
-
-        {"hand_pick_cmd", "pick"},
-        {"hand_pick_cmd_desc", "Pick a hand from the list."},
-        {"hand_pick_cmd_option_user", "user"},
-        {"hand_pick_cmd_option_desc", "Pick a user."},
+        {"hand_cmd_pick", "pick"},
+            {"hand_cmd_pick_desc", "Various ways to pick a hand."},
+            {"hand_cmd_pick_option_next", "next"},
+                {"hand_cmd_pick_option_next_desc", "Pick the next hand in the queue."},
+            {"hand_cmd_pick_option_list", "list"},
+                {"hand_cmd_pick_option_list_desc", "Pick a hand from a list."},
+            {"hand_cmd_pick_option_user", "user"},
+                {"hand_cmd_pick_option_user_desc", "Pick a specific user."},
+            {"hand_cmd_pick_option_random", "random"},
+                {"hand_cmd_pick_option_random_desc", "Pick a random hand in the queue."},
+            {"hand_cmd_pick_option_clear", "clear"},
+                {"hand_cmd_pick_option_clear_desc", "Lower all hands."},
 
         {"hand_already_raised", "You already have your hand raised."},
+        {"hand_cleared_hands", "{clearer} cleared all hands"},
         {"hand_limit", "Queue limit reached (max 50 hands)."},
         {"hand_no_hands", "No hands are raised."},
         {"hand_up_users", "Users with their hand up:"},
         {"hand_picked_message", "{picker} picked {picked}'s hand"},
-        {"hand_picked_user_without_hand", "{picked}'s hand wasn't raised, but picked them anyways"},
+        {"hand_picked_message_not_raised", "{picker} picked {picked}'s hand, even though it wasn't raised"},
         {"hand_user_raised_hand", "{raiser} raised their hand"},
 
         // attendance
-        {"attendance_cmd", "attendance"},
-        {"attendance_cmd_desc", "Take attendance."},
+        {"attendance_cmd_attendance", "attendance"},
+            {"attendance_cmd_attendance_desc", "Take attendance."},
+        
         {"attendance_taking_attendance", "{teacher} is taking attendance."},
         {"attendance_people_present", "People present"},
         {"attendance_already_indicated", "You have already indicated attendance"},
@@ -112,9 +114,9 @@ void Localization::init() {
         {"help_options", "Options"},
 
         // invite
-        {"invite_cmd", "invite"},
-        {"invite_cmd_desc", "Like the bot and want it on your own server? Use this command to get an invite link in your DM's."},
-        {"invite_label", "Invite me"}
+        {"invite_cmd_invite", "invite"},
+            {"invite_cmd_invite_desc", "Like the bot and want it on your own server? Use this command to get an invite link in your DM's."},
+            {"invite_label", "Invite me"}
 
     }, "en-US", "English", "");
 
@@ -232,10 +234,6 @@ bool Localization::hasLanguage(const std::string& lang) {
 
 const std::vector<std::pair<std::string, std::string>>& Localization::getLanguages() {
     return m_Languages;
-}
-
-void Localization::doIfHasString(const std::string& name, const std::string& lang, Localization::StringAcceptor handler) {
-    if(hasString(name, lang)) handler(getString(name, lang));
 }
 
 static const std::string unknownLanguage = "Unknown language";

@@ -69,6 +69,7 @@ const std::string& CommandContext::localize(const std::string& name) const {
 }
 
 const std::string& CommandContext::localizeGuild(const std::string& name) const {
+  // TODO: Guild locale is only for community servers, it should be overwritten with a per-server bot setting so normal servers can set their preferred locale for the bot as well
   return Localization::getString(name, m_GuildLangCode);
 }
 

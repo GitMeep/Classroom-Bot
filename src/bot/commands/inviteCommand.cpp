@@ -7,14 +7,14 @@
 
 InviteCommand::InviteCommand() {
     {
-        auto& command = m_Spec.commands.emplace_back(Localization::getString("invite_cmd"), Localization::getString("invite_cmd_desc"), NULL);
+        auto& command = m_Spec.commands.emplace_back(Localization::getString("invite_cmd_invite"), Localization::getString("invite_cmd_invite_desc"), NULL);
 
         for(const auto& lang : Localization::getLanguages()) {
             const std::string& currentLangCode = lang.first;
 
             if(currentLangCode == "en-US") continue;
 
-            addLocalizationIfExists(command, currentLangCode, "invite_cmd", "invite_cmd_desc");
+            addLocalizationIfExists(command, currentLangCode, "invite_cmd_invite", "invite_cmd_invite_desc");
         }
     }
 }

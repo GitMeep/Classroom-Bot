@@ -10,14 +10,14 @@ const std::string buttonId = "attend";
 
 AttendanceCommand::AttendanceCommand() {
   {
-    auto& command = m_Spec.commands.emplace_back(Localization::getString("attendance_cmd"), Localization::getString("attendance_cmd_desc"), NULL);
+    auto& command = m_Spec.commands.emplace_back(Localization::getString("attendance_cmd_attendance"), Localization::getString("attendance_cmd_attendance_desc"), NULL);
 
     for(const auto& lang : Localization::getLanguages()) {
       const std::string& currentLangCode = lang.first;
 
       if(currentLangCode == "en-US") continue;
 
-      addLocalizationIfExists(command, currentLangCode, "attendance_cmd", "attendance_cmd_desc");
+      addLocalizationIfExists(command, currentLangCode, "attendance_cmd_attendance", "attendance_cmd_attendance_desc");
     }
   }
 
@@ -37,7 +37,7 @@ const dpp::component presentButton(const CommandContext& ctx) {
 void AttendanceCommand::command(const CommandContext& ctx) {
   ctx.confirm();
   ctx.replyUnlocalizedChannel(dpp::message()
-    .set_content(fmt::format(ctx.localize("attendance_taking_attendance"), fmt::arg("teacher", mentionUser(ctx.userId()))))
+    .set_content(fmt::format(ctx.localizeGuild("attendance_taking_attendance"), fmt::arg("teacher", mentionUser(ctx.userId()))))
     .add_component(presentButton(ctx))
   );
 }
@@ -50,7 +50,7 @@ void AttendanceCommand::buttonClick(const CommandContext& ctx) {
   std::string messageContents = event.command.msg.content;
 
   if(messageContents.find('\n') == std::string::npos) {
-    messageContents += "\n\n" + ctx.localize("attendance_people_present") + ":";
+    messageContents += "\n\n" + ctx.localizeGuild("attendance_people_present") + ":";
   }
 
   std::string userIdString = std::to_string(userId);
