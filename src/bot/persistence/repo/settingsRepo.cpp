@@ -21,7 +21,7 @@ using bsoncxx::builder::stream::finalize;
 using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::open_document;
 
-const Settings SettingsRepo::defaultSettings {"?", "Teacher", "eng"};
+const Settings SettingsRepo::defaultSettings {"en-US"};
 
 // static members
 Poco::LRUCache<dpp::snowflake, Settings> SettingsRepo::m_Cache;
@@ -38,26 +38,14 @@ Settings SettingsRepo::get(const dpp::snowflake& guildId) {
     );
 
     if(result) {
-        std::string prefix, role, lang;
+        std::string lang;
 
-        if(result->view()["prefix"]) {
-            prefix = Encryption::decrypt(std::string(result->view()["prefix"].get_utf8().value));
-        } else {
-            prefix = defaultSettings.prefix;
-        }
-        if(result->view()["roleName"]) {
-            role = Encryption::decrypt(std::string(result->view()["roleName"].get_utf8().value));
-        } else {
-            role = defaultSettings.roleName;
-        }
         if(result->view()["lang"]) {
             lang = Encryption::decrypt(std::string(result->view()["lang"].get_utf8().value));
         } else {
             lang = defaultSettings.lang;
         }
         Settings settings = {
-            prefix,
-            role,
             lang
         };
         m_Cache.add(guildId, settings);
@@ -78,8 +66,6 @@ void SettingsRepo::save(const dpp::snowflake& guildId, const Settings& settings)
     << finalize,
     document{}
         << "$set" << open_document
-            << "prefix" << Encryption::encrypt(settings.prefix)
-            << "roleName" << Encryption::encrypt(settings.roleName)
             << "lang" << Encryption::encrypt(settings.lang)
         << close_document
     << finalize,

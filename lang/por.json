@@ -1,5 +1,5 @@
 {
-    "name": "Português do Brasil",
+    "name": "Português",
     "code": "pt-BR",
     "translator": "",
     "strings": [
@@ -59,9 +59,9 @@
         {"invalid_id": "ID inválido"},
         {"vc_not_exist": "Esse canal de voz não existe."},
 
-        {"settings_cmd": "definicoes"},
+        {"settings_cmd_settings": "definicoes"},
         {"settings_alias": "d"},
-        {"settings_desc": "Configurar as definições do servidor"},
+        {"settings_cmd_settings_desc": "Configurar as definições do servidor"},
         {"settings_option_get": "obter"},
         {"settings_option_set": "definir"},
         {"settings_option_set_desc": "`definir [prefixo/cargo/idioma] [valor]`: Alterar uma definição (Apenas para administradores)."},
@@ -70,7 +70,7 @@
         {"no_att": "Por favor insira o nome do cargo sem o @ à frente."},
         {"unknown_language": "Este idioma não é suportado. Idiomas suportados:"},
         {"settings_prefix": "Prefixo"},
-        {"settings_role_name": "Nome do cargo de administrador"},
+        {"settings_role": "Nome do cargo de administrador"},
         {"settings_language": "Idioma"},
         {"settings_setting_prefix": "prefixo"},
         {"settings_setting_role": "cargo"},

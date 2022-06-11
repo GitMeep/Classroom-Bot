@@ -4,6 +4,18 @@
 #include <bot/persistence/repo/questionRepo.h>
 #include <bot/persistence/model/question.h>
 
+// /ask
+
+// /drop
+
+// /questions (list questions)
+
+// /answer next (answer next question)
+// /answer user @user (answer specific user)
+// /answer list (show pick menu)
+// /answer random (answer random question)
+// /answer clear (clear questions)
+
 void QuestionCommand::call(int verb, const std::vector<std::string>& parameters, CommandContext* ctx) {
    switch(verb) {
     case 1: // ask

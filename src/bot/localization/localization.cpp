@@ -11,13 +11,12 @@ namespace fs = std::filesystem;
 std::unordered_map<std::string, std::unordered_map<std::string, std::string>> Localization::m_Strings;
 std::vector<std::pair<std::string, std::string>> Localization::m_Languages;
 std::unordered_map<std::string, std::string> Localization::m_Translators;
+std::set<std::string> Localization::m_PartialLanguages;
 
 // load default english string set
 void Localization::init() {
     addLanguage({
         // general
-        {"no_dm", "This command can't be used in DM's."},
-        {"admin_required", "You must be an admin to use this command."},
         {"above_zero", "Please enter a number above 0."},
         {"unknown_cmd", "Unknown command."},
 
@@ -65,6 +64,7 @@ void Localization::init() {
         {"hand_limit", "Queue limit reached (max 50 hands)."},
         {"hand_no_hands", "No hands are raised."},
         {"hand_up_users", "Users with their hand up:"},
+        {"hand_menu_placeholder", "Pick a user"},
         {"hand_picked_message", "{picker} picked {picked}'s hand"},
         {"hand_picked_message_not_raised", "{picker} picked {picked}'s hand, even though it wasn't raised"},
         {"hand_user_raised_hand", "{raiser} raised their hand"},
@@ -87,22 +87,14 @@ void Localization::init() {
         {"vc_not_exist", "That voice channel doesn't exist."},
 
         // settings
-        {"settings_cmd", "settings"},
-        {"settings_desc", "Configure the server's settings."},
-        {"settings_option_get", "get"},
-        {"settings_option_set", "set"},
-        {"settings_option_set_desc", "`set [prefix/role] [value]`: set a setting (Admin only)."},
-        {"settings_option_get_desc", "`get`: see the settings for your server."},
-        {"settings_usage", "Command usage: `settings [get/set] [settings] [value]`.\nSettings are `prefix`, `role` and `language`."},
-        {"no_att", "Please enter the role name without @ in front."},
-        {"unknown_language", "That language is not supported. Supported languages are:"},
-        {"settings_prefix", "Prefix"},
-        {"settings_role_name", "Admin role name"},
+        {"settings_cmd_settings", "settings"},
+            {"settings_cmd_settings_desc", "Configure the server's settings:"},
+            {"settings_cmd_settings_option_language", "language"},
+                {"settings_cmd_settings_option_language_desc", "View and change the server language."},
+        
         {"settings_language", "Language"},
-        {"settings_setting_prefix", "prefix"},
-        {"settings_setting_role", "role"},
-        {"settings_setting_lang", "language"},
-        {"settings_for", "Settings for:"},
+        {"settings_translator", "Translator:"},
+        {"settings_changed_language", "Changed language to {language}"},
 
         // help
         {"help_cmd", "help"},
@@ -144,6 +136,20 @@ void Localization::addLanguage(const std::unordered_map<std::string, std::string
 
     if(missingStrings != "") {
         LOG_WARN("Language " + code + " is missing strings: " + missingStrings + "\nLoading anyawys.");
+        m_PartialLanguages.insert(code);
+    }
+
+    std::string extraStrings = "";
+    auto s2 = strings.begin();
+    while(s2 != strings.end()) {
+        if(m_Strings["en-US"].count(s2->first) == 0) {
+            extraStrings += s2->first + " ";
+        }
+        s2++;
+    }
+
+    if(extraStrings != "") {
+        LOG_WARN("Language " + code + " has extra strings: " + extraStrings);
     }
 
     m_Strings[code] = strings;
@@ -221,8 +227,12 @@ const std::string& Localization::getString(const std::string& name, const std::s
     }
 
     if(m_Strings[lang].count(name) == 0) {
-        LOG_WARN("String " + name + " requested, but not loaded in language " + lang);
-        return emptyString;
+        if(lang == "en-US") {
+            LOG_CRITICAL("String " + name + " requested, but not loaded in english!");
+            return emptyString;
+        }
+        LOG_WARN("String " + name + " requested, but not loaded in language " + lang + " falling back to english");
+        return getString(name, "en-US");
     }
     
     return m_Strings[lang][name];
@@ -230,6 +240,10 @@ const std::string& Localization::getString(const std::string& name, const std::s
 
 bool Localization::hasLanguage(const std::string& lang) {
     return m_Strings.count(lang) == 1;
+}
+
+bool Localization::isPartial(const std::string& lang) {
+    return m_PartialLanguages.count(lang) == 1;
 }
 
 const std::vector<std::pair<std::string, std::string>>& Localization::getLanguages() {

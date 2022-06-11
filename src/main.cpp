@@ -5,7 +5,7 @@
 #include <bot/commands/handsCommand.h>
 #include <bot/commands/attendanceCommand.h>
 #include <bot/commands/inviteCommand.h>
-//#include <bot/commands/settingsCommand.h>
+#include <bot/commands/settingsCommand.h>
 //#include <bot/commands/helpCommand.h>
 // #include <bot/commands/muteCommand.h>
 
@@ -22,10 +22,10 @@ int main() {
     ClassroomBot::registerCommand(new InviteCommand());
     /*
     ClassroomBot::registerCommand(new QuestionCommand());
-    ClassroomBot::registerCommand(new SettingsCommand());
     ClassroomBot::registerCommand(new HelpCommand());
     ClassroomBot::registerCommand(new MuteCommand());
     */
+    ClassroomBot::registerCommand(new SettingsCommand());
     ClassroomBot::run();
     return 0;
 }

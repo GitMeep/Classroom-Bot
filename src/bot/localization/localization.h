@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include <functional>
+#include <set>
 
 class Localization {
 public:
@@ -13,6 +13,7 @@ public:
 
     static void addLanguage(const std::unordered_map<std::string, std::string>& strings, const std::string& code, const std::string& name, const std::string& translator);
     static bool hasLanguage(const std::string& lang);
+    static bool isPartial(const std::string& lang);
     static const std::vector<std::pair<std::string, std::string>>& getLanguages();
 
     static const bool hasString(const std::string& name, const std::string& lang = "");
@@ -21,7 +22,8 @@ public:
     static const std::string& getTranslator(const std::string& code);
 
 private:
-    static std::unordered_map<std::string, std::unordered_map<std::string, std::string>> m_Strings; // [lang][name]
-    static std::vector<std::pair<std::string, std::string>> m_Languages;
-    static std::unordered_map<std::string, std::string> m_Translators;
+    static std::unordered_map<std::string, std::unordered_map<std::string, std::string>> m_Strings; // language code -> (string name -> localized string)
+    static std::vector<std::pair<std::string, std::string>> m_Languages; // pair<language code, language name>
+    static std::unordered_map<std::string, std::string> m_Translators; // language code -> translator
+    static std::set<std::string> m_PartialLanguages; // language code -> translator
 };

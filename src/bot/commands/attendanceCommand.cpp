@@ -10,7 +10,7 @@ const std::string buttonId = "attend";
 
 AttendanceCommand::AttendanceCommand() {
   {
-    auto& command = m_Spec.commands.emplace_back(Localization::getString("attendance_cmd_attendance"), Localization::getString("attendance_cmd_attendance_desc"), NULL);
+    dpp::slashcommand& command = m_Spec.commands.emplace_back(Localization::getString("attendance_cmd_attendance"), Localization::getString("attendance_cmd_attendance_desc"), NULL);
 
     for(const auto& lang : Localization::getLanguages()) {
       const std::string& currentLangCode = lang.first;
@@ -25,20 +25,22 @@ AttendanceCommand::AttendanceCommand() {
 }
 
 const dpp::component presentButton(const CommandContext& ctx) {
-  return dpp::component().add_component(
-    dpp::component().set_label(ctx.localizeGuild("attendance_present_button"))
+  return dpp::component().set_label(ctx.localizeGuild("attendance_present_button"))
     .set_type(dpp::cot_button)
     .set_emoji("🖐️")
     .set_style(dpp::cos_primary)
-    .set_id(buttonId)
-  );
+    .set_id(buttonId);
 }
 
 void AttendanceCommand::command(const CommandContext& ctx) {
   ctx.confirm();
   ctx.replyUnlocalizedChannel(dpp::message()
     .set_content(fmt::format(ctx.localizeGuild("attendance_taking_attendance"), fmt::arg("teacher", mentionUser(ctx.userId()))))
-    .add_component(presentButton(ctx))
+    .add_component(
+      dpp::component().add_component(
+        presentButton(ctx)
+      )
+    )
   );
 }
 

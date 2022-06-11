@@ -43,6 +43,8 @@ public:
     const std::string& localize(const std::string& name) const;
     const std::string& localizeGuild(const std::string& name) const;
 
+    const std::string& userLanguage() const;
+
     const dpp::interaction_create_t& event;
     const InteractionType type;
 private:

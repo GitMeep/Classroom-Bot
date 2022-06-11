@@ -77,6 +77,10 @@ void CommandContext::replyUnlocalizedChannel(dpp::message message) const {
   ClassroomBot::cluster().message_create(message.set_channel_id(channelId()));
 }
 
+const std::string& CommandContext::userLanguage() const {
+  return m_UserLangCode;
+}
+
 // Command
 const Command::CommandSpec& Command::spec() {
   return m_Spec;

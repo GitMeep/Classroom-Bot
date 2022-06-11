@@ -4,10 +4,11 @@
 
 class SettingsCommand : public Command {
 public:
-    void call(int verb, const std::vector<std::string>& parameters, CommandContext* ctx);
-    CommandInfo getCommandInfo();
+    SettingsCommand();
+
+    void command(const CommandContext& ctx);
+    void selectClick(const CommandContext& ctx);
 
 private:
-    void set(CommandContext* ctx, const std::vector<std::string>& parameters);
-    void get(CommandContext* ctx);
+    void language(const CommandContext& ctx);
 };

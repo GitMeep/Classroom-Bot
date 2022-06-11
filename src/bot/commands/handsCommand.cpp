@@ -20,7 +20,8 @@ Command::Command() {
 
         dpp::slashcommand& handsCommand = m_Spec.commands.emplace_back(Localization::getString("hand_cmd_hands"), Localization::getString("hand_cmd_hands_desc"), NULL);
         
-        dpp::slashcommand& pickCommand = m_Spec.commands.emplace_back(Localization::getString("hand_cmd_pick"), Localization::getString("hand_cmd_pick_desc"), NULL);
+        dpp::slashcommand& pickCommand = m_Spec.commands.emplace_back(Localization::getString("hand_cmd_pick"), Localization::getString("hand_cmd_pick_desc"), NULL)
+            .set_default_permissions(dpp::p_manage_messages);
             dpp::command_option optionPickNext(dpp::co_sub_command, Localization::getString("hand_cmd_pick_option_next"), Localization::getString("hand_cmd_pick_option_next_desc"));
             dpp::command_option optionPickUser(dpp::co_sub_command, Localization::getString("hand_cmd_pick_option_user"), Localization::getString("hand_cmd_pick_option_user_desc"));
                 dpp::command_option optionPickUserUser(dpp::co_user, Localization::getString("hand_cmd_pick_option_user"), Localization::getString("hand_cmd_pick_option_user_desc"));
@@ -84,7 +85,7 @@ void HandsCommand::command(const CommandContext& ctx) {
     else if(commandName == Localization::getString("hand_cmd_pick"))    pickCmd(ctx);
     else {
         LOG_WARN("Hands: unknown command: " + commandName);
-        ctx.replyUnlocalized("Unknown command");
+        ctx.replyUnlocalized("Unknown command", true);
     }
 }
 
@@ -142,10 +143,10 @@ bool wasRaised(const dpp::snowflake& userId, const std::list<dpp::snowflake>& ha
     return false;
 }
 
-dpp::message createHandPicker(const std::list<dpp::snowflake>& hands, const dpp::snowflake& guildId) {
+dpp::message createHandPicker(const CommandContext& ctx, const std::list<dpp::snowflake>& hands, const dpp::snowflake& guildId) {
     dpp::component listComponent = dpp::component()
         .set_type(dpp::cot_selectmenu)
-        .set_placeholder("Pick a user") // TODO: Localize
+        .set_placeholder(ctx.localize("hand_menu_placeholder"))
         .set_id("hands_pick_user");
 
     for(auto userId : hands) {
@@ -209,8 +210,6 @@ void HandsCommand::lowerCmd(const CommandContext& ctx) {
 }
 
 void HandsCommand::pickCmd(const CommandContext& ctx) {
-    // TODO: Add admin check
-
     dpp::command_interaction ci = ctx.event.command.get_command_interaction();
 
     const std::string& subCommand = ci.options[0].name;
@@ -230,8 +229,6 @@ void HandsCommand::pickCmd(const CommandContext& ctx) {
 // pick subcommands
 
 void HandsCommand::pickNext(const CommandContext& ctx) {
-    // TODO: check if admin
-
     auto hands = HandRepo::get(ctx.channelId());
 
     if(!hands.size()) {
@@ -271,7 +268,7 @@ void HandsCommand::pickList(const CommandContext& ctx) {
         return;
     }
 
-    ctx.replyUnlocalized(createHandPicker(hands, ctx.guildId()));
+    ctx.replyUnlocalized(createHandPicker(ctx, hands, ctx.guildId()));
 }
 
 void HandsCommand::pickRandom(const CommandContext& ctx) {
@@ -310,8 +307,7 @@ void HandsCommand::pickClear(const CommandContext& ctx) {
 // Select menu click handler(s)
 
 void HandsCommand::pickFromList(const CommandContext& ctx) {
-    // TODO: add admin check
-
+    // TODO: Potentially unsafe cast
     dpp::select_click_t& event = (dpp::select_click_t&)ctx.event;
     dpp::snowflake selectedUserId = std::stoull(event.values[0]);
     
@@ -325,7 +321,7 @@ void HandsCommand::pickFromList(const CommandContext& ctx) {
         return;
     }
 
-    ctx.event.edit_original_response(createHandPicker(hands, ctx.guildId()));
+    ctx.event.edit_original_response(createHandPicker(ctx, hands, ctx.guildId()));
 }
 
 // Context menu handler(s)
