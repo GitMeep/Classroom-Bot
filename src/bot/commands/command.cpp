@@ -1,16 +1,10 @@
 #include "command.h"
 
 #include <bot/bot.h>
-#include <dpp/fmt/format.h>
 #include <bot/localization/localization.h>
+#include <fmt/format.h>
 
 // CommandContext
-
-CommandContext::CommandContext(const dpp::interaction_create_t& event, InteractionType type) :
-type(type),
-event(event),
-m_UserLangCode(event.command.locale),
-m_GuildLangCode(event.command.guild_locale) {}
 
 const dpp::snowflake& CommandContext::userId() const {
   return event.command.usr.id;
@@ -24,12 +18,8 @@ const dpp::snowflake& CommandContext::guildId() const {
   return event.command.guild_id;
 }
 
-const dpp::snowflake CommandContext::contextUser() const {
-  return type == ContextUser ? ((const dpp::user_context_menu_t&)event).get_user().id : 0;
-}
-
 void CommandContext::confirm() const {
-    event.reply(dpp::message("✅").set_flags(dpp::m_ephemeral));
+  event.reply(dpp::message("✅").set_flags(dpp::m_ephemeral));
 }
 
 void CommandContext::deny() const {
@@ -50,6 +40,10 @@ void CommandContext::unmute() const {
 
 void CommandContext::reply() const {
   event.reply();
+}
+
+void CommandContext::dialog(const dpp::interaction_modal_response& mr) const {
+  event.dialog(mr);
 }
 
 void CommandContext::replyUnlocalized(const std::string& message, bool ephemeral) const {
@@ -81,28 +75,76 @@ const std::string& CommandContext::userLanguage() const {
   return m_UserLangCode;
 }
 
+dpp::autocomplete_t& CommandContext::autocomplete() const {
+  if (eventType != AutoComplete) throw std::runtime_error("Doesn't contain the correct event type");
+  return (dpp::autocomplete_t&)event;
+}
+
+dpp::button_click_t& CommandContext::buttonClick() const {
+  if (eventType != ButtonClick) throw std::runtime_error("Doesn't contain the correct event type");
+  return (dpp::button_click_t&)event;
+}
+
+dpp::message_context_menu_t& CommandContext::messageContext() const {
+  if (eventType != MessageContext) throw std::runtime_error("Doesn't contain the correct event type");
+  return (dpp::message_context_menu_t&)event;
+}
+
+dpp::user_context_menu_t& CommandContext::userContext() const {
+  if (eventType != UserContext) throw std::runtime_error("Doesn't contain the correct event type");
+  return (dpp::user_context_menu_t&)event;
+}
+
+dpp::form_submit_t& CommandContext::formSubmit() const {
+  if (eventType != FormSubmit) throw std::runtime_error("Doesn't contain the correct event type");
+  return (dpp::form_submit_t&)event;
+}
+
+dpp::select_click_t& CommandContext::selectClick() const {
+  if (eventType != SelectClick) throw std::runtime_error("Doesn't contain the correct event type");
+  return (dpp::select_click_t&)event;
+}
+
+dpp::slashcommand_t CommandContext::slashCommand() const {
+  if (eventType != SlashCommand) throw std::runtime_error("Doesn't contain the correct event type");
+  return (dpp::slashcommand_t&)event;
+}
+
 // Command
 const Command::CommandSpec& Command::spec() {
   return m_Spec;
 }
 
+static std::string pleaseImplement = "Please implement this function yourself";
+// provide default implementations that do nothing so derived classes don't have to overwrite every one
+void Command::command(const CommandContext& ctx) {
+  LOG_WARN(pleaseImplement);
+}
+void Command::userContext(const CommandContext& ctx) {
+  LOG_WARN(pleaseImplement);
+}
+void Command::messageContext(const CommandContext& ctx) {
+  LOG_WARN(pleaseImplement);
+}
+void Command::buttonClick(const CommandContext& ctx) {
+  LOG_WARN(pleaseImplement);
+}
+void Command::selectClick(const CommandContext& ctx) {
+  LOG_WARN(pleaseImplement);
+}
+void Command::formSubmit(const CommandContext& ctx) {
+  LOG_WARN(pleaseImplement);
+}
+
 // global
 void addLocalizationIfExists(dpp::slashcommand& command, const std::string& language, const std::string& name, const std::string& description) {
-  if(Localization::hasString(name, language) && Localization::hasString(description, language)) {
+  if (Localization::hasString(name, language) && Localization::hasString(description, language)) {
     command.add_localization(language, Localization::getString(name, language), Localization::getString(description, language));
   }
 }
 
 void addLocalizationIfExists(dpp::command_option& option, const std::string& language, const std::string& name, const std::string& description) {
-  if(Localization::hasString(name, language) && Localization::hasString(description, language)) {
+  if (Localization::hasString(name, language) && Localization::hasString(description, language)) {
     option.add_localization(language, Localization::getString(name, language), Localization::getString(description, language));
   }
 }
-
-// provide defauly implementations that do nothing so derived classes don't have to overwrite every one
-void Command::command(const CommandContext& ctx) {}
-void Command::userContext(const CommandContext& ctx) {}
-void Command::messageContext(const CommandContext& ctx) {}
-void Command::buttonClick(const CommandContext& ctx) {}
-void Command::selectClick(const CommandContext& ctx) {}
-void Command::formSubmit(const CommandContext& ctx) {}

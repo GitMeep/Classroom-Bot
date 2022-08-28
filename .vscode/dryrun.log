@@ -1,0 +1,52 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/meep/Projects/Classroom-Bot'
+echo "==== Building classroombot (debug) ===="
+make --no-print-directory -C . -f classroombot.make config=debug
+ 
+echo Creating obj/Debug
+mkdir -p obj/Debug
+ 
+echo bot.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/bot.o" -MF "obj/Debug/bot.d" -c "src/bot/bot.cpp"
+echo attendanceCommand.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/attendanceCommand.o" -MF "obj/Debug/attendanceCommand.d" -c "src/bot/commands/attendanceCommand.cpp"
+echo command.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/command.o" -MF "obj/Debug/command.d" -c "src/bot/commands/command.cpp"
+echo handsCommand.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/handsCommand.o" -MF "obj/Debug/handsCommand.d" -c "src/bot/commands/handsCommand.cpp"
+echo inviteCommand.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/inviteCommand.o" -MF "obj/Debug/inviteCommand.d" -c "src/bot/commands/inviteCommand.cpp"
+echo questionCommand.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/questionCommand.o" -MF "obj/Debug/questionCommand.d" -c "src/bot/commands/questionCommand.cpp"
+echo settingsCommand.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/settingsCommand.o" -MF "obj/Debug/settingsCommand.d" -c "src/bot/commands/settingsCommand.cpp"
+echo config.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/config.o" -MF "obj/Debug/config.d" -c "src/bot/config/config.cpp"
+echo localization.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/localization.o" -MF "obj/Debug/localization.d" -c "src/bot/localization/localization.cpp"
+ 
+echo db.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/db.o" -MF "obj/Debug/db.d" -c "src/bot/persistence/db.cpp"
+echo encryption.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/encryption.o" -MF "obj/Debug/encryption.d" -c "src/bot/persistence/encryption/encryption.cpp"
+ 
+echo handRepo.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/handRepo.o" -MF "obj/Debug/handRepo.d" -c "src/bot/persistence/repo/handRepo.cpp"
+echo muteRepo.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/muteRepo.o" -MF "obj/Debug/muteRepo.d" -c "src/bot/persistence/repo/muteRepo.cpp"
+echo questionRepo.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/questionRepo.o" -MF "obj/Debug/questionRepo.d" -c "src/bot/persistence/repo/questionRepo.cpp"
+echo settingsRepo.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/settingsRepo.o" -MF "obj/Debug/settingsRepo.d" -c "src/bot/persistence/repo/settingsRepo.cpp"
+echo util.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/util.o" -MF "obj/Debug/util.d" -c "src/bot/util/util.cpp"
+echo main.cpp
+clang++   -MMD -MP -DBOT_VERSION=\"2.0.0\" -DDEBUG -I/usr/local/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/include -Isrc -g -std=c++17  -o "obj/Debug/main.o" -MF "obj/Debug/main.d" -c "src/main.cpp"
+echo Creating bin
+mkdir -p bin
+echo Linking classroombot
+clang++ -o "bin/classroombot" obj/Debug/bot.o obj/Debug/attendanceCommand.o obj/Debug/command.o obj/Debug/handsCommand.o obj/Debug/inviteCommand.o obj/Debug/questionCommand.o obj/Debug/settingsCommand.o obj/Debug/config.o obj/Debug/localization.o obj/Debug/db.o obj/Debug/encryption.o obj/Debug/handRepo.o obj/Debug/muteRepo.o obj/Debug/questionRepo.o obj/Debug/settingsRepo.o obj/Debug/util.o obj/Debug/main.o    -static-libstdc++ -static-libgcc -lpthread -lcrypto -lcryptopp -lz -lfmt -lbsoncxx -lmongocxx -lPocoFoundation -lPocoNet -lPocoNetSSL -ldpp -lssl -lspdlog
+:
+ 
+make: Leaving directory '/home/meep/Projects/Classroom-Bot'
+ 

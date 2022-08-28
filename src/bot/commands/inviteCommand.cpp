@@ -1,12 +1,13 @@
 #include "inviteCommand.h"
 
-#include <dpp/fmt/format.h>
+#include <fmt/format.h>
 
 #include <bot/localization/localization.h>
 #include <bot/bot.h>
 
 InviteCommand::InviteCommand() {
     {
+        m_Spec.commands.reserve(1); // Set to number of commands to prevent the vector from moving the data and invalidating the references
         auto& command = m_Spec.commands.emplace_back(Localization::getString("invite_cmd_invite"), Localization::getString("invite_cmd_invite_desc"), NULL);
 
         for(const auto& lang : Localization::getLanguages()) {

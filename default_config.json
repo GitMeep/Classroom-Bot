@@ -1,16 +1,16 @@
 {
     "bot": {
         "token": "${BOT_TOKEN}",
-        "owner": "${OWNER_ID}"
+        "admins": "${BOT_ADMINS}"
     },
     "persistence": {
         "url": "${MONGO_URL}",
         "db_name": "${DATABASE_NAME}",
-        "encryption_key": "${ENCRYPTION_KEY}"
+        "master_key": "${MASTER_KEY}"
     },
     "topgg": {
         "enable": "${ENABLE_TOPGG}",
         "bot_id": "${TOPGG_ID}",
         "token": "${TOPGG_TOKEN}"
-    },
+    }
 }

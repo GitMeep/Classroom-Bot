@@ -4,8 +4,8 @@
 
 class AttendanceCommand : public Command {
 public:
-    AttendanceCommand();
+  AttendanceCommand();
 
-    void command(const CommandContext& ctx);
-    void buttonClick(const CommandContext& ctx);
+  void command(const CommandContext& ctx);
+  void buttonClick(const CommandContext& ctx);
 };

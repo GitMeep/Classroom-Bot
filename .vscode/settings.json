@@ -90,12 +90,14 @@
         "ios": "cpp",
         "queue": "cpp",
         "stack": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "span": "cpp"
     },
 
     "files.watcherExclude": {
         "**/.git/objects/**": true,
         "**/.git/subtree-cache/**": true,
         "**/vendor/**": true
-    }
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
 }

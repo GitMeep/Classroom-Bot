@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 sudo apt update
-sudo apt install -y openssl libssl-dev zlib1g make g++ wget cmake libcrypto++8 libcrypto++-dev libcurl4 libicu70 libssl3 libspdlog-dev
+sudo apt install -y git openssl libssl-dev zlib1g-dev make g++ clang wget cmake libcrypto++-dev libcurl4 libicu70 libssl3 libspdlog-dev libfmt-dev libmongocrypt-dev
 
 mkdir deps
 cd deps # ./deps
@@ -10,7 +10,7 @@ if [ ! -d "./DPP/" ]; then
   git clone --recursive https://github.com/brainboxdotcc/DPP.git
   cd DPP # ./deps/DPP
   cmake -B ./build
-  cmake --build ./build -j4
+  cmake --build ./build -j7
   cd build # ./deps/DPP/build
   sudo make install
   cd ../.. # ./deps
@@ -24,7 +24,7 @@ if [ ! -d "./cmake-build/" ]; then
 fi
 cd cmake-build # ./deps/poco/cmake-build
 cmake ..
-sudo cmake --build . --target install -j4
+sudo cmake --build . --target install -j7
 cd ../.. # ./deps
 
 
@@ -46,8 +46,8 @@ if [ ! -d "./cmake-build/" ]; then
   mkdir cmake-build
 fi
 cd cmake-build # ./deps/mongo/mongo-c-driver-1.20.0/cmake-build
-cmake -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DENABLE_TESTS=OFF -DENABLE_EXAMPLES=OFF ..
-make -j4
+cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DENABLE_TESTS=OFF -DENABLE_EXAMPLES=OFF -DENABLE_CLIENT_SIDE_ENCRYPTION=ON ..
+cmake --build . -j7
 sudo cmake --build . --target install
 cd ../.. # ./deps/mongo
 
@@ -61,8 +61,8 @@ else
 fi
 cd mongo-cxx-driver-r3.6.7/build # ./deps/mongo/mongo-cxx-driver-r3.6.7/build
 
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_CXX_STANDARD=17 ..
-cmake --build . -j4
+cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_CXX_STANDARD=17 ..
+cmake --build . -j7
 sudo cmake --build . --target install
 
 cd ../../../.. # ./

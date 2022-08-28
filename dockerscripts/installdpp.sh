@@ -1,6 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 
-mkdir dpp
-cd dpp
-wget https://github.com/brainboxdotcc/DPP/releases/download/v9.0.13/libdpp-9.0.13-linux-x64.deb
-apt install -y ./libdpp-9.0.13-linux-x64.deb
+git clone --recursive https://github.com/brainboxdotcc/DPP.git
+cd DPP # ./deps/DPP
+git checkout v10.0.16
+cmake -B ./build
+cmake --build ./build -j7
+cd build # ./deps/DPP/build
+make install
+cd ../.. # ./deps

@@ -6,11 +6,11 @@ project "classroombot"
     language "C++"
     targetdir "bin"
     cppdialect "C++17"
-    toolset "gcc"
+    toolset "clang"
 
     linkoptions { '-static-libstdc++', '-static-libgcc' }
     files { "./src/**.cpp" }
-    defines { "BOT_VERSION=\"2.0.1\"" }
+    defines { "BOT_VERSION=\"2.0.0\"" }
     includedirs { 
         "/usr/local/include/",
         "/usr/local/include/mongocxx/v_noabi",
@@ -22,7 +22,6 @@ project "classroombot"
     }
     links {
         "pthread",
-        "ssl",
         "crypto",
         "cryptopp",
         "z",
@@ -32,11 +31,12 @@ project "classroombot"
         "PocoFoundation",
         "PocoNet",
         "PocoNetSSL",
-        "dpp"
+        "dpp",
+        "ssl",
+        "spdlog"
     }
 
     filter "configurations:Debug"
-        buildoptions { "-rdynamic" }
         defines { "DEBUG" }
         symbols "On"
 

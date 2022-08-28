@@ -1,21 +1,23 @@
 #pragma once
 
-#include <dpp/snowflake.h>
-
+#include <Poco/LRUCache.h>
 #include <bot/persistence/db.h>
 #include <bot/persistence/model/question.h>
-#include <Poco/LRUCache.h>
+#include <dpp/dpp.h>
 class QuestionRepo {
 public:
-    QuestionRepo(const QuestionRepo&) = delete;
+  QuestionRepo(const QuestionRepo&) = delete;
 
-    static std::deque<Question> get(dpp::snowflake channelId);
-    static void ask(const dpp::snowflake& channelId, const dpp::snowflake& userId, const std::string& question);
-    static void dismiss(const dpp::snowflake& channelId, const dpp::snowflake& userId);
-    static void clear(const dpp::snowflake& channelId);
+  static std::deque<Question> getByChannel(const dpp::snowflake& channelId);
+  static std::deque<Question> getByChannelAndUser(const dpp::snowflake& channelId, const dpp::snowflake& userId);
+  static Question             getNextByChannel(const dpp::snowflake& channelId);
+  static Question             getNextByChannelAndUser(const dpp::snowflake& channelId, const dpp::snowflake& userId);
+  static Question             getRandomByChannel(const dpp::snowflake& channelId);
+  static Question             get(const std::string& questionId);
+  static Question             getAndDismiss(const std::string& questionId);
+  static void                 ask(const dpp::snowflake& channelId, const dpp::snowflake& userId, const std::string& question);
+  static void                 dismiss(const std::string& questionId);
+  static void                 clearChannel(const dpp::snowflake& channelId);
 
-    static void expire();
-
-private:
-    static Poco::LRUCache<dpp::snowflake, std::deque<Question>> m_Cache;
+  static void expire();
 };

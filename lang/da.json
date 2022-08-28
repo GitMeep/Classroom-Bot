@@ -8,43 +8,59 @@
         {"above_zero": "Indtast venligst et tal over 0."},
         {"unknown_cmd": "Ukendt kommando."},
 
-        {"question_cmd": "spørgsmål"},
-        {"question_alias": "s"},
-        {"question_desc": "Stil spørgsmål som læreren kan besvare et efter et."},
-        {"question_option_ask": "stil"},
-        {"question_option_list": "liste"},
-        {"question_option_next": "næste"},
-        {"question_option_clear": "ryd"},
-        {"question_option_ask_desc": "`stil [spørgsmål]`: stil et spørgsmål."},
-        {"question_option_list_desc": "`liste`: se alle spørgsmålene."},
-        {"question_option_next_desc": "`næste`: (kun administrator) vis det næste spørgsmål og fjern det fra køen."},
-        {"question_option_clear_desc": "`ryd`: (kun administrator) ryd spørgsmålskøen."},
-        {"question_usage": "Kommandobrug : `spørgsmål [stil/liste/næste/ryd]`."},
+        {"question_cmd_ask": "spørg"},
+        {"question_cmd_ask_desc": "Stil et spørgsmål"},
+        {"question_cmd_ask_option_question": "spørgsmål"},
+        {"question_cmd_ask_option_question_desc": "Indtast dit spørgsmål her"},
+
+        {"question_cmd_drop": "drop"},
+        {"question_cmd_drop_desc": "Drop et spørgsmål du stilte"},
+
+        {"question_cmd_questions": "spørgsmål"},
+        {"question_cmd_questions_desc": "Få en liste af spørgsmål stillet i denne kanal"},
+
+        {"question_cmd_answer": "svar"},
+        {"question_cmd_answer_desc": "Svar på et spørgsmål"},
+
+        {"question_cmd_answer_option_next": "næste"},
+        {"question_cmd_answer_option_next_desc": "Svar på det næste spørgsmål fra denne kanal"},
+
+        {"question_cmd_answer_option_user": "bruger"},
+        {"question_cmd_answer_option_user_desc": "Svar på et spørgsmål fra en specifik bruger"},
+        {"question_cmd_answer_option_user_option_user": "Bruger"},
+        {"question_cmd_answer_option_user_option_user_desc": "Brugeren hvis spørgsmål du vil besvare"},
+        {"question_cmd_answer_option_list": "liste"},
+        {"question_cmd_answer_option_list_desc": "Vælg et spørgsmål til besvaring fra en liste"},
+        {"question_cmd_answer_option_random": "tilfældig"},
+        
+        {"question_cmd_answer_option_random_desc": "Svar på et tilfældigt spørgsmål"},
+        {"question_cmd_answer_option_clear": "ryd"},
+        {"question_cmd_answer_option_clear_desc": "Ryd alle spørgsmål i kanalen"},
         {"question_limit": "Kø grænse nået (max 50 spørgsmål)."},
         {"no_questions": "Ingen spørgsmål tilbage."},
         {"empty_question": "Du kan ikke stille et tomt spørgsmål."},
 
         {"hand_cmd_raise": "løft"},
-            {"hand_cmd_raise_desc": "Løft din hånd."},
+        {"hand_cmd_raise_desc": "Løft din hånd."},
 
         {"hand_cmd_lower": "sænk"},
-            {"hand_cmd_lower_desc": "Sænk din hånd."},
+        {"hand_cmd_lower_desc": "Sænk din hånd."},
         
         {"hand_cmd_hands": "hænder"},
-            {"hand_cmd_hands_desc": "Vis alle med hånden løftet."},
+        {"hand_cmd_hands_desc": "Vis alle med hånden løftet."},
 
         {"hand_cmd_pick": "vælg"},
-            {"hand_cmd_pick_desc": "Vælg en hånd"},
-            {"hand_cmd_pick_option_next": "næste"},
-                {"hand_cmd_pick_option_next_desc": "Vælg den næste hånd i rækken."},
-            {"hand_cmd_pick_option_list": "liste"},
-                {"hand_cmd_pick_option_list_desc": "Vælg en hånd fra listen."},
-            {"hand_cmd_pick_option_user": "bruger"},
-                {"hand_cmd_pick_option_user_desc": "Vælg en specifik bruger."},
-            {"hand_cmd_pick_option_random": "tilfældig"},
-                {"hand_cmd_pick_option_random_desc": "Vælg en tilfældig hånd."},
-            {"hand_cmd_pick_option_clear": "ryd"},
-                {"hand_cmd_pick_option_clear_desc": "Sænk alle hænder."},
+        {"hand_cmd_pick_desc": "Vælg en hånd"},
+        {"hand_cmd_pick_option_next": "næste"},
+        {"hand_cmd_pick_option_next_desc": "Vælg den næste hånd i rækken."},
+        {"hand_cmd_pick_option_list": "liste"},
+        {"hand_cmd_pick_option_list_desc": "Vælg en hånd fra listen."},
+        {"hand_cmd_pick_option_user": "bruger"},
+        {"hand_cmd_pick_option_user_desc": "Vælg en specifik bruger."},
+        {"hand_cmd_pick_option_random": "tilfældig"},
+        {"hand_cmd_pick_option_random_desc": "Vælg en tilfældig hånd."},
+        {"hand_cmd_pick_option_clear": "ryd"},
+        {"hand_cmd_pick_option_clear_desc": "Sænk alle hænder."},
 
         {"hand_already_raised": "Du har allerede din hånd oppe."},
         {"hand_cleared_hands": "{clearer} rydtede alle hænder"},
@@ -72,9 +88,9 @@
         {"vc_not_exist": "Den stemmekanal eksisterer ikke."},
 
         {"settings_cmd_settings": "indstillinger"},
-            {"settings_cmd_settings_desc": "Konfigurer serverens indstillinger:"},
-            {"settings_cmd_settings_option_language": "sprog"},
-                {"settings_cmd_settings_option_language_desc": "Se og vælg serverens sprog."},
+        {"settings_cmd_settings_desc": "Konfigurer serverens indstillinger:"},
+        {"settings_cmd_settings_option_language": "sprog"},
+        {"settings_cmd_settings_option_language_desc": "Se og vælg serverens sprog."},
         
         {"settings_language": "Sprog"},
         {"settings_translator": "Oversætter:"},
@@ -90,7 +106,7 @@
         {"help_options": "Valgmuligheder"},
 
         {"invite_cmd_invite": "invite"},
-            {"invite_cmd_invite_desc": "Like the bot and want it on your own server? Use this command to get an invite link in your DM's."},
-            {"invite_label": "Invite me"}
+        {"invite_cmd_invite_desc": "Like the bot and want it on your own server? Use this command to get an invite link in your DM's."},
+        {"invite_label": "Invite me"}
     ]
 }

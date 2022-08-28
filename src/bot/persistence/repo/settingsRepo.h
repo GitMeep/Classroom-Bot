@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dpp/snowflake.h>
+#include <dpp/dpp.h>
 
 #include <bot/persistence/model/settings.h>
 #include <bot/persistence/db.h>

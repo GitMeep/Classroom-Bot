@@ -9,6 +9,7 @@ services:
       - "443:443"
     environment:
       BOT_TOKEN: # Token here
+      BOT_ADMINS: # JSON array of strings with admins id's
       MONGO_URL: # MongoDB Url here
       DATABASE_NAME: # Database name here
-      ENCRYPTION_KEY: # Ecnryption key here
+      MASTER_KEY: # Master key here

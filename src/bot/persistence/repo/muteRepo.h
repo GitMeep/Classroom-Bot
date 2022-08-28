@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dpp/snowflake.h>
+#include <dpp/dpp.h>
 
 #include <bot/persistence/db.h>
 #include <Poco/LRUCache.h>

@@ -1,11 +1,13 @@
 #pragma once
 
 struct Question {
-    dpp::snowflake userId;
-    std::string question;
+  std::string    questionId;
+  dpp::snowflake userId;
+  std::string    question;
 
-    Question(dpp::snowflake _userId, std::string _question) {
-        userId = _userId;
-        question = _question;
-    }
+  Question(std::string _questionId, dpp::snowflake _userId, std::string _question) {
+    questionId = _questionId;
+    userId     = _userId;
+    question   = _question;
+  }
 };
